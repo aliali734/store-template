@@ -1,0 +1,51 @@
+<link rel="stylesheet" href="header.css">
+
+<header class="site-header">
+  <nav class="nav">
+    <!-- Dynamic logo -->
+    <a href="user.html" class="logo" id="site-logo-link">
+      <span id="site-logo-text">Clothing Store</span>
+    </a>
+
+    <!-- Dynamic desktop menu -->
+    <div class="menu" id="desktop-menu"></div>
+
+    <!-- Mobile toggle -->
+    <button id="mobile-toggle" class="icon-btn" aria-label="Open Menu">☰</button>
+
+    <!-- Dynamic mobile menu -->
+    <div id="mobile-panel" class="mobile-panel" aria-hidden="true">
+      <button id="mobile-close" class="icon-btn" aria-label="Close Menu">✖</button>
+      <div class="mobile-menu-items" id="mobile-menu"></div>
+    </div>
+
+    <div class="actions">
+      <div class="search-wrapper">
+        <button id="search-toggle" class="icon-btn" aria-label="Search">🔍</button>
+        <input type="text" id="search-input-header" placeholder="Search..." style="display:none;">
+      </div>
+
+      <div class="cart-wrapper">
+        <button class="icon-btn" aria-label="Cart">🛒</button>
+
+        <div id="cart-modal" class="cart-modal">
+          <div class="cart-content">
+            <button id="cart-close" class="cart-close">&times;</button>
+            <h3>Your Cart</h3>
+            <ul id="cart-items-list"></ul>
+            <div class="cart-total">
+              Total: <span id="cart-total">$0</span>
+            </div>
+            <button id="checkout-btn" class="checkout-btn">Proceed to Checkout</button>
+          </div>
+        </div>
+
+        <span id="cart-count">0</span>
+      </div>
+
+      <a id="login-link" class="icon-btn" href="login.html" style="display:none;">Login</a>
+      <a id="register-link" class="icon-btn" href="register.html" style="display:none;">Register</a>
+      <button id="logout-btn" class="icon-btn" type="button" style="display:none;">Logout</button>
+    </div>
+  </nav>
+</header>

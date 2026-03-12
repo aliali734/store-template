@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clothing Store</title>
+
+  <link rel="stylesheet" href="header.css">
+  <link rel="stylesheet" href="user.css">
+  <link rel="stylesheet" href="product-card.css">
+</head>
+<body>
+
+  <div id="header"></div>
+
+  <main class="page">
+    <div class="toolbar">
+      <h1 class="title">Products</h1>
+
+      <div class="toolbar-actions">
+        <button id="toggle-filters" class="link-btn">
+          Hide Filters
+          <span class="icon">⚙️</span>
+        </button>
+
+        <select id="filter-sort" class="link-btn">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+          <option value="name_asc">Name: A-Z</option>
+          <option value="name_desc">Name: Z-A</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="content">
+      <aside id="filters" class="filters">
+        <div class="filter-block">
+          <input type="text" id="search-input" placeholder="Search products..." />
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="filter-block">
+          <select id="filter-category">
+            <option value="">All categories</option>
+            <option value="tops">Tops</option>
+            <option value="pants">Pants</option>
+            <option value="dresses">Dresses</option>
+            <option value="jackets">Jackets</option>
+            <option value="hoodies">Hoodies</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="filter-block">
+          <select id="filter-audience">
+            <option value="">All audiences</option>
+            <option value="men">Men</option>
+            <option value="women">Women</option>
+            <option value="kids">Kids</option>
+            <option value="unisex">Unisex</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="filter-block">
+          <select id="filter-size">
+            <option value="">All sizes</option>
+            <option value="XS">XS</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="filter-block">
+          <select id="filter-color">
+            <option value="">All colors</option>
+            <option value="black">Black</option>
+            <option value="white">White</option>
+            <option value="blue">Blue</option>
+            <option value="red">Red</option>
+            <option value="green">Green</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="filter-block">
+          <input type="number" id="filter-minPrice" placeholder="Min price">
+          <input type="number" id="filter-maxPrice" placeholder="Max price">
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="filter-block">
+          <label>
+            <input type="checkbox" id="filter-inStock" />
+            In stock only
+          </label>
+        </div>
+
+        <div class="filter-block">
+          <label>
+            <input type="checkbox" id="filter-featured" />
+            Featured only
+          </label>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="filter-block">
+          <button id="reset-filters" class="filter-item">Reset Filters</button>
+        </div>
+      </aside>
+
+      <section class="grid-wrap">
+        <section id="products" class="products-grid"></section>
+        <div id="pagination" class="pagination"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="filters.js"></script>
+  <script src="user.js"></script>
+</body>
+</html>

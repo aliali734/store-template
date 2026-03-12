@@ -1,0 +1,129 @@
+/* Product Layout */
+.product-image {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.main-image img {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.main-image img:hover {
+  transform: scale(1.05);
+}
+
+.thumbnails {
+  display: flex;
+  gap: 8px;
+}
+
+.thumbnails img {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border 0.3s ease, transform 0.3s ease;
+}
+
+.thumbnails img:hover {
+  border: 2px solid #000;
+  transform: scale(1.1);
+}
+
+/* Product Info */
+.product-info h1 { font-size: 28px; }
+.product-info p { line-height: 1.5; }
+
+.product-actions input[type="number"] {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 6px 10px;
+  width: 80px;
+}
+
+.product-actions button {
+  padding: 10px 20px;
+  background: black;
+  color: white;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+}
+
+.product-actions button:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+/* Related Products */
+.related-products h2 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+#related-container .related-card {
+  flex: 1 1 calc(25% - 24px);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#related-container .related-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.related-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.related-card .related-info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.related-card .related-info h4 {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.related-card .related-info p {
+  font-size: 14px;
+  color: gray;
+}
+
+/* Responsive */
+@media(max-width:900px) {
+  main {
+    flex-direction: column;
+  }
+  .product-image, .product-info {
+    min-width: 100%;
+  }
+  .thumbnails {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+  .thumbnails img { flex-shrink: 0; }
+  #related-container .related-card { flex: 1 1 calc(50% - 16px); }
+}
+@media(max-width:500px) {
+  #related-container .related-card { flex: 1 1 100%; }
+}
