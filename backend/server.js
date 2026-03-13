@@ -18,8 +18,12 @@ mongoose.connect(dbURI)
 const app = express();
 
 // ✅ CORS (allow both localhost + 127) + allow cookies
+// ✅ Update CORS to allow your live GitHub Pages site
 app.use(cors({
-  origin: ["http://127.0.0.1:5500"],
+  origin: [
+    "http://127.0.0.1:5500", 
+    "https://your-username.github.io" // Add your GitHub Pages URL here!
+  ],
   credentials: true
 }));
 
