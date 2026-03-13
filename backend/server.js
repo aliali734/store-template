@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const path = require("path");
@@ -7,13 +8,7 @@ const cookieParser = require("cookie-parser");
 const { setCsrfCookie } = require("./middlewares/csrf.middleware");
 
 dotenv.config();
-// This tells the app: "Use the Render variable if it exists, 
-// otherwise use the local one for my own testing."
-const dbURI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/shoe-store";
-
-mongoose.connect(dbURI)
-  .then(() => console.log("MongoDB Connected Successfully!"))
-  .catch((err) => console.log("MongoDB connection failed:", err));
+connectDB();
 
 const app = express();
 
