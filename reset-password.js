@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:5000/api";
+const API_BASE = "https://shoe-store-api.onrender.com/api";
 
 // Load header
 fetch("header.html")
