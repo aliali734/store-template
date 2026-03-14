@@ -1,5 +1,5 @@
 const API_BASE = "https://shoe-store-api.onrender.com/api";
-const SERVER_BASE = "https://shoe-store-api.onrender.com";
+const SERVER_BASE = "http://127.0.0.1:5000";
 
 // =====================
 // CSRF HELPERS
