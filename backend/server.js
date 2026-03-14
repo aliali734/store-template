@@ -13,12 +13,10 @@ const app = express();
 
 // ✅ Updated CORS for Production
 app.use(cors({
-  origin: [
-    "http://127.0.0.1:5500", 
-    "https://aliali734.github.io" // Your GitHub Pages URL
-  ],
+  origin: true,
   credentials: true
 }));
+
 
 // Body parsers
 app.use(express.json());
