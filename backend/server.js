@@ -31,6 +31,10 @@ app.use(setCsrfCookie);
 // Static folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+app.get("/", (req, res) => {
+  res.send("🚀 Backend is running successfully!");
+});
+
 // Routes
 app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api/product", require("./routes/product.routes"));
