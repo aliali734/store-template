@@ -10,12 +10,13 @@ const { setCsrfCookie } = require("./middlewares/csrf.middleware");
 connectDB();
 
 const app = express();
+const cors = require("cors");
 
-// ✅ Updated CORS for Production
 app.use(cors({
-  origin: true,
-  credentials: true
+  origin: "https://aliali734.github.io", // allow your GitHub Pages site
+  credentials: true,                     // if using cookies/sessions
 }));
+
 
 
 // Body parsers
