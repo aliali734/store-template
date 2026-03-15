@@ -281,13 +281,10 @@ form?.addEventListener("submit", async (e) => {
   try {
     const res = await adminApiFetch(path, {
       method,
-      headers: {
-        ...csrfHeaders()
-      },
       body: formData
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       messageEl.textContent = data.message || "Error";
@@ -305,6 +302,7 @@ form?.addEventListener("submit", async (e) => {
       setMultiSelectValues(colors, []);
       loadProducts();
     }, 600);
+
   } catch (err) {
     console.error(err);
     messageEl.textContent = "Server error";
@@ -318,8 +316,10 @@ form?.addEventListener("submit", async (e) => {
 async function loadProducts() {
   try {
     const res = await adminApiFetch(`/product?limit=100&isActive=true`);
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
+
     renderProducts(data.products || []);
+
   } catch (err) {
     console.error(err);
   }
@@ -329,14 +329,17 @@ async function loadProducts() {
 // RENDER PRODUCTS
 // =====================
 function renderProducts(products) {
+
   productsBody.innerHTML = "";
 
   if (!products.length) {
-    productsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No products</td></tr>`;
+    productsBody.innerHTML =
+      `<tr><td colspan="6" style="text-align:center;">No products</td></tr>`;
     return;
   }
 
   products.forEach((product) => {
+
     const tr = document.createElement("tr");
 
     const firstImage = Array.isArray(product.images)
@@ -348,7 +351,10 @@ function renderProducts(products) {
       : "https://via.placeholder.com/50";
 
     tr.innerHTML = `
-      <td><img src="${imgSrc}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;"></td>
+      <td>
+        <img src="${imgSrc}"
+        style="width:50px;height:50px;object-fit:cover;border-radius:8px;">
+      </td>
       <td>${product.name}</td>
       <td>$${product.price}</td>
       <td>${product.stock}</td>
@@ -359,28 +365,32 @@ function renderProducts(products) {
       </td>
     `;
 
-    tr.querySelector(".edit").addEventListener("click", () => openEditPopup(product));
+    tr.querySelector(".edit")
+      .addEventListener("click", () => openEditPopup(product));
 
-    tr.querySelector(".delete").addEventListener("click", async () => {
-      if (!confirm("Delete this product?")) return;
+    tr.querySelector(".delete")
+      .addEventListener("click", async () => {
 
-      await adminApiFetch(`/product/${product._id}`, {
-        method: "DELETE",
-        headers: {
-          ...csrfHeaders()
-        }
+        if (!confirm("Delete this product?")) return;
+
+        await adminApiFetch(`/product/${product._id}`, {
+          method: "DELETE"
+        });
+
+        loadProducts();
       });
 
-      loadProducts();
-    });
-
     productsBody.appendChild(tr);
+
   });
+
 }
+
 // =====================
 // EDIT POPUP
 // =====================
 function openEditPopup(product) {
+
   modalTitle.textContent = "Edit Product";
   submitBtn.textContent = "Update";
 
@@ -393,66 +403,108 @@ function openEditPopup(product) {
   price.value = product.price ?? "";
   compareAtPrice.value = product.compareAtPrice ?? 0;
   stock.value = product.stock ?? "";
-  setMultiSelectValues(sizes, Array.isArray(product.sizes) ? product.sizes : []);
-  setMultiSelectValues(colors, Array.isArray(product.colors) ? product.colors : []);
+
+  setMultiSelectValues(
+    sizes,
+    Array.isArray(product.sizes) ? product.sizes : []
+  );
+
+  setMultiSelectValues(
+    colors,
+    Array.isArray(product.colors) ? product.colors : []
+  );
+
   featured.checked = !!product.featured;
   isActive.checked = product.isActive !== false;
 
   modal.classList.remove("hidden");
   overlay.classList.remove("hidden");
+
 }
 
 // =====================
 // HEADER MODAL
 // =====================
 openHeaderBtn?.addEventListener("click", () => {
+
   headerModal.classList.remove("hidden");
   overlay.classList.remove("hidden");
+
   loadHeaderSettings();
+
 });
 
 closeHeaderBtn?.addEventListener("click", closeHeaderModal);
 
 headerLogo?.addEventListener("change", () => {
+
   if (headerLogo.files[0]) {
     logoPreview.src = URL.createObjectURL(headerLogo.files[0]);
   }
+
 });
 
+// =====================
+// LOAD HEADER SETTINGS
+// =====================
 async function loadHeaderSettings() {
+
   try {
-    const res = await fetch(`${API_BASE}/header`);
-    const data = await res.json();
+
+    const res = await adminApiFetch(`/header`);
+    const data = await res.json().catch(() => ({}));
+
     if (data.success) {
-      logoPreview.src = data.header.logo ? `${SERVER_BASE}${data.header.logo}` : "";
-      headerCategories.value = (data.header.categories || []).join(", ");
+
+      logoPreview.src = data.header.logo
+        ? `${SERVER_BASE}${data.header.logo}`
+        : "";
+
+      headerCategories.value =
+        (data.header.categories || []).join(", ");
+
     }
+
   } catch (err) {
+
     console.error("Failed to load header settings:", err);
+
   }
+
 }
 
+// =====================
+// UPDATE HEADER
+// =====================
 headerForm?.addEventListener("submit", async (e) => {
+
   e.preventDefault();
 
   const formData = new FormData();
-  if (headerLogo.files[0]) formData.append("logo", headerLogo.files[0]);
+
+  if (headerLogo.files[0])
+    formData.append("logo", headerLogo.files[0]);
+
   formData.append("categories", headerCategories.value);
 
   try {
+
     const res = await adminApiFetch(`/header`, {
       method: "PUT",
-      headers: {
-        ...csrfHeaders()
-      },
       body: formData
     });
 
-    const data = await res.json();
-    headerMessage.textContent = data.success ? "✅ Header updated" : (data.message || "Error");
+    const data = await res.json().catch(() => ({}));
+
+    headerMessage.textContent =
+      data.success ? "✅ Header updated" : (data.message || "Error");
+
   } catch (err) {
+
     headerMessage.textContent = "Server error";
+
   }
+
 });
 
 // =====================
@@ -467,28 +519,39 @@ const sections = {
 };
 
 links.forEach((link) => {
+
   link.addEventListener("click", (e) => {
+
     e.preventDefault();
 
     const sectionName = link.dataset.section;
 
-    Object.values(sections).forEach((s) => s.classList.add("hidden"));
+    Object.values(sections)
+      .forEach((s) => s.classList.add("hidden"));
 
     if (sectionName === "orders") {
+
       window.showOrders?.();
       return;
+
     }
 
     if (sectionName === "products") {
+
       sections.dashboard?.classList.remove("hidden");
       sections.products?.classList.remove("hidden");
+
       loadProducts();
       return;
+
     }
 
     sections[sectionName]?.classList.remove("hidden");
+
   });
+
 });
+
 // =====================
 // LOAD
 // =====================
