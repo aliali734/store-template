@@ -24,7 +24,10 @@ async function adminLogout() {
     await fetch(`${API_BASE}/auth/logout`, {
       method: "POST",
       credentials: "include",
-      headers: { ...csrfHeaders() }
+      headers: {
+        "Content-Type": "application/json",
+        ...csrfHeaders()
+      }
     });
   } catch (e) {
     console.error("Logout failed:", e);
@@ -37,17 +40,23 @@ async function adminLogout() {
 // API FETCH (COOKIE)
 // =====================
 async function adminApiFetch(path, options = {}) {
-  return fetch(`${API_BASE}${path}`, {
-    ...options,
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: options.method || "GET",
     credentials: "include",
     headers: {
+      ...csrfHeaders(),
       ...(options.headers || {})
-    }
+    },
+    body: options.body
   });
+
+  return res;
 }
 
 window.adminApiFetch = adminApiFetch;
+
 /* ================= AUTH ================= */
+
 const loginSection = document.getElementById("login-section");
 const dashboardSection = document.getElementById("dashboard-section");
 const loginForm = document.getElementById("login-form");
@@ -55,6 +64,7 @@ const loginMessage = document.getElementById("login-message");
 const logoutBtn = document.getElementById("logoutBtn");
 
 /* ================= DASHBOARD / PRODUCTS ================= */
+
 const form = document.getElementById("product-form");
 const messageEl = document.getElementById("message");
 const modal = document.getElementById("productModal");
@@ -82,6 +92,7 @@ const image = document.getElementById("image");
 const productsBody = document.getElementById("productsBody");
 
 /* ================= HEADER ================= */
+
 const openHeaderBtn = document.getElementById("openHeaderModal");
 const closeHeaderBtn = document.getElementById("closeHeaderModal");
 const headerModal = document.getElementById("headerModal");
@@ -94,6 +105,7 @@ const headerMessage = document.getElementById("headerMessage");
 // =====================
 // SHOW/HIDE HELPERS
 // =====================
+
 function showLogin(msg = "") {
   loginSection?.classList.remove("hidden");
   dashboardSection?.classList.add("hidden");
@@ -112,9 +124,10 @@ function showDashboard() {
 // =====================
 // CHECK ADMIN SESSION
 // =====================
+
 async function checkAdminAuth() {
   try {
-    const res =  await adminApiFetch("/test/admin")
+    const res = await adminApiFetch("/test/admin");
 
     if (res.ok) {
       showDashboard();
@@ -132,6 +145,7 @@ async function checkAdminAuth() {
 // =====================
 // LOGIN
 // =====================
+
 loginForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -151,8 +165,7 @@ loginForm?.addEventListener("submit", async (e) => {
     const res = await adminApiFetch("/auth/login", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        ...csrfHeaders()
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({ email, password })
     });
@@ -176,11 +189,13 @@ loginForm?.addEventListener("submit", async (e) => {
 // =====================
 // LOGOUT
 // =====================
+
 logoutBtn?.addEventListener("click", adminLogout);
 
 // =====================
 // MULTI-SELECT HELPERS
 // =====================
+
 function getMultiSelectValues(selectEl) {
   return [...selectEl.selectedOptions].map((option) => option.value);
 }
@@ -194,20 +209,25 @@ function setMultiSelectValues(selectEl, values = []) {
 // =====================
 // MODAL
 // =====================
+
 openBtn?.addEventListener("click", () => {
   modalTitle.textContent = "Add Product";
   submitBtn.textContent = "Add";
   productIdInput.value = "";
   form.reset();
+
   setMultiSelectValues(sizes, []);
   setMultiSelectValues(colors, []);
+
   if (isActive) isActive.checked = true;
   if (featured) featured.checked = false;
+
   modal.classList.remove("hidden");
   overlay.classList.remove("hidden");
 });
 
 closeBtn?.addEventListener("click", closeModal);
+
 overlay?.addEventListener("click", () => {
   closeModal();
   closeHeaderModal();
