@@ -5,16 +5,24 @@ const crypto = require("crypto");
 const { sendEmail } = require("../config/email");
 const { isValidEmail, passwordPolicy } = require("../utils/validators");
 
-// ✅ central cookie config
+// ============================
+// COOKIE CONFIG
+// ============================
+
 function tokenCookieOptions() {
   const isProd = process.env.NODE_ENV === "production";
+
   return {
     httpOnly: true,
     sameSite: "lax",
-    secure: isProd, // ✅ true in production (https)
+    secure: isProd,
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   };
 }
+
+// ============================
+// REGISTER
+// ============================
 
 exports.register = async (req, res) => {
   try {
@@ -40,62 +48,110 @@ exports.register = async (req, res) => {
     }
 
     const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: "Email exists" });
+    if (exists) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
 
     const hash = await bcrypt.hash(password, 10);
 
-    await User.create({ name, email, password: hash });
+    await User.create({
+      name,
+      email,
+      password: hash
+    });
 
-    res.status(201).json({ success: true, message: "Registered successfully" });
+    res.status(201).json({
+      success: true,
+      message: "Registered successfully"
+    });
+
   } catch (err) {
-    res.status(500).json({ message: "Register failed", error: err.message });
+    console.error("Register error:", err);
+    res.status(500).json({ message: "Register failed" });
   }
 };
 
+// ============================
+// LOGIN
+// ============================
+
 exports.login = async (req, res) => {
   try {
+
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is missing");
+      return res.status(500).json({ message: "Server configuration error" });
+    }
+
     let { email, password } = req.body;
 
     email = (email || "").trim().toLowerCase();
     password = (password || "").trim();
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res.status(400).json({
+        message: "Email and password are required"
+      });
     }
 
     const user = await User.findOne({ email });
 
-    // ✅ avoid revealing if user exists
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid credentials"
+      });
+    }
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(400).json({ message: "Invalid credentials" });
+
+    if (!match) {
+      return res.status(400).json({
+        message: "Invalid credentials"
+      });
+    }
 
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      {
+        userId: user._id,
+        role: user.role
+      },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
     res.cookie("token", token, tokenCookieOptions());
 
-    res.json({ success: true, message: "Logged in" });
+    res.json({
+      success: true,
+      message: "Logged in"
+    });
+
   } catch (err) {
-    res.status(500).json({ message: "Login failed", error: err.message });
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Login failed" });
   }
 };
 
+// ============================
+// FORGOT PASSWORD
+// ============================
+
 exports.forgotPassword = async (req, res) => {
   try {
+
     let { email } = req.body;
     email = (email || "").trim().toLowerCase();
 
-    if (!email) return res.status(400).json({ message: "Email is required" });
-    if (!isValidEmail(email)) return res.status(400).json({ message: "Invalid email format" });
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
 
     const user = await User.findOne({ email });
 
-    // ✅ don't reveal if email exists
     if (!user) {
       return res.json({
         success: true,
@@ -104,13 +160,20 @@ exports.forgotPassword = async (req, res) => {
     }
 
     const rawToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
 
     user.resetPasswordToken = hashedToken;
     user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
+
     await user.save();
 
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password.html?token=${rawToken}&email=${encodeURIComponent(email)}`;
+    const resetLink =
+      `${process.env.FRONTEND_URL}/reset-password.html` +
+      `?token=${rawToken}&email=${encodeURIComponent(email)}`;
 
     await sendEmail({
       to: email,
@@ -127,13 +190,20 @@ exports.forgotPassword = async (req, res) => {
       success: true,
       message: "If that email exists, we sent a reset link."
     });
+
   } catch (err) {
-    res.status(500).json({ message: "Forgot password failed", error: err.message });
+    console.error("Forgot password error:", err);
+    res.status(500).json({ message: "Forgot password failed" });
   }
 };
 
+// ============================
+// RESET PASSWORD
+// ============================
+
 exports.resetPassword = async (req, res) => {
   try {
+
     let { token, email, newPassword } = req.body;
 
     token = (token || "").trim();
@@ -141,11 +211,15 @@ exports.resetPassword = async (req, res) => {
     newPassword = (newPassword || "").trim();
 
     if (!token || !email || !newPassword) {
-      return res.status(400).json({ message: "token, email, newPassword are required" });
+      return res.status(400).json({
+        message: "token, email, newPassword are required"
+      });
     }
 
     if (!isValidEmail(email)) {
-      return res.status(400).json({ message: "Invalid email format" });
+      return res.status(400).json({
+        message: "Invalid email format"
+      });
     }
 
     if (!passwordPolicy(newPassword)) {
@@ -155,7 +229,10 @@ exports.resetPassword = async (req, res) => {
       });
     }
 
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
 
     const user = await User.findOne({
       email,
@@ -164,7 +241,9 @@ exports.resetPassword = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid or expired reset token" });
+      return res.status(400).json({
+        message: "Invalid or expired reset token"
+      });
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
@@ -173,19 +252,28 @@ exports.resetPassword = async (req, res) => {
 
     await user.save();
 
-    res.json({ success: true, message: "Password reset successful" });
+    res.json({
+      success: true,
+      message: "Password reset successful"
+    });
+
   } catch (err) {
-    res.status(500).json({ message: "Reset password failed", error: err.message });
+    console.error("Reset password error:", err);
+    res.status(500).json({ message: "Reset password failed" });
   }
 };
 
+// ============================
+// LOGOUT
+// ============================
+
 exports.logout = (req, res) => {
-  // ✅ clear cookie with same flags style
-  res.clearCookie("token", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production"
+
+  res.clearCookie("token", tokenCookieOptions());
+
+  res.json({
+    success: true,
+    message: "Logged out"
   });
 
-  res.json({ success: true, message: "Logged out" });
 };
