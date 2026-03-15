@@ -22,17 +22,17 @@ function csrfHeaders() {
 // ENSURE CSRF COOKIE
 // =====================
 
-// async function ensureCsrf() {
-//   try {
-//     if (!getCookie("csrfToken")) {
-//       await fetch(`${API_BASE}/test/user`, {
-//         credentials: "include"
-//       });
-//     }
-//   } catch (err) {
-//     console.error("Failed to initialize CSRF:", err);
-//   }
-// }
+async function ensureCsrf() {
+  try {
+    if (!getCookie("csrfToken")) {
+      await fetch(`${API_BASE}/test/user`, {
+        credentials: "include"
+      });
+    }
+  } catch (err) {
+    console.error("Failed to initialize CSRF:", err);
+  }
+}
 
 // =====================
 // UI MESSAGE
