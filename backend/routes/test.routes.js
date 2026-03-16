@@ -1,30 +1,29 @@
 const express = require("express");
 const router = express.Router();
-const jwt = require("jsonwebtoken");
+const protect = require("../middlewares/auth.middleware");
 
-// Verify logged-in user
-router.get("/user", (req, res) => {
+router.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Backend structure is working 🚀"
+  });
+});
 
-  const token = req.cookies?.token;
+router.get("/user", protect(), (req, res) => {
+  res.status(200).json({
+    success: true,
+    userId: req.user.id,
+    role: req.user.role
+  });
+});
 
-  if (!token) {
-    return res.status(401).json({ message: "Not authenticated" });
-  }
-
-  try {
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    res.json({
-      success: true,
-      userId: decoded.userId,
-      role: decoded.role
-    });
-
-  } catch (err) {
-    res.status(401).json({ message: "Invalid token" });
-  }
-
+router.get("/admin", protect(["admin"]), (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Admin authorized",
+    userId: req.user.id,
+    role: req.user.role
+  });
 });
 
 module.exports = router;
