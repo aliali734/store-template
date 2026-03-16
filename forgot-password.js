@@ -1,47 +1,73 @@
-const API_BASE = "https://shoe-store-api.onrender.com/api";
+// js/forgot-password.js
 
 // Load header
 fetch("header.html")
-  .then(res => res.text())
-  .then(html => {
-    document.getElementById("header").innerHTML = html;
-    if (typeof setupAuthHeader === "function") setupAuthHeader();
-  });
+  .then((res) => res.text())
+  .then((html) => {
+    const headerEl = document.getElementById("header");
+    if (headerEl) {
+      headerEl.innerHTML = html;
+      if (typeof setupAuthHeader === "function") setupAuthHeader();
+    }
+  })
+  .catch((err) => console.error("Failed to load header:", err));
 
-// If already logged in, go to user page
-(function redirectIfLoggedIn() {
-  const token = localStorage.getItem("token");
-  if (token) window.location.href = "user.html";
-})();
+// Ensure CSRF cookie exists
+async function ensureCsrf() {
+  try {
+    if (!getCookie("csrfToken")) {
+      await fetch(`${API_BASE}/test/user`, {
+        credentials: "include"
+      }).catch(() => {});
+    }
+  } catch (err) {
+    console.error("Failed to initialize CSRF:", err);
+  }
+}
 
 const form = document.getElementById("forgot-form");
 const msg = document.getElementById("msg");
 const btn = document.getElementById("btn");
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  msg.textContent = "";
-  btn.disabled = true;
+if (form) {
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.textContent = "";
+    btn.disabled = true;
 
-  const email = document.getElementById("email").value.trim();
+    const email = document.getElementById("email")?.value.trim().toLowerCase();
 
-  try {
-    const res = await fetch(`${API_BASE}/auth/forgot-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
-    });
+    if (!email) {
+      msg.style.color = "red";
+      msg.textContent = "Email is required.";
+      btn.disabled = false;
+      return;
+    }
 
-    const data = await res.json();
+    try {
+      await ensureCsrf();
 
-    // Always shows same message for security
-    msg.style.color = "green";
-    msg.textContent = data.message || "If that email exists, we sent a reset link.";
+      const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...csrfHeaders()
+        },
+        body: JSON.stringify({ email })
+      });
 
-  } catch (err) {
-    msg.style.color = "red";
-    msg.textContent = "Server error. Try again.";
-  } finally {
-    btn.disabled = false;
-  }
-});
+      const data = await res.json().catch(() => ({}));
+
+      msg.style.color = "green";
+      msg.textContent =
+        data.message || "If that email exists, we sent a reset link.";
+    } catch (err) {
+      console.error(err);
+      msg.style.color = "red";
+      msg.textContent = "Server error. Try again.";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}

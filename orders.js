@@ -1,72 +1,6 @@
-const API_BASE = "https://shoe-store-api.onrender.com/api";
+// js/orders.js
+
 const ordersContainer = document.getElementById("orders-container");
-
-// =====================
-// API FETCH WRAPPER (AUTO LOGOUT ON 401/403)
-// =====================
-async function apiFetch(path, options = {}) {
-  const token = localStorage.getItem("token");
-
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: {
-      ...(options.headers || {}),
-      Authorization: token ? `Bearer ${token}` : undefined
-    }
-  });
-
-  if (res.status === 401 || res.status === 403) {
-    localStorage.removeItem("token");
-    window.location.href = "login.html";
-    throw new Error("Unauthorized");
-  }
-
-  return res;
-}
-
-// =====================
-// LOAD HEADER
-// =====================
-fetch("header.html")
-  .then(res => res.text())
-  .then(html => {
-    document.getElementById("header").innerHTML = html;
-    setupAuthHeader();
-  });
-
-// =====================
-// LOAD MY ORDERS (COD)
-// =====================
-async function loadMyOrders() {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  ordersContainer.innerHTML = "<p>Loading...</p>";
-
-  try {
-    const res = await apiFetch("/orders/my");
-    const data = await res.json();
-const API_BASE = "https://shoe-store-api.onrender.com/api";
-const SERVER_BASE = "https://shoe-store-api.onrender.com";
-const ordersContainer = document.getElementById("orders-container");
-
-// =====================
-// CSRF HELPERS
-// =====================
-function getCookie(name) {
-  return document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(name + "="))
-    ?.split("=")[1];
-}
-
-function csrfHeaders() {
-  const csrf = getCookie("csrfToken");
-  return csrf ? { "x-csrf-token": csrf } : {};
-}
 
 // =====================
 // FORCE LOGOUT
@@ -76,7 +10,9 @@ async function forceLogout() {
     await fetch(`${API_BASE}/auth/logout`, {
       method: "POST",
       credentials: "include",
-      headers: { ...csrfHeaders() }
+      headers: {
+        ...csrfHeaders()
+      }
     });
   } catch (e) {
     console.error("Logout request failed:", e);
@@ -88,13 +24,18 @@ async function forceLogout() {
 // =====================
 // API FETCH
 // =====================
-async function apiFetch(path, options = {}) {
+async function ordersApiFetch(path, options = {}) {
+  const isFormData = options.body instanceof FormData;
+
   const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
+    method: options.method || "GET",
     credentials: "include",
     headers: {
+      ...(!isFormData ? { "Content-Type": "application/json" } : {}),
+      ...csrfHeaders(),
       ...(options.headers || {})
-    }
+    },
+    body: options.body
   });
 
   if (res.status === 401 || res.status === 403) {
@@ -126,6 +67,7 @@ function setupAuthHeader() {
 
   if (loginLink) loginLink.style.display = "none";
   if (registerLink) registerLink.style.display = "none";
+
   if (logoutBtn) {
     logoutBtn.style.display = "inline-flex";
     logoutBtn.onclick = () => forceLogout();
@@ -141,7 +83,7 @@ async function loadMyOrders() {
   ordersContainer.innerHTML = "<p>Loading orders...</p>";
 
   try {
-    const res = await apiFetch("/orders/my");
+    const res = await ordersApiFetch("/orders/my");
     const data = await res.json();
 
     if (!res.ok) {
@@ -171,12 +113,8 @@ async function cancelOrder(orderId) {
   if (!confirmed) return;
 
   try {
-    const res = await apiFetch(`/orders/${orderId}`, {
+    const res = await ordersApiFetch(`/orders/${orderId}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...csrfHeaders()
-      },
       body: JSON.stringify({ status: "cancelled" })
     });
 
@@ -270,46 +208,4 @@ function renderOrders(orders) {
 // =====================
 // INIT
 // =====================
-document.addEventListener("DOMContentLoaded", loadMyOrders);
-    const orders = data.orders || [];
-    if (!orders.length) {
-      ordersContainer.innerHTML = "<p>No orders found.</p>";
-      return;
-    }
-
-    renderOrders(orders);
-  } catch (err) {
-    console.error(err);
-    ordersContainer.innerHTML = "<p style='color:red'>Error loading orders</p>";
-  }
-}
-
-function renderOrders(orders) {
-  ordersContainer.innerHTML = "";
-
-  orders.forEach(order => {
-    const div = document.createElement("div");
-    div.className = `order-card ${order.status}`;
-
-    // ✅ COD status labels (no payment button)
-    const statusLabel =
-      order.status === "pending"
-        ? `<span class="paid-label">Cash on delivery ⏳</span>`
-        : order.status === "paid"
-        ? `<span class="paid-label">Delivered / Paid ✅</span>`
-        : `<span class="paid-label">${order.status}</span>`;
-
-    div.innerHTML = `
-      <h3>Order #${order._id}</h3>
-      <p>Total: $${order.totalPrice}</p>
-      <p>Status: <strong>${order.status}</strong></p>
-      <p>Date: ${new Date(order.createdAt).toLocaleString()}</p>
-      ${statusLabel}
-      <hr/>
-    `;
-
-    ordersContainer.appendChild(div);
-  });
-}
-
 document.addEventListener("DOMContentLoaded", loadMyOrders);
