@@ -1,31 +1,25 @@
 // js/reset-password.js
 
-// Load header
 fetch("header.html")
   .then((res) => res.text())
   .then((html) => {
     const headerEl = document.getElementById("header");
     if (headerEl) {
       headerEl.innerHTML = html;
-      if (typeof setupAuthHeader === "function") setupAuthHeader();
     }
   })
   .catch((err) => console.error("Failed to load header:", err));
 
-// Ensure CSRF cookie exists
 async function ensureCsrf() {
   try {
-    if (!getCookie("csrfToken")) {
-      await fetch(`${API_BASE}/test/user`, {
-        credentials: "include"
-      }).catch(() => {});
-    }
+    await fetch(`${API_BASE}/csrf`, {
+      credentials: "include"
+    });
   } catch (err) {
     console.error("Failed to initialize CSRF:", err);
   }
 }
 
-// Read token + email from URL
 const params = new URLSearchParams(window.location.search);
 const token = params.get("token");
 const email = params.get("email");

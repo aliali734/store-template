@@ -1,8 +1,5 @@
 // js/auth.js
 
-// =====================
-// UI MESSAGE
-// =====================
 const authMessage = document.getElementById("auth-message");
 
 function showMessage(message, color = "red") {
@@ -28,6 +25,7 @@ async function ensureCsrf() {
     console.error("Failed to initialize CSRF:", err);
   }
 }
+
 // =====================
 // AUTO REDIRECT IF LOGGED IN
 // =====================
