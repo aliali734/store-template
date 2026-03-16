@@ -21,22 +21,13 @@ function clearMessage() {
 // =====================
 async function ensureCsrf() {
   try {
-    if (!getCookie("csrfToken")) {
-      await fetch(`${API_BASE}/`, {
-        credentials: "include"
-      }).catch(() => {});
-    }
-
-    if (!getCookie("csrfToken")) {
-      await fetch(`${API_BASE}/test/user`, {
-        credentials: "include"
-      }).catch(() => {});
-    }
+    await fetch(`${API_BASE}/csrf`, {
+      credentials: "include"
+    });
   } catch (err) {
     console.error("Failed to initialize CSRF:", err);
   }
 }
-
 // =====================
 // AUTO REDIRECT IF LOGGED IN
 // =====================

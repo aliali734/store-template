@@ -87,6 +87,12 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // ===============================
 // ROUTES
 // ===============================
+app.get("/api/csrf", (req, res) => {
+  res.json({
+    success: true,
+    csrfToken: req.cookies.csrfToken || null
+  });
+});
 app.use("/api/test", require("./routes/test.routes"));
 app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api/product", require("./routes/product.routes"));
