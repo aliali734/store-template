@@ -14,8 +14,9 @@ function tokenCookieOptions() {
 
   return {
     httpOnly: true,
-    sameSite: "lax",
-    secure: isProd,
+    sameSite: isProd ? "none" : "lax", // cross-site for production
+    secure: isProd,                    // required for SameSite=None
+    path: "/",
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   };
 }
@@ -48,6 +49,7 @@ exports.register = async (req, res) => {
     }
 
     const exists = await User.findOne({ email });
+
     if (exists) {
       return res.status(400).json({ message: "Email already exists" });
     }
@@ -79,7 +81,7 @@ exports.login = async (req, res) => {
   try {
 
     if (!process.env.JWT_SECRET) {
-      console.error("JWT_SECRET is missing");
+      console.error("JWT_SECRET missing");
       return res.status(500).json({ message: "Server configuration error" });
     }
 
@@ -172,8 +174,7 @@ exports.forgotPassword = async (req, res) => {
     await user.save();
 
     const resetLink =
-      `${process.env.FRONTEND_URL}/reset-password.html` +
-      `?token=${rawToken}&email=${encodeURIComponent(email)}`;
+      `${process.env.FRONTEND_URL}/reset-password.html?token=${rawToken}&email=${encodeURIComponent(email)}`;
 
     await sendEmail({
       to: email,
