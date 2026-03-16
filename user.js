@@ -127,7 +127,7 @@ async function loadDynamicHeader() {
 
     const { header } = data;
 
-    renderHeaderLogo(header.logo);
+    HeaderLogo(header.logo);
     renderDesktopMenu(header.menu || []);
     renderMobileMenu(header.menu || []);
   } catch (err) {

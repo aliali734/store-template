@@ -1,7 +1,7 @@
 // js/api.js
 
-const API_BASE = "https://shoe-store-api.onrender.com/api";
-const SERVER_BASE = "https://shoe-store-api.onrender.com";
+const API_BASE = "https://store-template-nemj.onrender.com/api";
+const SERVER_BASE = "https://store-template-nemj.onrender.com";
 
 function getCookie(name) {
   return document.cookie

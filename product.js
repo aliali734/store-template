@@ -1,4 +1,4 @@
-const API_BASE = "https://shoe-store-api.onrender.com/api";
+const API_BASE = "https://store-template-nemj.onrender.com/api";
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 // Toast function
@@ -73,9 +73,9 @@ async function loadProduct() {
 
     // Gallery images
     if (product.images && product.images.length) {
-      mainImg.src = `https://shoe-store-api.onrender.com${product.images[0]}`;
+      mainImg.src = `https://store-template-nemj.onrender.com${product.images[0]}`;
       thumbsContainer.innerHTML = product.images.map(src => `
-        <img class="thumb" src="https://shoe-store-api.onrender.com${src}" alt="Thumbnail">
+        <img class="thumb" src="https://store-template-nemj.onrender.com${src}" alt="Thumbnail">
       `).join("");
 
       thumbsContainer.querySelectorAll(".thumb").forEach(img => {
@@ -133,7 +133,7 @@ async function loadRelatedProducts(category) {
 
     relatedContainer.innerHTML = related.map(p => `
       <div class="related-card" onclick="window.location.href='product.html?id=${p._id}'">
-        <img src="${p.image ? 'https://shoe-store-api.onrender.com'+p.image : 'https://via.placeholder.com/300'}" alt="${p.name}">
+        <img src="${p.image ? 'https://store-template-nemj.onrender.com'+p.image : 'https://via.placeholder.com/300'}" alt="${p.name}">
         <div class="related-info">
           <h4>${p.name}</h4>
           <p>$${p.price}</p>
