@@ -24,12 +24,14 @@ const allowedOrigins = [
 app.use(cors({
   origin: function (origin, callback) {
 
-    if (!origin || allowedOrigins.includes(origin)) {
+    // allow requests with no origin (Postman, curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
     return callback(new Error("Not allowed by CORS"));
-
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -40,10 +42,8 @@ app.use(cors({
   ]
 }));
 
-app.options("*", cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+// Handle preflight requests
+app.options("*", cors());
 
 // ===============================
 // BODY PARSERS
