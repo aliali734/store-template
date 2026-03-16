@@ -19,9 +19,10 @@ function setCsrfCookie(req, res, next) {
     const isProd = process.env.NODE_ENV === "production";
 
     res.cookie("csrfToken", token, {
-      httpOnly: false,          // JS must read it to send header
-      sameSite: "lax",
-      secure: isProd,           // HTTPS in production
+      httpOnly: false,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
+      path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
@@ -50,6 +51,7 @@ function verifyCsrf(req, res, next) {
   if (!cookieToken || !headerToken || cookieToken !== headerToken) {
 
     return res.status(403).json({
+      success: false,
       message: "CSRF token invalid or missing"
     });
 
