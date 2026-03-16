@@ -1,35 +1,48 @@
+// js/api.js
+
 const API_BASE = "https://shoe-store-api.onrender.com/api";
+const SERVER_BASE = "https://shoe-store-api.onrender.com";
 
 function getCookie(name) {
   return document.cookie
     .split("; ")
-    .find(row => row.startsWith(name + "="))
+    .find((row) => row.startsWith(name + "="))
     ?.split("=")[1];
 }
 
-async function apiFetch(endpoint, options = {}) {
+function csrfHeaders() {
   const csrfToken = getCookie("csrfToken");
+  return csrfToken ? { "x-csrf-token": csrfToken } : {};
+}
+
+async function apiFetch(endpoint, options = {}) {
+  const isFormData = options.body instanceof FormData;
 
   const config = {
-    method: "GET",
-    credentials: "include", // important for cookies
+    method: options.method || "GET",
+    credentials: "include",
     headers: {
-      "Content-Type": "application/json",
-      ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
+      ...(!isFormData ? { "Content-Type": "application/json" } : {}),
+      ...csrfHeaders(),
       ...(options.headers || {})
     },
-    ...options
+    body: options.body
   };
 
   try {
     const res = await fetch(`${API_BASE}${endpoint}`, config);
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || "Request failed");
+    if (res.status === 401) {
+      throw new Error("Unauthorized");
     }
 
-    return await res.json();
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(data.message || "Request failed");
+    }
+
+    return data;
   } catch (err) {
     console.error("API Error:", err.message);
     throw err;

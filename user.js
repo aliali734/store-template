@@ -1,7 +1,5 @@
-// js/user.js ✅ COD + Cookie Auth + Dynamic Header + Professional Filters
-
-const API_BASE = "https://shoe-store-api.onrender.com/api";
-const SERVER_BASE = "https://shoe-store-api.onrender.com";
+// js/user.js
+// Uses shared api.js
 
 let products = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -24,22 +22,6 @@ let filters = {
 let cartCountEl;
 
 // =====================
-// CSRF HELPERS
-// =====================
-function getCookie(name) {
-  const value = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(name + "="));
-
-  return value ? value.split("=")[1] : null;
-}
-
-function csrfHeaders() {
-  const csrf = getCookie("csrfToken");
-  return csrf ? { "x-csrf-token": csrf } : {};
-}
-
-// =====================
 // FORCE LOGOUT
 // =====================
 async function forceLogout() {
@@ -48,7 +30,6 @@ async function forceLogout() {
       method: "POST",
       credentials: "include",
       headers: {
-        "Content-Type": "application/json",
         ...csrfHeaders()
       }
     });
@@ -60,56 +41,22 @@ async function forceLogout() {
 }
 
 // =====================
-// API FETCH (Safe Wrapper)
-// =====================
-async function apiFetch(path, options = {}) {
-  try {
-
-    const res = await fetch(`${API_BASE}${path}`, {
-      method: options.method || "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...csrfHeaders(),
-        ...(options.headers || {})
-      },
-      body: options.body
-    });
-
-    // Handle authentication failure
-    if (res.status === 401 || res.status === 403) {
-      await forceLogout();
-      throw new Error("Unauthorized");
-    }
-
-    return res;
-
-  } catch (err) {
-    console.error("API request failed:", err);
-    throw err;
-  }
-}
-
-// =====================
 // PROTECT USER PAGE
 // =====================
 (async function protectPage() {
   try {
-
-    const res = await apiFetch("/auth/me");
+    const res = await fetch(`${API_BASE}/test/user`, {
+      credentials: "include"
+    });
 
     if (!res.ok) {
       throw new Error("Session invalid");
     }
 
     console.log("✅ User session verified");
-
   } catch (err) {
-
     console.error("Session verification failed:", err);
-
     alert("Your session has expired. Please login again.");
-
     window.location.href = "login.html";
   }
 })();
@@ -118,7 +65,6 @@ async function apiFetch(path, options = {}) {
 // TOAST NOTIFICATION
 // =====================
 function showToast(message, type = "success") {
-
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
   toast.textContent = message;
@@ -138,7 +84,6 @@ function showToast(message, type = "success") {
 // =====================
 async function initHeader() {
   try {
-
     const res = await fetch("header.html");
     const html = await res.text();
 
@@ -156,16 +101,14 @@ async function initHeader() {
     updateCartCounter();
     setupCartModal();
     setupHeaderInteractions();
-    setupFilters();
-
     applyUrlFilters();
     syncFilterInputsFromState();
+    setupFilters();
 
     const checkoutBtn = document.getElementById("checkout-btn");
     checkoutBtn?.addEventListener("click", checkout);
 
     loadProducts(1);
-
   } catch (err) {
     console.error("Failed to initialize header:", err);
   }
@@ -173,19 +116,12 @@ async function initHeader() {
 
 initHeader();
 
-
 // =====================
 // LOAD HEADER DATA FROM API
 // =====================
 async function loadDynamicHeader() {
-
   try {
-
-    const res = await apiFetch("/header");
-
-    if (!res.ok) return;
-
-    const data = await res.json();
+    const data = await apiFetch("/header");
 
     if (!data.success || !data.header) return;
 
@@ -194,65 +130,49 @@ async function loadDynamicHeader() {
     renderHeaderLogo(header.logo);
     renderDesktopMenu(header.menu || []);
     renderMobileMenu(header.menu || []);
-
   } catch (err) {
     console.error("Failed to load dynamic header:", err);
   }
 }
 
-
 // =====================
 // RENDER LOGO
 // =====================
 function renderHeaderLogo(logoPath) {
-
-  const logoLink = document.getElementById("site-logo-link");
   const logoText = document.getElementById("site-logo-text");
-
-  if (!logoLink || !logoText) return;
+  if (!logoText) return;
 
   if (logoPath) {
-    logoText.innerHTML =
-      `<img src="${SERVER_BASE}${logoPath}" alt="Logo" style="height:40px;object-fit:contain;">`;
+    logoText.innerHTML = `<img src="${SERVER_BASE}${logoPath}" alt="Logo" style="height:40px;object-fit:contain;">`;
   } else {
     logoText.textContent = "Clothing Store";
   }
-
 }
-
 
 // =====================
 // DESKTOP MENU
 // =====================
 function renderDesktopMenu(menu) {
-
   const desktopMenu = document.getElementById("desktop-menu");
   if (!desktopMenu) return;
 
   desktopMenu.innerHTML = "";
 
   menu.forEach((menuItem) => {
-
-    const sections = Array.isArray(menuItem.sections)
-      ? menuItem.sections
-      : [];
+    const sections = Array.isArray(menuItem.sections) ? menuItem.sections : [];
 
     if (!sections.length) {
-
-      desktopMenu.insertAdjacentHTML("beforeend", `
-        <a class="menu-item" href="#">${menuItem.title}</a>
-      `);
-
+      desktopMenu.insertAdjacentHTML(
+        "beforeend",
+        `<a class="menu-item" href="#">${menuItem.title}</a>`
+      );
       return;
     }
 
     const sectionsHtml = sections
       .map((section) => {
-
         const linksHtml = (section.links || [])
-          .map((link) =>
-            `<a href="${link.url || "#"}">${link.label || ""}</a>`
-          )
+          .map((link) => `<a href="${link.url || "#"}">${link.label || ""}</a>`)
           .join("");
 
         return `
@@ -264,7 +184,9 @@ function renderDesktopMenu(menu) {
       })
       .join("");
 
-    desktopMenu.insertAdjacentHTML("beforeend", `
+    desktopMenu.insertAdjacentHTML(
+      "beforeend",
+      `
       <div class="menu-item">
         ${menuItem.title}
         <div class="mega">
@@ -273,62 +195,50 @@ function renderDesktopMenu(menu) {
           </div>
         </div>
       </div>
-    `);
-
+    `
+    );
   });
-
 }
-
 
 // =====================
 // MOBILE MENU
 // =====================
 function renderMobileMenu(menu) {
-
   const mobileMenu = document.getElementById("mobile-menu");
   if (!mobileMenu) return;
 
   mobileMenu.innerHTML = "";
 
   menu.forEach((menuItem) => {
-
-    const links = (menuItem.sections || [])
-      .flatMap((section) => section.links || []);
+    const links = (menuItem.sections || []).flatMap((section) => section.links || []);
 
     if (!links.length) {
-
-      mobileMenu.insertAdjacentHTML("beforeend",
-        `<a href="#">${menuItem.title}</a>`
-      );
-
+      mobileMenu.insertAdjacentHTML("beforeend", `<a href="#">${menuItem.title}</a>`);
       return;
     }
 
     const linksHtml = links
-      .map((link) =>
-        `<a href="${link.url || "#"}">${link.label || ""}</a>`
-      )
+      .map((link) => `<a href="${link.url || "#"}">${link.label || ""}</a>`)
       .join("");
 
-    mobileMenu.insertAdjacentHTML("beforeend", `
+    mobileMenu.insertAdjacentHTML(
+      "beforeend",
+      `
       <div class="mobile-item">
         <button class="mobile-toggle-sub">${menuItem.title} ▾</button>
         <div class="mobile-submenu">
           ${linksHtml}
         </div>
       </div>
-    `);
-
+    `
+    );
   });
-
 }
-
 
 // =====================
 // HEADER INTERACTIONS
 // =====================
 function setupHeaderInteractions() {
-
   const mobileToggle = document.getElementById("mobile-toggle");
   const mobileClose = document.getElementById("mobile-close");
   const mobilePanel = document.getElementById("mobile-panel");
@@ -338,69 +248,53 @@ function setupHeaderInteractions() {
   const pageSearch = document.getElementById("search-input");
 
   mobileToggle?.addEventListener("click", () => {
-
+    if (!mobilePanel) return;
     mobilePanel.style.display = "block";
     mobilePanel.setAttribute("aria-hidden", "false");
-
   });
 
   mobileClose?.addEventListener("click", () => {
-
+    if (!mobilePanel) return;
     mobilePanel.style.display = "none";
     mobilePanel.setAttribute("aria-hidden", "true");
-
   });
 
   document.querySelectorAll(".mobile-toggle-sub").forEach((btn) => {
-
     btn.addEventListener("click", () => {
-
       const submenu = btn.nextElementSibling;
       if (!submenu) return;
 
       const isOpen = submenu.style.display === "block";
       submenu.style.display = isOpen ? "none" : "block";
-
     });
-
   });
 
   searchToggle?.addEventListener("click", () => {
-
     if (!headerSearch) return;
 
-    const isHidden =
-      headerSearch.style.display === "none" ||
-      !headerSearch.style.display;
-
-    headerSearch.style.display =
-      isHidden ? "inline-block" : "none";
+    const isHidden = headerSearch.style.display === "none" || !headerSearch.style.display;
+    headerSearch.style.display = isHidden ? "inline-block" : "none";
 
     if (isHidden) headerSearch.focus();
-
   });
 
   headerSearch?.addEventListener(
     "input",
     debounce((e) => {
-
       filters.search = e.target.value;
 
       if (pageSearch) pageSearch.value = e.target.value;
 
+      updateFiltersURL();
       loadProducts(1);
-
     })
   );
-
 }
-
 
 // =====================
 // AUTH HEADER
 // =====================
 function setupAuthHeader() {
-
   const loginLink = document.getElementById("login-link");
   const registerLink = document.getElementById("register-link");
   const logoutBtn = document.getElementById("logout-btn");
@@ -410,10 +304,9 @@ function setupAuthHeader() {
   loginLink.style.display = "none";
   registerLink.style.display = "none";
   logoutBtn.style.display = "inline-flex";
-
   logoutBtn.onclick = forceLogout;
-
 }
+
 // =====================
 // CART
 // =====================
@@ -458,29 +351,24 @@ function renderCartModal() {
   if (!list || !totalEl) return;
 
   list.innerHTML = "";
-
   let total = 0;
 
   if (!cart.length) {
-    list.innerHTML =
-      `<li style="justify-content:center;opacity:.7;">Cart is empty</li>`;
+    list.innerHTML = `<li style="justify-content:center;opacity:.7;">Cart is empty</li>`;
     totalEl.textContent = "$0";
     return;
   }
 
   cart.forEach((item, idx) => {
-
     const li = document.createElement("li");
 
     li.innerHTML = `
       <span>${item.name}</span>
-
       <div>
         <button class="dec" ${item.quantity <= 1 ? "disabled" : ""}>-</button>
         <span>${item.quantity}</span>
         <button class="inc">+</button>
       </div>
-
       <span>$${(item.price * item.quantity).toFixed(2)}</span>
     `;
 
@@ -494,28 +382,21 @@ function renderCartModal() {
 
     decBtn.onclick = () => {
       item.quantity -= 1;
-
-      if (item.quantity <= 0) {
-        cart.splice(idx, 1);
-      }
-
+      if (item.quantity <= 0) cart.splice(idx, 1);
       saveCart();
     };
 
     list.appendChild(li);
-
     total += item.price * item.quantity;
   });
 
   totalEl.textContent = `$${total.toFixed(2)}`;
 }
 
-
 // =====================
 // PRODUCTS
 // =====================
 function showProductsSkeleton() {
-
   const container = document.getElementById("products");
   if (!container) return;
 
@@ -528,13 +409,10 @@ function showProductsSkeleton() {
   `).join("");
 }
 
-
 async function loadProducts(page = 1) {
-
   showProductsSkeleton();
 
   try {
-
     const query = new URLSearchParams({
       page,
       limit: 9,
@@ -550,51 +428,36 @@ async function loadProducts(page = 1) {
       sort: filters.sort || "newest"
     });
 
-    const res = await apiFetch(`/product?${query}`);
-
-    if (!res.ok) throw new Error("Failed to load products");
-
-    const data = await res.json();
+    const data = await apiFetch(`/product?${query}`);
 
     products = data.products || [];
     currentPage = data.page || 1;
     totalPages = data.totalPages || 1;
 
     updateTitle(data.totalProducts || 0);
-
     await renderProducts();
-
     renderPagination();
-
   } catch (err) {
-
     console.error(err);
 
     const container = document.getElementById("products");
-
     if (container) {
-      container.innerHTML =
-        `<p style="color:red">❌ Failed to load products</p>`;
+      container.innerHTML = `<p style="color:red">❌ Failed to load products</p>`;
     }
   }
 }
 
-
 function updateTitle(total) {
-
   const title = document.querySelector(".title");
-
   if (!title) return;
 
   title.textContent = `Products (${total})`;
 }
 
-
 // =====================
 // RENDER PRODUCTS
 // =====================
 async function renderProducts() {
-
   const container = document.getElementById("products");
   if (!container) return;
 
@@ -612,21 +475,18 @@ async function renderProducts() {
   }
 
   if (!products.length) {
-
     container.innerHTML = `
       <div class="empty-state">
         <h3>No products found 😕</h3>
         <p>Try changing filters or search</p>
       </div>
     `;
-
     return;
   }
 
   const fragment = document.createDocumentFragment();
 
   products.forEach((product) => {
-
     const firstImage = Array.isArray(product.images)
       ? product.images[0]
       : product.images || "";
@@ -649,14 +509,13 @@ async function renderProducts() {
   });
 
   container.appendChild(fragment);
-
   initAddToCart();
 }
+
 // =====================
 // APPLY URL FILTERS
 // =====================
 function applyUrlFilters() {
-
   const params = new URLSearchParams(window.location.search);
 
   filters.search = params.get("search") || "";
@@ -669,61 +528,45 @@ function applyUrlFilters() {
   filters.inStock = params.get("inStock") || "";
   filters.featured = params.get("featured") || "";
   filters.sort = params.get("sort") || "newest";
-
 }
-
 
 // =====================
 // SYNC FILTER INPUTS
 // =====================
 function syncFilterInputsFromState() {
-
   const searchInput = document.getElementById("search-input");
   const headerSearch = document.getElementById("search-input-header");
-
   const categoryInput = document.getElementById("filter-category");
   const audienceInput = document.getElementById("filter-audience");
   const sizeInput = document.getElementById("filter-size");
   const colorInput = document.getElementById("filter-color");
-
   const minInput = document.getElementById("filter-minPrice");
   const maxInput = document.getElementById("filter-maxPrice");
-
   const inStockInput = document.getElementById("filter-inStock");
   const featuredInput = document.getElementById("filter-featured");
-
   const sortInput = document.getElementById("filter-sort");
 
   if (searchInput) searchInput.value = filters.search;
   if (headerSearch) headerSearch.value = filters.search;
-
   if (categoryInput) categoryInput.value = filters.category;
   if (audienceInput) audienceInput.value = filters.audience;
   if (sizeInput) sizeInput.value = filters.size;
   if (colorInput) colorInput.value = filters.color;
-
   if (minInput) minInput.value = filters.priceMin;
   if (maxInput) maxInput.value = filters.priceMax;
-
   if (inStockInput) inStockInput.checked = filters.inStock === "true";
   if (featuredInput) featuredInput.checked = filters.featured === "true";
-
   if (sortInput) sortInput.value = filters.sort;
-
 }
-
 
 // =====================
 // ADD TO CART
 // =====================
 function initAddToCart() {
-
   const buttons = document.querySelectorAll(".add-to-cart-btn");
 
   buttons.forEach((btn) => {
-
     btn.onclick = (e) => {
-
       e.preventDefault();
       e.stopPropagation();
 
@@ -731,43 +574,33 @@ function initAddToCart() {
       if (!card) return;
 
       const id = card.dataset.id;
-
       const product = products.find((p) => p._id === id);
+
       if (!product) return;
 
       const existing = cart.find((item) => item.id === product._id);
 
       if (existing) {
-
         existing.quantity += 1;
-
       } else {
-
         cart.push({
           id: product._id,
           name: product.name || "Product",
           price: Number(product.price) || 0,
           quantity: 1
         });
-
       }
 
       saveCart();
-
       showToast("🛒 Added to cart");
-
     };
-
   });
-
 }
-
 
 // =====================
 // PAGINATION
 // =====================
 function renderPagination() {
-
   const container = document.getElementById("pagination");
   if (!container) return;
 
@@ -778,11 +611,8 @@ function renderPagination() {
   const fragment = document.createDocumentFragment();
 
   for (let i = 1; i <= totalPages; i++) {
-
     const btn = document.createElement("button");
-
     btn.textContent = i;
-
     btn.disabled = i === currentPage;
 
     btn.onclick = () => {
@@ -791,12 +621,11 @@ function renderPagination() {
     };
 
     fragment.appendChild(btn);
-
   }
 
   container.appendChild(fragment);
-
 }
+
 // =====================
 // FILTERS
 // =====================
@@ -823,139 +652,90 @@ function updateFiltersURL() {
 }
 
 function setupFilters() {
-
   const searchInput = document.getElementById("search-input");
   const headerSearch = document.getElementById("search-input-header");
-
   const categoryInput = document.getElementById("filter-category");
   const audienceInput = document.getElementById("filter-audience");
   const sizeInput = document.getElementById("filter-size");
   const colorInput = document.getElementById("filter-color");
-
   const minInput = document.getElementById("filter-minPrice");
   const maxInput = document.getElementById("filter-maxPrice");
-
   const inStockInput = document.getElementById("filter-inStock");
   const featuredInput = document.getElementById("filter-featured");
-
   const sortInput = document.getElementById("filter-sort");
-
   const resetBtn = document.getElementById("reset-filters");
-
 
   searchInput?.addEventListener(
     "input",
     debounce((e) => {
-
       filters.search = e.target.value;
-
       if (headerSearch) headerSearch.value = e.target.value;
-
       updateFiltersURL();
       loadProducts(1);
-
     })
   );
 
-
   categoryInput?.addEventListener("change", (e) => {
-
     filters.category = e.target.value;
-
     updateFiltersURL();
     loadProducts(1);
-
   });
-
 
   audienceInput?.addEventListener("change", (e) => {
-
     filters.audience = e.target.value;
-
     updateFiltersURL();
     loadProducts(1);
-
   });
-
 
   sizeInput?.addEventListener("change", (e) => {
-
     filters.size = e.target.value;
-
     updateFiltersURL();
     loadProducts(1);
-
   });
-
 
   colorInput?.addEventListener("change", (e) => {
-
     filters.color = e.target.value;
-
     updateFiltersURL();
     loadProducts(1);
-
   });
-
 
   minInput?.addEventListener(
     "input",
     debounce((e) => {
-
       filters.priceMin = e.target.value;
-
       updateFiltersURL();
       loadProducts(1);
-
     })
   );
-
 
   maxInput?.addEventListener(
     "input",
     debounce((e) => {
-
       filters.priceMax = e.target.value;
-
       updateFiltersURL();
       loadProducts(1);
-
     })
   );
 
-
   inStockInput?.addEventListener("change", (e) => {
-
     filters.inStock = e.target.checked ? "true" : "";
-
     updateFiltersURL();
     loadProducts(1);
-
   });
-
 
   featuredInput?.addEventListener("change", (e) => {
-
     filters.featured = e.target.checked ? "true" : "";
-
     updateFiltersURL();
     loadProducts(1);
-
   });
-
 
   sortInput?.addEventListener("change", (e) => {
-
     filters.sort = e.target.value;
-
     updateFiltersURL();
     loadProducts(1);
-
   });
 
-
   resetBtn?.addEventListener("click", () => {
-
     filters = {
       search: "",
       category: "",
@@ -983,17 +763,13 @@ function setupFilters() {
 
     updateFiltersURL();
     loadProducts(1);
-
   });
-
 }
-
 
 // =====================
 // CHECKOUT
 // =====================
 async function checkout() {
-
   if (!cart.length) {
     alert("Cart is empty");
     return;
@@ -1006,21 +782,15 @@ async function checkout() {
     quantity: item.quantity
   }));
 
-
   try {
-
-    const res = await apiFetch("/orders", {
+    const data = await apiFetch("/orders", {
       method: "POST",
       body: JSON.stringify({ products: productsPayload })
     });
 
-    const data = await res.json();
-
-    if (!res.ok || !data.order?._id) {
-
+    if (!data.order?._id) {
       showToast(data.message || "❌ Order creation failed", "error");
       return;
-
     }
 
     localStorage.setItem("currentOrderId", data.order._id);
@@ -1029,35 +799,23 @@ async function checkout() {
     saveCart();
 
     window.location.href = "confirmation.html";
-
   } catch (err) {
-
     console.error(err);
     showToast("❌ Server error", "error");
-
   }
-
 }
-
 
 // =====================
 // INIT
 // =====================
 document.addEventListener("DOMContentLoaded", () => {
-
-  loadProducts();
-
   const toggleFilters = document.getElementById("toggle-filters");
   const aside = document.getElementById("filters");
 
   toggleFilters?.addEventListener("click", () => {
-
     if (!aside) return;
 
     const hidden = aside.style.display === "none";
-
     aside.style.display = hidden ? "" : "none";
-
   });
-
 });
