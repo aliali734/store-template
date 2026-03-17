@@ -51,7 +51,7 @@ async function getCsrfToken() {
     });
 
     if (res.ok) {
-      window.location.href = "user.html";
+      window.location.href = "index.html";
     }
   } catch (err) {
     console.error("Token verification failed:", err);
@@ -171,9 +171,9 @@ if (loginForm) {
       }
 
       showMessage("Login successful ✅ Redirecting...", "green");
-
+user
       setTimeout(() => {
-        window.location.href = "user.html";
+        window.location.href = "index.html";
       }, 700);
     } catch (err) {
       console.error(err);
