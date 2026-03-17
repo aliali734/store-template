@@ -14,38 +14,24 @@ function clearMessage() {
 }
 
 // =====================
-// GET COOKIE
+// GET CSRF TOKEN FROM BACKEND DIRECTLY
 // =====================
-function getCookieValue(name) {
-  const match = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(name + "="));
-
-  return match ? decodeURIComponent(match.split("=").slice(1).join("=")) : null;
-}
-
-// =====================
-// ENSURE CSRF COOKIE
-// =====================
-async function ensureCsrf() {
+async function getCsrfToken() {
   try {
-    await fetch(`${API_BASE}/csrf`, {
+    const res = await fetch(`${API_BASE}/csrf`, {
       method: "GET",
       credentials: "include"
     });
+
+    const data = await res.json().catch(() => ({}));
+
+    console.log("CSRF response:", data);
+
+    return data.csrfToken || null;
   } catch (err) {
     console.error("Failed to initialize CSRF:", err);
+    return null;
   }
-}
-
-// =====================
-// GET CSRF TOKEN SAFELY
-// =====================
-async function getCsrfToken() {
-  await ensureCsrf();
-  const token = getCookieValue("csrfToken");
-  console.log("CSRF token from cookie:", token);
-  return token;
 }
 
 // =====================
@@ -112,6 +98,8 @@ if (registerForm) {
     try {
       const csrfToken = await getCsrfToken();
 
+      console.log("Register CSRF token:", csrfToken);
+
       const res = await fetch(`${API_BASE}/auth/register`, {
         method: "POST",
         credentials: "include",
@@ -163,6 +151,8 @@ if (loginForm) {
 
     try {
       const csrfToken = await getCsrfToken();
+
+      console.log("Login CSRF token:", csrfToken);
 
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
