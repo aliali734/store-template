@@ -1,7 +1,7 @@
-// js/api.js
+// api.js
 
-const API_BASE = "https://store-template-nemj.onrender.com/api";
-const SERVER_BASE = "https://store-template-nemj.onrender.com";
+const API_BASE = window.APP_CONFIG?.API_BASE || "http://localhost:5000/api";
+const SERVER_BASE = window.APP_CONFIG?.SERVER_BASE || "http://localhost:5000";
 
 // =====================
 // GET COOKIE
