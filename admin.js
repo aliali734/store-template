@@ -1,4 +1,4 @@
-// js/admin.js
+// admin.js
 
 const productsBody = document.getElementById("productsBody");
 const loginSection = document.getElementById("login-section");
@@ -41,17 +41,36 @@ const headerCategories = document.getElementById("header-categories");
 const headerMessage = document.getElementById("headerMessage");
 
 // =====================
+// CSRF TOKEN FROM BACKEND
+// =====================
+async function getCsrfToken() {
+  try {
+    const res = await fetch(`${API_BASE}/csrf`, {
+      method: "GET",
+      credentials: "include"
+    });
+
+    const data = await res.json().catch(() => ({}));
+    return data.csrfToken || null;
+  } catch (err) {
+    console.error("Failed to initialize CSRF:", err);
+    return null;
+  }
+}
+
+// =====================
 // API FETCH FOR ADMIN
 // =====================
 async function adminApiFetch(path, options = {}) {
   const isFormData = options.body instanceof FormData;
+  const csrfToken = await getCsrfToken();
 
   const res = await fetch(`${API_BASE}${path}`, {
     method: options.method || "GET",
     credentials: "include",
     headers: {
       ...(!isFormData ? { "Content-Type": "application/json" } : {}),
-      ...csrfHeaders(),
+      ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
       ...(options.headers || {})
     },
     body: options.body
@@ -85,6 +104,8 @@ function showDashboard() {
 // =====================
 async function checkAdminAuth() {
   try {
+    await getCsrfToken();
+
     const res = await fetch(`${API_BASE}/test/user`, {
       credentials: "include"
     });
@@ -128,12 +149,14 @@ loginForm?.addEventListener("submit", async (e) => {
   loginMessage.style.color = "black";
 
   try {
+    const csrfToken = await getCsrfToken();
+
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        ...csrfHeaders()
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
       },
       body: JSON.stringify({ email, password })
     });
@@ -159,11 +182,13 @@ loginForm?.addEventListener("submit", async (e) => {
 // =====================
 async function adminLogout() {
   try {
+    const csrfToken = await getCsrfToken();
+
     await fetch(`${API_BASE}/auth/logout`, {
       method: "POST",
       credentials: "include",
       headers: {
-        ...csrfHeaders()
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
       }
     });
   } catch (e) {
@@ -448,7 +473,6 @@ headerForm?.addEventListener("submit", async (e) => {
     formData.append("logo", headerLogo.files[0]);
   }
 
-  // Convert comma-separated input into simple menu structure
   const titles = headerCategories.value
     .split(",")
     .map((item) => item.trim())
