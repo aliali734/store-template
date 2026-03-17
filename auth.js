@@ -171,7 +171,7 @@ if (loginForm) {
       }
 
       showMessage("Login successful ✅ Redirecting...", "green");
-user
+      
       setTimeout(() => {
         window.location.href = "index.html";
       }, 700);

@@ -8,18 +8,18 @@ const defaultMenu = [
       {
         title: "Tops",
         links: [
-          { label: "T-Shirts", url: "user.html?audience=men&category=t-shirts" },
-          { label: "Shirts", url: "user.html?audience=men&category=shirts" },
-          { label: "Hoodies", url: "user.html?audience=men&category=hoodies" },
-          { label: "Jackets", url: "user.html?audience=men&category=jackets" }
+          { label: "T-Shirts", url: "index.html?audience=men&category=t-shirts" },
+          { label: "Shirts", url: "index.html?audience=men&category=shirts" },
+          { label: "Hoodies", url: "index.html?audience=men&category=hoodies" },
+          { label: "Jackets", url: "index.html?audience=men&category=jackets" }
         ]
       },
       {
         title: "Bottoms",
         links: [
-          { label: "Pants", url: "user.html?audience=men&category=pants" },
-          { label: "Jeans", url: "user.html?audience=men&category=jeans" },
-          { label: "Shorts", url: "user.html?audience=men&category=shorts" }
+          { label: "Pants", url: "index.html?audience=men&category=pants" },
+          { label: "Jeans", url: "index.html?audience=men&category=jeans" },
+          { label: "Shorts", url: "index.html?audience=men&category=shorts" }
         ]
       }
     ]
@@ -30,24 +30,24 @@ const defaultMenu = [
       {
         title: "Tops",
         links: [
-          { label: "T-Shirts", url: "user.html?audience=women&category=t-shirts" },
-          { label: "Shirts", url: "user.html?audience=women&category=shirts" },
-          { label: "Hoodies", url: "user.html?audience=women&category=hoodies" },
-          { label: "Jackets", url: "user.html?audience=women&category=jackets" }
+          { label: "T-Shirts", url: "index.html?audience=women&category=t-shirts" },
+          { label: "Shirts", url: "index.html?audience=women&category=shirts" },
+          { label: "Hoodies", url: "index.html?audience=women&category=hoodies" },
+          { label: "Jackets", url: "index.html?audience=women&category=jackets" }
         ]
       },
       {
         title: "Bottoms",
         links: [
-          { label: "Pants", url: "user.html?audience=women&category=pants" },
-          { label: "Jeans", url: "user.html?audience=women&category=jeans" },
-          { label: "Skirts", url: "user.html?audience=women&category=skirts" }
+          { label: "Pants", url: "index.html?audience=women&category=pants" },
+          { label: "Jeans", url: "index.html?audience=women&category=jeans" },
+          { label: "Skirts", url: "index.html?audience=women&category=skirts" }
         ]
       },
       {
         title: "Dresses",
         links: [
-          { label: "Dresses", url: "user.html?audience=women&category=dresses" }
+          { label: "Dresses", url: "index.html?audience=women&category=dresses" }
         ]
       }
     ]
@@ -58,17 +58,17 @@ const defaultMenu = [
       {
         title: "Tops",
         links: [
-          { label: "T-Shirts", url: "user.html?audience=kids&category=t-shirts" },
-          { label: "Hoodies", url: "user.html?audience=kids&category=hoodies" },
-          { label: "Jackets", url: "user.html?audience=kids&category=jackets" }
+          { label: "T-Shirts", url: "index.html?audience=kids&category=t-shirts" },
+          { label: "Hoodies", url: "index.html?audience=kids&category=hoodies" },
+          { label: "Jackets", url: "index.html?audience=kids&category=jackets" }
         ]
       },
       {
         title: "Bottoms",
         links: [
-          { label: "Pants", url: "user.html?audience=kids&category=pants" },
-          { label: "Jeans", url: "user.html?audience=kids&category=jeans" },
-          { label: "Shorts", url: "user.html?audience=kids&category=shorts" }
+          { label: "Pants", url: "index.html?audience=kids&category=pants" },
+          { label: "Jeans", url: "index.html?audience=kids&category=jeans" },
+          { label: "Shorts", url: "index.html?audience=kids&category=shorts" }
         ]
       }
     ]
@@ -79,8 +79,8 @@ const defaultMenu = [
       {
         title: "Collections",
         links: [
-          { label: "Featured", url: "user.html?featured=true" },
-          { label: "New Arrivals", url: "user.html?sort=newest" }
+          { label: "Featured", url: "index.html?featured=true" },
+          { label: "New Arrivals", url: "index.html?sort=newest" }
         ]
       }
     ]
