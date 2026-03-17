@@ -3,20 +3,46 @@
 const API_BASE = "https://store-template-nemj.onrender.com/api";
 const SERVER_BASE = "https://store-template-nemj.onrender.com";
 
+// =====================
+// GET COOKIE
+// =====================
 function getCookie(name) {
-  return document.cookie
+  const match = document.cookie
     .split("; ")
-    .find((row) => row.startsWith(name + "="))
-    ?.split("=")[1];
+    .find((row) => row.startsWith(name + "="));
+
+  return match ? decodeURIComponent(match.split("=").slice(1).join("=")) : null;
 }
 
+// =====================
+// CSRF HEADERS
+// =====================
 function csrfHeaders() {
   const csrfToken = getCookie("csrfToken");
   return csrfToken ? { "x-csrf-token": csrfToken } : {};
 }
 
+// =====================
+// ENSURE CSRF COOKIE
+// =====================
+async function ensureCsrf() {
+  try {
+    await fetch(`${API_BASE}/csrf`, {
+      method: "GET",
+      credentials: "include"
+    });
+  } catch (err) {
+    console.error("Failed to initialize CSRF:", err);
+  }
+}
+
+// =====================
+// API FETCH
+// =====================
 async function apiFetch(endpoint, options = {}) {
   const isFormData = options.body instanceof FormData;
+
+  await ensureCsrf();
 
   const config = {
     method: options.method || "GET",

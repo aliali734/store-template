@@ -14,16 +14,38 @@ function clearMessage() {
 }
 
 // =====================
+// GET COOKIE
+// =====================
+function getCookieValue(name) {
+  const match = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(name + "="));
+
+  return match ? decodeURIComponent(match.split("=").slice(1).join("=")) : null;
+}
+
+// =====================
 // ENSURE CSRF COOKIE
 // =====================
 async function ensureCsrf() {
   try {
     await fetch(`${API_BASE}/csrf`, {
+      method: "GET",
       credentials: "include"
     });
   } catch (err) {
     console.error("Failed to initialize CSRF:", err);
   }
+}
+
+// =====================
+// GET CSRF TOKEN SAFELY
+// =====================
+async function getCsrfToken() {
+  await ensureCsrf();
+  const token = getCookieValue("csrfToken");
+  console.log("CSRF token from cookie:", token);
+  return token;
 }
 
 // =====================
@@ -36,7 +58,7 @@ async function ensureCsrf() {
   if (!isAuthPage) return;
 
   try {
-    await ensureCsrf();
+    await getCsrfToken();
 
     const res = await fetch(`${API_BASE}/test/user`, {
       credentials: "include"
@@ -88,14 +110,14 @@ if (registerForm) {
     }
 
     try {
-      await ensureCsrf();
+      const csrfToken = await getCsrfToken();
 
       const res = await fetch(`${API_BASE}/auth/register`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          ...csrfHeaders()
+          "x-csrf-token": csrfToken
         },
         body: JSON.stringify({ name, email, password })
       });
@@ -140,14 +162,14 @@ if (loginForm) {
     }
 
     try {
-      await ensureCsrf();
+      const csrfToken = await getCsrfToken();
 
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          ...csrfHeaders()
+          "x-csrf-token": csrfToken
         },
         body: JSON.stringify({ email, password })
       });
@@ -175,13 +197,13 @@ if (loginForm) {
 // =====================
 async function logout() {
   try {
-    await ensureCsrf();
+    const csrfToken = await getCsrfToken();
 
     await fetch(`${API_BASE}/auth/logout`, {
       method: "POST",
       credentials: "include",
       headers: {
-        ...csrfHeaders()
+        "x-csrf-token": csrfToken
       }
     });
   } catch (err) {
