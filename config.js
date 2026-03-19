@@ -1,4 +1,4 @@
 window.APP_CONFIG = {
-  API_BASE: "https://shoe-store-api.onrender.com/api",
-  SERVER_BASE: "https://shoe-store-api.onrender.com"
+  API_BASE: "https://store-template-nemj.onrender.com/api",
+  SERVER_BASE: "https://store-template-nemj.onrender.com"
 };
