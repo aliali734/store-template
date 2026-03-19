@@ -11,9 +11,7 @@ const { setCsrfCookie } = require("./middlewares/csrf.middleware");
 
 const app = express();
 
-// ===============================
-// ENSURE UPLOAD DIRECTORIES EXIST
-// ===============================
+// Ensure upload folders exist
 const uploadDirs = [
   path.join(__dirname, "uploads"),
   path.join(__dirname, "uploads/header"),
@@ -26,15 +24,17 @@ uploadDirs.forEach((dir) => {
   }
 });
 
-// ===============================
-// CORS CONFIG
-// ===============================
+// CORS
 const allowedOrigins = [
+  "https://aliali734.github.io",
   "http://127.0.0.1:5500",
   "http://localhost:5500",
-  "http://localhost:3000",
-  process.env.FRONTEND_URL
-].filter(Boolean);
+  "http://localhost:3000"
+];
+
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -59,15 +59,11 @@ app.options("*", cors({
   credentials: true
 }));
 
-// ===============================
-// BODY PARSERS
-// ===============================
+// Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ===============================
-// COOKIES + CSRF
-// ===============================
+// Cookies + CSRF
 app.use(cookieParser());
 app.use(setCsrfCookie);
 
@@ -79,14 +75,10 @@ app.get("/api/csrf", (req, res) => {
   });
 });
 
-// ===============================
-// STATIC FILES
-// ===============================
+// Static
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ===============================
-// ROUTES
-// ===============================
+// Routes
 app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api/product", require("./routes/product.routes"));
 app.use("/api/orders", require("./routes/order.routes"));
@@ -94,28 +86,21 @@ app.use("/api/test", require("./routes/test.routes"));
 app.use("/api/email-test", require("./routes/email-test.routes"));
 app.use("/api/header", require("./routes/header.routes"));
 
-// ===============================
-// HEALTH CHECK
-// ===============================
+// Health
 app.get("/", (req, res) => {
   res.send("🚀 Backend is running successfully!");
 });
 
-// ===============================
-// ERROR HANDLER
-// ===============================
+// Error handler
 app.use((err, req, res, next) => {
   console.error("Server error:", err.message);
-
   res.status(500).json({
     success: false,
     message: err.message || "Internal server error"
   });
 });
 
-// ===============================
-// START SERVER AFTER DB CONNECTS
-// ===============================
+// Start server after DB connect
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
