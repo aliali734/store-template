@@ -1,4 +1,4 @@
 window.APP_CONFIG = {
-  API_BASE: "http://localhost:5000/api",
-  SERVER_BASE: "http://localhost:5000"
+  API_BASE: "https://shoe-store-api.onrender.com/api",
+  SERVER_BASE: "https://shoe-store-api.onrender.com"
 };
