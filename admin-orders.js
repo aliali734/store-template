@@ -11,10 +11,12 @@ async function showOrders() {
   ordersSection.innerHTML = "<h2>Orders</h2><p>Loading...</p>";
 
   try {
-    const res = await window.adminApiFetch(`/orders/admin/all`);
-    const data = await res.json();
+    const res = await window.adminApiFetch("/orders/admin/all");
+    const data = await res.json().catch(() => ({}));
 
-    if (!res.ok) throw new Error(data.message || "Failed to fetch orders");
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to fetch orders");
+    }
 
     renderOrders(data.orders || []);
   } catch (err) {
@@ -28,14 +30,10 @@ async function updateAdminOrderStatus(orderId, status) {
   try {
     const res = await window.adminApiFetch(`/orders/admin/${orderId}/status`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        ...csrfHeaders()
-      },
       body: JSON.stringify({ status })
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       alert(data.message || "Failed to update order status");
@@ -77,6 +75,8 @@ function getOrderActionButtons(order) {
 /* ================= RENDER ORDERS ================= */
 function renderOrders(orders) {
   const section = document.getElementById("orders-section");
+  if (!section) return;
+
   section.innerHTML = "<h2>Orders</h2>";
 
   if (!orders.length) {

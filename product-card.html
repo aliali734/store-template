@@ -1,26 +1,23 @@
-<!-- PRODUCT CARD -->
-<!-- components/product-card.html -->
 <div class="product-card" data-id="{{_id}}">
   <a href="product.html?id={{_id}}" class="product-link">
     <div class="product-image">
-      <img src="{{image}}" alt="{{name}}">
+      <img src="{{image}}" alt="{{name}}" />
     </div>
   </a>
+
   <div class="product-info">
     <a href="product.html?id={{_id}}" class="product-link">
       <h4 class="product-title">{{name}}</h4>
     </a>
+
     <p class="product-category">{{category}}</p>
 
     <div class="product-price">
       <span class="price">${{price}}</span>
     </div>
 
-    <button class="add-to-cart-btn">
+    <button type="button" class="add-to-cart-btn">
       Add to Cart
     </button>
   </div>
 </div>
-
-
-<!-- END PRODUCT CARD -->

@@ -1,6 +1,9 @@
+const mongoose = require("mongoose");
 const Product = require("../models/product");
 
-// simple slug generator
+// ============================
+// SLUG GENERATOR
+// ============================
 function makeSlug(text) {
   return String(text)
     .toLowerCase()
@@ -10,7 +13,9 @@ function makeSlug(text) {
     .replace(/-+/g, "-");
 }
 
-// CREATE product (admin)
+// ============================
+// CREATE PRODUCT
+// ============================
 const createProduct = async (req, res) => {
   try {
     const imageUrls = req.files
@@ -36,8 +41,12 @@ const createProduct = async (req, res) => {
       : makeSlug(req.body.name);
 
     const existingSlug = await Product.findOne({ slug });
+
     if (existingSlug) {
-      return res.status(400).json({ message: "Slug already exists" });
+      return res.status(400).json({
+        success: false,
+        message: "Slug already exists"
+      });
     }
 
     const product = await Product.create({
@@ -60,13 +69,23 @@ const createProduct = async (req, res) => {
           : req.body.isActive === "true" || req.body.isActive === true
     });
 
-    res.status(201).json({ success: true, product });
+    return res.status(201).json({
+      success: true,
+      product
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Create product error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create product"
+    });
   }
 };
 
-// GET all products with pagination, filters, and sorting
+// ============================
+// GET PRODUCTS
+// ============================
 const getProducts = async (req, res) => {
   try {
     const page = Math.max(parseInt(req.query.page) || 1, 1);
@@ -143,9 +162,10 @@ const getProducts = async (req, res) => {
     const products = await Product.find(filter)
       .sort(sortOption)
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
 
-    res.json({
+    return res.json({
       success: true,
       page,
       totalPages: Math.ceil(total / limit),
@@ -153,49 +173,104 @@ const getProducts = async (req, res) => {
       products
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Get products error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch products"
+    });
   }
 };
 
-// GET single product by slug
+// ============================
+// GET PRODUCT BY SLUG
+// ============================
 const getProductBySlug = async (req, res) => {
   try {
     const product = await Product.findOne({
       slug: req.params.slug,
       isActive: true
-    });
+    }).lean();
 
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
     }
 
-    res.json({ success: true, product });
+    return res.json({
+      success: true,
+      product
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Get product by slug error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch product"
+    });
   }
 };
 
-// GET single product by ID
+// ============================
+// GET PRODUCT BY ID
+// ============================
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const { id } = req.params;
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID"
+      });
     }
 
-    res.json({ success: true, product });
+    const product = await Product.findById(id).lean();
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
+    }
+
+    return res.json({
+      success: true,
+      product
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Get product by ID error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch product"
+    });
   }
 };
 
-// UPDATE product (admin)
+// ============================
+// UPDATE PRODUCT
+// ============================
 const updateProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID"
+      });
+    }
+
+    const product = await Product.findById(id);
+
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
     }
 
     if (req.body.name !== undefined) product.name = req.body.name;
@@ -204,20 +279,28 @@ const updateProduct = async (req, res) => {
     if (req.body.category !== undefined) product.category = req.body.category;
     if (req.body.audience !== undefined) product.audience = req.body.audience;
     if (req.body.price !== undefined) product.price = Number(req.body.price);
+
     if (req.body.compareAtPrice !== undefined) {
       product.compareAtPrice = Number(req.body.compareAtPrice);
     }
-    if (req.body.stock !== undefined) product.stock = Number(req.body.stock);
+
+    if (req.body.stock !== undefined) {
+      product.stock = Number(req.body.stock);
+    }
 
     if (req.body.slug) {
       const newSlug = makeSlug(req.body.slug);
+
       const existingSlug = await Product.findOne({
         slug: newSlug,
         _id: { $ne: product._id }
       });
 
       if (existingSlug) {
-        return res.status(400).json({ message: "Slug already exists" });
+        return res.status(400).json({
+          success: false,
+          message: "Slug already exists"
+        });
       }
 
       product.slug = newSlug;
@@ -254,24 +337,55 @@ const updateProduct = async (req, res) => {
     }
 
     await product.save();
-    res.json({ success: true, product });
+
+    return res.json({
+      success: true,
+      product
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Update product error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update product"
+    });
   }
 };
 
-// DELETE product (admin)
+// ============================
+// DELETE PRODUCT
+// ============================
 const deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID"
+      });
     }
 
-    res.json({ success: true, message: "Product deleted successfully" });
+    const product = await Product.findByIdAndDelete(id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Product deleted successfully"
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Delete product error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete product"
+    });
   }
 };
 

@@ -1,5 +1,4 @@
-// js/user.js
-// Uses shared api.js
+// index.js
 
 let products = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -22,15 +21,35 @@ let filters = {
 let cartCountEl;
 
 // =====================
+// GET CSRF TOKEN
+// =====================
+async function getCsrfToken() {
+  try {
+    const res = await fetch(`${API_BASE}/csrf`, {
+      method: "GET",
+      credentials: "include"
+    });
+
+    const data = await res.json().catch(() => ({}));
+    return data.csrfToken || null;
+  } catch (err) {
+    console.error("Failed to initialize CSRF:", err);
+    return null;
+  }
+}
+
+// =====================
 // FORCE LOGOUT
 // =====================
 async function forceLogout() {
   try {
+    const csrfToken = await getCsrfToken();
+
     await fetch(`${API_BASE}/auth/logout`, {
       method: "POST",
       credentials: "include",
       headers: {
-        ...csrfHeaders()
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
       }
     });
   } catch (e) {
@@ -41,7 +60,33 @@ async function forceLogout() {
 }
 
 // =====================
-// PROTECT USER PAGE
+// API FETCH WRAPPER
+// =====================
+async function shopApiFetch(path, options = {}) {
+  const isFormData = options.body instanceof FormData;
+  const csrfToken = await getCsrfToken();
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: options.method || "GET",
+    credentials: "include",
+    headers: {
+      ...(!isFormData ? { "Content-Type": "application/json" } : {}),
+      ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
+      ...(options.headers || {})
+    },
+    body: options.body
+  });
+
+  if (res.status === 401 || res.status === 403) {
+    await forceLogout();
+    throw new Error("Unauthorized");
+  }
+
+  return res;
+}
+
+// =====================
+// PROTECT PAGE
 // =====================
 (async function protectPage() {
   try {
@@ -53,7 +98,7 @@ async function forceLogout() {
       throw new Error("Session invalid");
     }
 
-    console.log("✅ User session verified");
+    console.log("User session verified");
   } catch (err) {
     console.error("Session verification failed:", err);
     alert("Your session has expired. Please login again.");
@@ -101,6 +146,7 @@ async function initHeader() {
     updateCartCounter();
     setupCartModal();
     setupHeaderInteractions();
+
     applyUrlFilters();
     syncFilterInputsFromState();
     setupFilters();
@@ -117,7 +163,7 @@ async function initHeader() {
 initHeader();
 
 // =====================
-// LOAD HEADER DATA FROM API
+// LOAD HEADER DATA
 // =====================
 async function loadDynamicHeader() {
   try {
@@ -127,7 +173,7 @@ async function loadDynamicHeader() {
 
     const { header } = data;
 
-    HeaderLogo(header.logo);
+    renderHeaderLogo(header.logo);
     renderDesktopMenu(header.menu || []);
     renderMobileMenu(header.menu || []);
   } catch (err) {
@@ -140,10 +186,12 @@ async function loadDynamicHeader() {
 // =====================
 function renderHeaderLogo(logoPath) {
   const logoText = document.getElementById("site-logo-text");
+
   if (!logoText) return;
 
   if (logoPath) {
-    logoText.innerHTML = `<img src="${SERVER_BASE}${logoPath}" alt="Logo" style="height:40px;object-fit:contain;">`;
+    logoText.innerHTML =
+      `<img src="${SERVER_BASE}${logoPath}" alt="Logo" style="height:40px;object-fit:contain;">`;
   } else {
     logoText.textContent = "Clothing Store";
   }
@@ -159,7 +207,9 @@ function renderDesktopMenu(menu) {
   desktopMenu.innerHTML = "";
 
   menu.forEach((menuItem) => {
-    const sections = Array.isArray(menuItem.sections) ? menuItem.sections : [];
+    const sections = Array.isArray(menuItem.sections)
+      ? menuItem.sections
+      : [];
 
     if (!sections.length) {
       desktopMenu.insertAdjacentHTML(
@@ -225,7 +275,7 @@ function renderMobileMenu(menu) {
       "beforeend",
       `
       <div class="mobile-item">
-        <button class="mobile-toggle-sub">${menuItem.title} ▾</button>
+        <button type="button" class="mobile-toggle-sub">${menuItem.title} ▾</button>
         <div class="mobile-submenu">
           ${linksHtml}
         </div>
@@ -249,13 +299,11 @@ function setupHeaderInteractions() {
 
   mobileToggle?.addEventListener("click", () => {
     if (!mobilePanel) return;
-    mobilePanel.style.display = "block";
     mobilePanel.setAttribute("aria-hidden", "false");
   });
 
   mobileClose?.addEventListener("click", () => {
     if (!mobilePanel) return;
-    mobilePanel.style.display = "none";
     mobilePanel.setAttribute("aria-hidden", "true");
   });
 
@@ -272,7 +320,9 @@ function setupHeaderInteractions() {
   searchToggle?.addEventListener("click", () => {
     if (!headerSearch) return;
 
-    const isHidden = headerSearch.style.display === "none" || !headerSearch.style.display;
+    const isHidden =
+      headerSearch.style.display === "none" || !headerSearch.style.display;
+
     headerSearch.style.display = isHidden ? "inline-block" : "none";
 
     if (isHidden) headerSearch.focus();
@@ -304,6 +354,7 @@ function setupAuthHeader() {
   loginLink.style.display = "none";
   registerLink.style.display = "none";
   logoutBtn.style.display = "inline-flex";
+
   logoutBtn.onclick = forceLogout;
 }
 
@@ -351,10 +402,12 @@ function renderCartModal() {
   if (!list || !totalEl) return;
 
   list.innerHTML = "";
+
   let total = 0;
 
   if (!cart.length) {
-    list.innerHTML = `<li style="justify-content:center;opacity:.7;">Cart is empty</li>`;
+    list.innerHTML =
+      `<li style="justify-content:center;opacity:.7;">Cart is empty</li>`;
     totalEl.textContent = "$0";
     return;
   }
@@ -365,9 +418,9 @@ function renderCartModal() {
     li.innerHTML = `
       <span>${item.name}</span>
       <div>
-        <button class="dec" ${item.quantity <= 1 ? "disabled" : ""}>-</button>
+        <button type="button" class="dec" ${item.quantity <= 1 ? "disabled" : ""}>-</button>
         <span>${item.quantity}</span>
-        <button class="inc">+</button>
+        <button type="button" class="inc">+</button>
       </div>
       <span>$${(item.price * item.quantity).toFixed(2)}</span>
     `;
@@ -382,7 +435,11 @@ function renderCartModal() {
 
     decBtn.onclick = () => {
       item.quantity -= 1;
-      if (item.quantity <= 0) cart.splice(idx, 1);
+
+      if (item.quantity <= 0) {
+        cart.splice(idx, 1);
+      }
+
       saveCart();
     };
 
@@ -442,7 +499,7 @@ async function loadProducts(page = 1) {
 
     const container = document.getElementById("products");
     if (container) {
-      container.innerHTML = `<p style="color:red">❌ Failed to load products</p>`;
+      container.innerHTML = `<p style="color:#b91c1c">Failed to load products</p>`;
     }
   }
 }
@@ -477,7 +534,7 @@ async function renderProducts() {
   if (!products.length) {
     container.innerHTML = `
       <div class="empty-state">
-        <h3>No products found 😕</h3>
+        <h3>No products found</h3>
         <p>Try changing filters or search</p>
       </div>
     `;
@@ -536,26 +593,34 @@ function applyUrlFilters() {
 function syncFilterInputsFromState() {
   const searchInput = document.getElementById("search-input");
   const headerSearch = document.getElementById("search-input-header");
+
   const categoryInput = document.getElementById("filter-category");
   const audienceInput = document.getElementById("filter-audience");
   const sizeInput = document.getElementById("filter-size");
   const colorInput = document.getElementById("filter-color");
+
   const minInput = document.getElementById("filter-minPrice");
   const maxInput = document.getElementById("filter-maxPrice");
+
   const inStockInput = document.getElementById("filter-inStock");
   const featuredInput = document.getElementById("filter-featured");
+
   const sortInput = document.getElementById("filter-sort");
 
   if (searchInput) searchInput.value = filters.search;
   if (headerSearch) headerSearch.value = filters.search;
+
   if (categoryInput) categoryInput.value = filters.category;
   if (audienceInput) audienceInput.value = filters.audience;
   if (sizeInput) sizeInput.value = filters.size;
   if (colorInput) colorInput.value = filters.color;
+
   if (minInput) minInput.value = filters.priceMin;
   if (maxInput) maxInput.value = filters.priceMax;
+
   if (inStockInput) inStockInput.checked = filters.inStock === "true";
   if (featuredInput) featuredInput.checked = filters.featured === "true";
+
   if (sortInput) sortInput.value = filters.sort;
 }
 
@@ -575,7 +640,6 @@ function initAddToCart() {
 
       const id = card.dataset.id;
       const product = products.find((p) => p._id === id);
-
       if (!product) return;
 
       const existing = cart.find((item) => item.id === product._id);
@@ -592,7 +656,7 @@ function initAddToCart() {
       }
 
       saveCart();
-      showToast("🛒 Added to cart");
+      showToast("Added to cart");
     };
   });
 }
@@ -612,6 +676,7 @@ function renderPagination() {
 
   for (let i = 1; i <= totalPages; i++) {
     const btn = document.createElement("button");
+
     btn.textContent = i;
     btn.disabled = i === currentPage;
 
@@ -654,14 +719,18 @@ function updateFiltersURL() {
 function setupFilters() {
   const searchInput = document.getElementById("search-input");
   const headerSearch = document.getElementById("search-input-header");
+
   const categoryInput = document.getElementById("filter-category");
   const audienceInput = document.getElementById("filter-audience");
   const sizeInput = document.getElementById("filter-size");
   const colorInput = document.getElementById("filter-color");
+
   const minInput = document.getElementById("filter-minPrice");
   const maxInput = document.getElementById("filter-maxPrice");
+
   const inStockInput = document.getElementById("filter-inStock");
   const featuredInput = document.getElementById("filter-featured");
+
   const sortInput = document.getElementById("filter-sort");
   const resetBtn = document.getElementById("reset-filters");
 
@@ -669,7 +738,9 @@ function setupFilters() {
     "input",
     debounce((e) => {
       filters.search = e.target.value;
+
       if (headerSearch) headerSearch.value = e.target.value;
+
       updateFiltersURL();
       loadProducts(1);
     })
@@ -775,7 +846,7 @@ async function checkout() {
     return;
   }
 
-  showToast("⏳ Placing your order...", "info");
+  showToast("Placing your order...", "info");
 
   const productsPayload = cart.map((item) => ({
     product: item.id,
@@ -783,13 +854,15 @@ async function checkout() {
   }));
 
   try {
-    const data = await apiFetch("/orders", {
+    const res = await shopApiFetch("/orders", {
       method: "POST",
       body: JSON.stringify({ products: productsPayload })
     });
 
-    if (!data.order?._id) {
-      showToast(data.message || "❌ Order creation failed", "error");
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || !data.order?._id) {
+      showToast(data.message || "Order creation failed", "error");
       return;
     }
 
@@ -801,7 +874,7 @@ async function checkout() {
     window.location.href = "confirmation.html";
   } catch (err) {
     console.error(err);
-    showToast("❌ Server error", "error");
+    showToast("Server error", "error");
   }
 }
 

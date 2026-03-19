@@ -4,30 +4,35 @@ const HeaderSchema = new mongoose.Schema(
   {
     logo: {
       type: String,
-      default: ""
+      default: "",
+      trim: true
     },
 
     menu: [
       {
         title: {
           type: String,
-          required: true
+          required: true,
+          trim: true
         },
         sections: [
           {
             title: {
               type: String,
-              default: ""
+              default: "",
+              trim: true
             },
             links: [
               {
                 label: {
                   type: String,
-                  default: ""
+                  default: "",
+                  trim: true
                 },
                 url: {
                   type: String,
-                  default: "#"
+                  default: "#",
+                  trim: true
                 }
               }
             ]
@@ -39,4 +44,5 @@ const HeaderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.models.Header || mongoose.model("Header", HeaderSchema);
+module.exports =
+  mongoose.models.Header || mongoose.model("Header", HeaderSchema);

@@ -9,11 +9,6 @@ const upload = require("../middlewares/upload.middleware");
 router.get("/", getHeader);
 
 // Admin route
-router.put(
-  "/",
-  protect(["admin"]),
-  upload.single("logo"),
-  updateHeader
-);
+router.put("/", protect(["admin"]), upload.single("logo"), updateHeader);
 
 module.exports = router;

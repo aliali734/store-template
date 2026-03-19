@@ -1,30 +1,29 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");
 const crypto = require("crypto");
+
+const User = require("../models/User");
 const { sendEmail } = require("../config/email");
 const { isValidEmail, passwordPolicy } = require("../utils/validators");
 
 // ============================
 // COOKIE CONFIG
 // ============================
-
 function tokenCookieOptions() {
   const isProd = process.env.NODE_ENV === "production";
 
   return {
     httpOnly: true,
-    sameSite: isProd ? "none" : "lax", // cross-site for production
-    secure: isProd,                    // required for SameSite=None
+    sameSite: isProd ? "none" : "lax",
+    secure: isProd,
     path: "/",
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    maxAge: 7 * 24 * 60 * 60 * 1000
   };
 }
 
 // ============================
 // REGISTER
 // ============================
-
 exports.register = async (req, res) => {
   try {
     let { name, email, password } = req.body;
@@ -34,15 +33,22 @@ exports.register = async (req, res) => {
     password = (password || "").trim();
 
     if (!name || name.length < 2 || name.length > 40) {
-      return res.status(400).json({ message: "Name must be 2-40 characters" });
+      return res.status(400).json({
+        success: false,
+        message: "Name must be 2-40 characters"
+      });
     }
 
     if (!email || !isValidEmail(email)) {
-      return res.status(400).json({ message: "Invalid email format" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format"
+      });
     }
 
     if (!passwordPolicy(password)) {
       return res.status(400).json({
+        success: false,
         message:
           "Password must be at least 8 characters and include uppercase, lowercase, number, and special character"
       });
@@ -51,7 +57,10 @@ exports.register = async (req, res) => {
     const exists = await User.findOne({ email });
 
     if (exists) {
-      return res.status(400).json({ message: "Email already exists" });
+      return res.status(400).json({
+        success: false,
+        message: "Email already exists"
+      });
     }
 
     const hash = await bcrypt.hash(password, 10);
@@ -62,27 +71,32 @@ exports.register = async (req, res) => {
       password: hash
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Registered successfully"
     });
-
   } catch (err) {
     console.error("Register error:", err);
-    res.status(500).json({ message: "Register failed" });
+
+    return res.status(500).json({
+      success: false,
+      message: "Register failed"
+    });
   }
 };
 
 // ============================
 // LOGIN
 // ============================
-
 exports.login = async (req, res) => {
   try {
-
     if (!process.env.JWT_SECRET) {
       console.error("JWT_SECRET missing");
-      return res.status(500).json({ message: "Server configuration error" });
+
+      return res.status(500).json({
+        success: false,
+        message: "Server configuration error"
+      });
     }
 
     let { email, password } = req.body;
@@ -92,6 +106,7 @@ exports.login = async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({
+        success: false,
         message: "Email and password are required"
       });
     }
@@ -100,6 +115,7 @@ exports.login = async (req, res) => {
 
     if (!user) {
       return res.status(400).json({
+        success: false,
         message: "Invalid credentials"
       });
     }
@@ -108,6 +124,7 @@ exports.login = async (req, res) => {
 
     if (!match) {
       return res.status(400).json({
+        success: false,
         message: "Invalid credentials"
       });
     }
@@ -123,33 +140,40 @@ exports.login = async (req, res) => {
 
     res.cookie("token", token, tokenCookieOptions());
 
-    res.json({
+    return res.json({
       success: true,
       message: "Logged in"
     });
-
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ message: "Login failed" });
+
+    return res.status(500).json({
+      success: false,
+      message: "Login failed"
+    });
   }
 };
 
 // ============================
 // FORGOT PASSWORD
 // ============================
-
 exports.forgotPassword = async (req, res) => {
   try {
-
     let { email } = req.body;
     email = (email || "").trim().toLowerCase();
 
     if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+      return res.status(400).json({
+        success: false,
+        message: "Email is required"
+      });
     }
 
     if (!isValidEmail(email)) {
-      return res.status(400).json({ message: "Invalid email format" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format"
+      });
     }
 
     const user = await User.findOne({ email });
@@ -184,27 +208,29 @@ exports.forgotPassword = async (req, res) => {
         <p>Click the link below to reset your password (valid for 15 minutes):</p>
         <p><a href="${resetLink}">Reset Password</a></p>
         <p>If you didn’t request this, ignore this email.</p>
-      `
+      `,
+      text: `Reset your password using this link: ${resetLink}`
     });
 
-    res.json({
+    return res.json({
       success: true,
       message: "If that email exists, we sent a reset link."
     });
-
   } catch (err) {
     console.error("Forgot password error:", err);
-    res.status(500).json({ message: "Forgot password failed" });
+
+    return res.status(500).json({
+      success: false,
+      message: "Forgot password failed"
+    });
   }
 };
 
 // ============================
 // RESET PASSWORD
 // ============================
-
 exports.resetPassword = async (req, res) => {
   try {
-
     let { token, email, newPassword } = req.body;
 
     token = (token || "").trim();
@@ -213,18 +239,21 @@ exports.resetPassword = async (req, res) => {
 
     if (!token || !email || !newPassword) {
       return res.status(400).json({
+        success: false,
         message: "token, email, newPassword are required"
       });
     }
 
     if (!isValidEmail(email)) {
       return res.status(400).json({
+        success: false,
         message: "Invalid email format"
       });
     }
 
     if (!passwordPolicy(newPassword)) {
       return res.status(400).json({
+        success: false,
         message:
           "Password must be at least 8 characters and include uppercase, lowercase, number, and special character"
       });
@@ -243,6 +272,7 @@ exports.resetPassword = async (req, res) => {
 
     if (!user) {
       return res.status(400).json({
+        success: false,
         message: "Invalid or expired reset token"
       });
     }
@@ -253,28 +283,28 @@ exports.resetPassword = async (req, res) => {
 
     await user.save();
 
-    res.json({
+    return res.json({
       success: true,
       message: "Password reset successful"
     });
-
   } catch (err) {
     console.error("Reset password error:", err);
-    res.status(500).json({ message: "Reset password failed" });
+
+    return res.status(500).json({
+      success: false,
+      message: "Reset password failed"
+    });
   }
 };
 
 // ============================
 // LOGOUT
 // ============================
-
 exports.logout = (req, res) => {
-
   res.clearCookie("token", tokenCookieOptions());
 
-  res.json({
+  return res.json({
     success: true,
     message: "Logged out"
   });
-
 };

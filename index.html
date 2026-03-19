@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Clothing Store</title>
 
-  <link rel="stylesheet" href="header.css">
-  <link rel="stylesheet" href="user.css">
-  <link rel="stylesheet" href="product-card.css">
+  <link rel="stylesheet" href="header.css" />
+  <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="product-card.css" />
 </head>
 <body>
-
   <div id="header"></div>
 
   <main class="page">
@@ -18,7 +17,7 @@
       <h1 class="title">Products</h1>
 
       <div class="toolbar-actions">
-        <button id="toggle-filters" class="link-btn">
+        <button id="toggle-filters" class="link-btn" type="button">
           Hide Filters
           <span class="icon">⚙️</span>
         </button>
@@ -94,8 +93,8 @@
         <div class="divider"></div>
 
         <div class="filter-block">
-          <input type="number" id="filter-minPrice" placeholder="Min price">
-          <input type="number" id="filter-maxPrice" placeholder="Max price">
+          <input type="number" id="filter-minPrice" placeholder="Min price" />
+          <input type="number" id="filter-maxPrice" placeholder="Max price" />
         </div>
 
         <div class="divider"></div>
@@ -117,7 +116,9 @@
         <div class="divider"></div>
 
         <div class="filter-block">
-          <button id="reset-filters" class="filter-item">Reset Filters</button>
+          <button id="reset-filters" class="filter-item" type="button">
+            Reset Filters
+          </button>
         </div>
       </aside>
 
@@ -127,8 +128,9 @@
       </section>
     </div>
   </main>
+
   <script src="config.js"></script>
   <script src="api.js"></script>
-  <script src="user.js"></script>
+  <script src="index.js"></script>
 </body>
 </html>

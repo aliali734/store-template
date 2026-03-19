@@ -87,10 +87,11 @@ window.adminApiFetch = adminApiFetch;
 function showLogin(msg = "") {
   loginSection?.classList.remove("hidden");
   dashboardSection?.classList.add("hidden");
+  document.getElementById("orders-section")?.classList.add("hidden");
 
   if (loginMessage) {
     loginMessage.textContent = msg;
-    loginMessage.style.color = msg ? "red" : "";
+    loginMessage.style.color = msg ? "#b91c1c" : "";
   }
 }
 
@@ -141,12 +142,12 @@ loginForm?.addEventListener("submit", async (e) => {
 
   if (!email || !password) {
     loginMessage.textContent = "Email & password required.";
-    loginMessage.style.color = "red";
+    loginMessage.style.color = "#b91c1c";
     return;
   }
 
   loginMessage.textContent = "Logging in...";
-  loginMessage.style.color = "black";
+  loginMessage.style.color = "#374151";
 
   try {
     const csrfToken = await getCsrfToken();
@@ -165,7 +166,7 @@ loginForm?.addEventListener("submit", async (e) => {
 
     if (!res.ok) {
       loginMessage.textContent = data.message || "Login failed.";
-      loginMessage.style.color = "red";
+      loginMessage.style.color = "#b91c1c";
       return;
     }
 
@@ -173,7 +174,7 @@ loginForm?.addEventListener("submit", async (e) => {
   } catch (err) {
     console.error(err);
     loginMessage.textContent = "Server error.";
-    loginMessage.style.color = "red";
+    loginMessage.style.color = "#b91c1c";
   }
 });
 
@@ -295,12 +296,12 @@ form?.addEventListener("submit", async (e) => {
 
     if (!res.ok) {
       messageEl.textContent = data.message || "Error";
-      messageEl.style.color = "red";
+      messageEl.style.color = "#b91c1c";
       return;
     }
 
-    messageEl.textContent = "✅ Saved successfully";
-    messageEl.style.color = "green";
+    messageEl.textContent = "Saved successfully";
+    messageEl.style.color = "#166534";
 
     setTimeout(() => {
       closeModal();
@@ -312,7 +313,7 @@ form?.addEventListener("submit", async (e) => {
   } catch (err) {
     console.error(err);
     messageEl.textContent = "Server error";
-    messageEl.style.color = "red";
+    messageEl.style.color = "#b91c1c";
   }
 });
 
@@ -321,7 +322,7 @@ form?.addEventListener("submit", async (e) => {
 // =====================
 async function loadProducts() {
   try {
-    const data = await apiFetch(`/product?limit=100`);
+    const data = await apiFetch("/product?limit=100");
     renderProducts(data.products || []);
   } catch (err) {
     console.error("Failed to load products:", err);
@@ -411,8 +412,15 @@ function openEditPopup(product) {
   compareAtPriceInput.value = product.compareAtPrice ?? 0;
   stockInput.value = product.stock ?? "";
 
-  setMultiSelectValues(sizesInput, Array.isArray(product.sizes) ? product.sizes : []);
-  setMultiSelectValues(colorsInput, Array.isArray(product.colors) ? product.colors : []);
+  setMultiSelectValues(
+    sizesInput,
+    Array.isArray(product.sizes) ? product.sizes : []
+  );
+
+  setMultiSelectValues(
+    colorsInput,
+    Array.isArray(product.colors) ? product.colors : []
+  );
 
   featuredInput.checked = !!product.featured;
   isActiveInput.checked = product.isActive !== false;
@@ -443,7 +451,7 @@ headerLogo?.addEventListener("change", () => {
 // =====================
 async function loadHeaderSettings() {
   try {
-    const data = await apiFetch(`/header`);
+    const data = await apiFetch("/header");
 
     if (data.success) {
       logoPreview.src = data.header.logo
@@ -486,7 +494,7 @@ headerForm?.addEventListener("submit", async (e) => {
   formData.append("menu", JSON.stringify(menu));
 
   try {
-    const res = await adminApiFetch(`/header`, {
+    const res = await adminApiFetch("/header", {
       method: "PUT",
       body: formData
     });
@@ -495,16 +503,16 @@ headerForm?.addEventListener("submit", async (e) => {
 
     if (!res.ok) {
       headerMessage.textContent = data.message || "Error";
-      headerMessage.style.color = "red";
+      headerMessage.style.color = "#b91c1c";
       return;
     }
 
-    headerMessage.textContent = "✅ Header updated";
-    headerMessage.style.color = "green";
+    headerMessage.textContent = "Header updated";
+    headerMessage.style.color = "#166534";
   } catch (err) {
     console.error(err);
     headerMessage.textContent = "Server error";
-    headerMessage.style.color = "red";
+    headerMessage.style.color = "#b91c1c";
   }
 });
 

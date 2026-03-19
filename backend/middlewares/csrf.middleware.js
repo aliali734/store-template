@@ -41,6 +41,7 @@ function verifyCsrf(req, res, next) {
 
   if (!cookieToken || !headerToken || cookieToken !== headerToken) {
     return res.status(403).json({
+      success: false,
       message: "CSRF token invalid or missing"
     });
   }

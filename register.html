@@ -4,18 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Register</title>
+  <link rel="stylesheet" href="register.css" />
 </head>
 <body>
-  <h2>Register</h2>
+  <main class="auth-page">
+    <div class="auth-box">
+      <h2>Register</h2>
 
-  <form id="register-form">
-    <input type="text" id="name" placeholder="Name" required />
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button type="submit">Register</button>
-  </form>
+      <form id="register-form">
+        <input type="text" id="name" placeholder="Name" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit">Register</button>
+      </form>
 
-  <p id="auth-message"></p>
+      <p class="auth-link">
+        Already have an account?
+        <a href="login.html">Login</a>
+      </p>
+
+      <p id="auth-message"></p>
+    </div>
+  </main>
+
   <script src="config.js"></script>
   <script src="api.js"></script>
   <script src="auth.js"></script>

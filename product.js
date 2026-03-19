@@ -1,13 +1,19 @@
-const API_BASE = "https://store-template-nemj.onrender.com/api";
+// product.js
+
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-// Toast function
+// =====================
+// TOAST
+// =====================
 function showToast(message, type = "success") {
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
   toast.textContent = message;
+
   document.body.appendChild(toast);
+
   setTimeout(() => toast.classList.add("show"), 50);
+
   setTimeout(() => {
     toast.classList.remove("show");
     setTimeout(() => toast.remove(), 300);
@@ -15,45 +21,100 @@ function showToast(message, type = "success") {
 }
 
 // =====================
+// GET CSRF TOKEN
+// =====================
+async function getCsrfToken() {
+  try {
+    const res = await fetch(`${API_BASE}/csrf`, {
+      method: "GET",
+      credentials: "include"
+    });
+
+    const data = await res.json().catch(() => ({}));
+    return data.csrfToken || null;
+  } catch (err) {
+    console.error("Failed to initialize CSRF:", err);
+    return null;
+  }
+}
+
+// =====================
+// LOGOUT
+// =====================
+async function logout() {
+  try {
+    const csrfToken = await getCsrfToken();
+
+    await fetch(`${API_BASE}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
+      }
+    });
+  } catch (err) {
+    console.error("Logout failed:", err);
+  } finally {
+    window.location.href = "login.html";
+  }
+}
+
+// =====================
 // AUTH-AWARE HEADER
 // =====================
-function setupAuthHeader() {
-  const token = localStorage.getItem("token");
-
+async function setupAuthHeader() {
   const loginLink = document.getElementById("login-link");
   const registerLink = document.getElementById("register-link");
   const logoutBtn = document.getElementById("logout-btn");
 
   if (!loginLink || !registerLink || !logoutBtn) return;
 
-  if (token) {
-    loginLink.style.display = "none";
-    registerLink.style.display = "none";
-    logoutBtn.style.display = "inline-flex";
+  try {
+    const res = await fetch(`${API_BASE}/test/user`, {
+      credentials: "include"
+    });
 
-    logoutBtn.onclick = () => {
-      localStorage.removeItem("token");
-      window.location.href = "login.html";
-    };
-  } else {
+    if (res.ok) {
+      loginLink.style.display = "none";
+      registerLink.style.display = "none";
+      logoutBtn.style.display = "inline-flex";
+      logoutBtn.onclick = logout;
+    } else {
+      loginLink.style.display = "inline-flex";
+      registerLink.style.display = "inline-flex";
+      logoutBtn.style.display = "none";
+    }
+  } catch (err) {
+    console.error("Auth header check failed:", err);
     loginLink.style.display = "inline-flex";
     registerLink.style.display = "inline-flex";
     logoutBtn.style.display = "none";
   }
 }
 
-// Load header
+// =====================
+// LOAD HEADER
+// =====================
 fetch("header.html")
-  .then(res => res.text())
-  .then(html =>{ document.getElementById("header").innerHTML = html
-    setupAuthHeader();
-});
+  .then((res) => res.text())
+  .then((html) => {
+    const headerEl = document.getElementById("header");
+    if (headerEl) {
+      headerEl.innerHTML = html;
+      setupAuthHeader();
+    }
+  })
+  .catch((err) => console.error("Failed to load header:", err));
 
-// Get product ID from URL
+// =====================
+// URL PARAMS
+// =====================
 const params = new URLSearchParams(window.location.search);
 const productId = params.get("id");
 
-// Elements
+// =====================
+// ELEMENTS
+// =====================
 const mainImg = document.getElementById("product-img");
 const thumbsContainer = document.querySelector(".thumbnails");
 const nameEl = document.getElementById("product-name");
@@ -64,50 +125,69 @@ const quantityEl = document.getElementById("product-quantity");
 const addBtn = document.getElementById("add-to-cart-btn");
 const relatedContainer = document.getElementById("related-container");
 
-// Load product
+// =====================
+// LOAD PRODUCT
+// =====================
 async function loadProduct() {
+  if (!productId) {
+    alert("Product ID is missing.");
+    return;
+  }
+
   try {
-    const res = await fetch(`${API_BASE}/product/${productId}`);
-    if (!res.ok) throw new Error("Product not found");
-    const product = await res.json();
+    const data = await apiFetch(`/product/${productId}`);
+    const product = data.product;
 
-    // Gallery images
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
     if (product.images && product.images.length) {
-      mainImg.src = `https://store-template-nemj.onrender.com${product.images[0]}`;
-      thumbsContainer.innerHTML = product.images.map(src => `
-        <img class="thumb" src="https://store-template-nemj.onrender.com${src}" alt="Thumbnail">
-      `).join("");
+      mainImg.src = `${SERVER_BASE}${product.images[0]}`;
 
-      thumbsContainer.querySelectorAll(".thumb").forEach(img => {
-        img.onclick = () => mainImg.src = img.src;
+      thumbsContainer.innerHTML = product.images
+        .map(
+          (src) => `
+            <img class="thumb" src="${SERVER_BASE}${src}" alt="Thumbnail" />
+          `
+        )
+        .join("");
+
+      thumbsContainer.querySelectorAll(".thumb").forEach((img) => {
+        img.onclick = () => {
+          mainImg.src = img.src;
+        };
       });
     } else {
       mainImg.src = "https://via.placeholder.com/400";
     }
 
-    // Product info
-    nameEl.textContent = product.name;
+    nameEl.textContent = product.name || "Product";
     categoryEl.textContent = product.category || "Uncategorized";
-    priceEl.textContent = `$${product.price}`;
+    priceEl.textContent = `$${Number(product.price || 0).toFixed(2)}`;
     descEl.textContent = product.description || "No description available.";
 
-    // Load related products
-    if (product.category) loadRelatedProducts(product.category);
-
+    if (product.category) {
+      loadRelatedProducts(product.category);
+    }
   } catch (err) {
     console.error(err);
     alert("Product could not be loaded.");
   }
 }
 
-// Add to cart
-addBtn.onclick = () => {
-  const quantity = parseInt(quantityEl.value) || 1;
+// =====================
+// ADD TO CART
+// =====================
+addBtn?.addEventListener("click", () => {
+  const quantity = parseInt(quantityEl.value, 10) || 1;
   if (quantity <= 0) return;
 
-  const existing = cart.find(item => item.id === productId);
-  if (existing) existing.quantity += quantity;
-  else {
+  const existing = cart.find((item) => item.id === productId);
+
+  if (existing) {
+    existing.quantity += quantity;
+  } else {
     cart.push({
       id: productId,
       name: nameEl.textContent,
@@ -117,35 +197,46 @@ addBtn.onclick = () => {
   }
 
   localStorage.setItem("cart", JSON.stringify(cart));
-  showToast("🛒 Added to cart");
-};
+  showToast("Added to cart");
+});
 
-
-
-// Load related products
+// =====================
+// LOAD RELATED PRODUCTS
+// =====================
 async function loadRelatedProducts(category) {
   try {
-    const res = await apiFetch(`/product?category=${encodeURIComponent(category)}&limit=4`);
-    if (!res.ok) throw new Error("Failed to load related products");
-    const data = await res.json();
+    const data = await apiFetch(`/product?category=${encodeURIComponent(category)}&limit=4`);
+    const related = (data.products || []).filter((p) => p._id !== productId);
 
-    const related = data.products.filter(p => p._id !== productId);
+    relatedContainer.innerHTML = related
+      .map((p) => {
+        const firstImage = Array.isArray(p.images) ? p.images[0] : "";
+        const imageSrc = firstImage
+          ? `${SERVER_BASE}${firstImage}`
+          : "https://via.placeholder.com/300";
 
-    relatedContainer.innerHTML = related.map(p => `
-      <div class="related-card" onclick="window.location.href='product.html?id=${p._id}'">
-        <img src="${p.image ? 'https://store-template-nemj.onrender.com'+p.image : 'https://via.placeholder.com/300'}" alt="${p.name}">
-        <div class="related-info">
-          <h4>${p.name}</h4>
-          <p>$${p.price}</p>
-        </div>
-      </div>
-    `).join("");
+        return `
+          <div class="related-card" onclick="window.location.href='product.html?id=${p._id}'">
+            <img src="${imageSrc}" alt="${p.name}" />
+            <div class="related-info">
+              <h4>${p.name}</h4>
+              <p>$${Number(p.price || 0).toFixed(2)}</p>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
 
+    if (!related.length) {
+      relatedContainer.innerHTML = "<p>No related products found.</p>";
+    }
   } catch (err) {
     console.error(err);
-    relatedContainer.innerHTML = "<p style='color:red;'>Failed to load related products</p>";
+    relatedContainer.innerHTML = "<p style='color:#b91c1c;'>Failed to load related products</p>";
   }
 }
 
-// Init
+// =====================
+// INIT
+// =====================
 document.addEventListener("DOMContentLoaded", loadProduct);

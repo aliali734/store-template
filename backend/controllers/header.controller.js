@@ -1,6 +1,8 @@
 const Header = require("../models/header");
 
-// default menu if header does not exist yet
+// ============================
+// DEFAULT MENU
+// ============================
 const defaultMenu = [
   {
     title: "Men",
@@ -87,7 +89,9 @@ const defaultMenu = [
   }
 ];
 
-// GET header
+// ============================
+// GET HEADER
+// ============================
 const getHeader = async (req, res) => {
   try {
     let header = await Header.findOne();
@@ -102,13 +106,23 @@ const getHeader = async (req, res) => {
       await header.save();
     }
 
-    res.json({ success: true, header });
+    return res.json({
+      success: true,
+      header
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Get header error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load header"
+    });
   }
 };
 
-// UPDATE header (admin)
+// ============================
+// UPDATE HEADER
+// ============================
 const updateHeader = async (req, res) => {
   try {
     let header = await Header.findOne();
@@ -124,7 +138,10 @@ const updateHeader = async (req, res) => {
       try {
         header.menu = JSON.parse(req.body.menu);
       } catch (err) {
-        return res.status(400).json({ message: "Invalid menu JSON format" });
+        return res.status(400).json({
+          success: false,
+          message: "Invalid menu JSON format"
+        });
       }
     }
 
@@ -134,10 +151,21 @@ const updateHeader = async (req, res) => {
 
     await header.save();
 
-    res.json({ success: true, header });
+    return res.json({
+      success: true,
+      header
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Update header error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update header"
+    });
   }
 };
 
-module.exports = { getHeader, updateHeader };
+module.exports = {
+  getHeader,
+  updateHeader
+};

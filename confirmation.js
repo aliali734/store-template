@@ -1,32 +1,38 @@
-// js/confirmation.js ✅ COD + Cookie Auth + CSRF + Auto Logout
+// confirmation.js
 
-const API_BASE = "https://store-template-nemj.onrender.com/api";
 const ORDER_ID = localStorage.getItem("currentOrderId");
 
 // =====================
-// CSRF HELPERS
+// GET CSRF TOKEN
 // =====================
-function getCookie(name) {
-  return document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(name + "="))
-    ?.split("=")[1];
+async function getCsrfToken() {
+  try {
+    const res = await fetch(`${API_BASE}/csrf`, {
+      method: "GET",
+      credentials: "include"
+    });
+
+    const data = await res.json().catch(() => ({}));
+    return data.csrfToken || null;
+  } catch (err) {
+    console.error("Failed to initialize CSRF:", err);
+    return null;
+  }
 }
 
-function csrfHeaders() {
-  const csrf = getCookie("csrfToken");
-  return csrf ? { "x-csrf-token": csrf } : {};
-}
-
 // =====================
-// FORCE LOGOUT (COOKIE)
+// FORCE LOGOUT
 // =====================
 async function forceLogout() {
   try {
+    const csrfToken = await getCsrfToken();
+
     await fetch(`${API_BASE}/auth/logout`, {
       method: "POST",
       credentials: "include",
-      headers: { ...csrfHeaders() }
+      headers: {
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
+      }
     });
   } catch (e) {
     console.error("Logout request failed:", e);
@@ -36,12 +42,12 @@ async function forceLogout() {
 }
 
 // =====================
-// API FETCH WRAPPER (COOKIE + AUTO LOGOUT)
+// API FETCH WRAPPER
 // =====================
-async function apiFetch(path, options = {}) {
+async function confirmationApiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
-    credentials: "include", // ✅ IMPORTANT: send cookie
+    credentials: "include",
     headers: {
       ...(options.headers || {})
     }
@@ -61,39 +67,42 @@ async function apiFetch(path, options = {}) {
 fetch("header.html")
   .then((res) => res.text())
   .then((html) => {
-    document.getElementById("header").innerHTML = html;
-    setupAuthHeader();
-  });
+    const headerEl = document.getElementById("header");
+    if (headerEl) {
+      headerEl.innerHTML = html;
+      setupAuthHeader();
+    }
+  })
+  .catch((err) => console.error("Failed to load header:", err));
 
 function setupAuthHeader() {
   const loginLink = document.getElementById("login-link");
   const registerLink = document.getElementById("register-link");
   const logoutBtn = document.getElementById("logout-btn");
 
-  if (!logoutBtn) return;
-
-  // Confirmation page is protected => show logout, hide login/register
   if (loginLink) loginLink.style.display = "none";
   if (registerLink) registerLink.style.display = "none";
-  logoutBtn.style.display = "inline-flex";
 
-  logoutBtn.onclick = () => forceLogout();
+  if (logoutBtn) {
+    logoutBtn.style.display = "inline-flex";
+    logoutBtn.onclick = () => forceLogout();
+  }
 }
 
 // =====================
-// PAGE INIT (VERIFY SESSION + ORDER_ID)
+// PAGE INIT
 // =====================
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    // ✅ verify cookie session first
-    const me = await apiFetch("/test/user");
+    const me = await confirmationApiFetch("/test/user");
+
     if (!me.ok) {
       await forceLogout();
       return;
     }
 
     if (!ORDER_ID) {
-      updateStatus("No order found ❌", "error");
+      updateStatus("No order found", "error");
       return;
     }
 
@@ -105,11 +114,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // =====================
-// LOAD ORDER (COD)
+// LOAD ORDER
 // =====================
 async function loadOrder() {
-  const res = await apiFetch(`/orders/${ORDER_ID}`);
-  const data = await res.json();
+  const res = await confirmationApiFetch(`/orders/${ORDER_ID}`);
+  const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
     updateStatus(data.message || "Failed to load order", "error");
@@ -119,7 +128,6 @@ async function loadOrder() {
   const order = data.order;
   renderOrder(order);
 
-  // ✅ Clear stored order after showing it
   localStorage.removeItem("currentOrderId");
 }
 
@@ -129,25 +137,28 @@ async function loadOrder() {
 function renderOrder(order) {
   const statusText =
     order.status === "pending"
-      ? "Order placed ✅ Pay cash on delivery"
+      ? "Order placed successfully. Pay cash on delivery."
       : `Order status: ${order.status}`;
 
   updateStatus(statusText, "success");
 
   const itemsList = document.getElementById("order-items");
+  if (!itemsList) return;
+
   itemsList.innerHTML = "";
 
-  order.products.forEach((item) => {
+  (order.products || []).forEach((item) => {
     const li = document.createElement("li");
     li.textContent = `${item.name} × ${item.quantity} — $${(
-      item.price * item.quantity
+      Number(item.price || 0) * Number(item.quantity || 0)
     ).toFixed(2)}`;
     itemsList.appendChild(li);
   });
 
-  document.getElementById("order-total").textContent = `Total: $${Number(
-    order.totalPrice || 0
-  ).toFixed(2)}`;
+  const totalEl = document.getElementById("order-total");
+  if (totalEl) {
+    totalEl.textContent = `Total: $${Number(order.totalPrice || 0).toFixed(2)}`;
+  }
 }
 
 // =====================
@@ -155,6 +166,8 @@ function renderOrder(order) {
 // =====================
 function updateStatus(text, type) {
   const statusEl = document.getElementById("status");
+  if (!statusEl) return;
+
   statusEl.textContent = text;
   statusEl.className = `status ${type}`;
 }

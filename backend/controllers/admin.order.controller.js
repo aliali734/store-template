@@ -1,43 +1,35 @@
-const Order = require("../models/order");
 const mongoose = require("mongoose");
+const Order = require("../models/order");
 
 // ============================
 // GET ALL ORDERS
 // ============================
-
 exports.getAllOrders = async (req, res) => {
   try {
-
     const orders = await Order.find()
       .populate("user", "name email")
       .sort({ createdAt: -1 })
       .lean();
 
-    res.json({
+    return res.json({
       success: true,
       orders
     });
-
   } catch (err) {
+    console.error("Get all admin orders error:", err);
 
-    console.error("Get orders error:", err);
-
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch orders"
     });
-
   }
 };
 
 // ============================
 // GET ORDER BY ID
 // ============================
-
 exports.getOrderById = async (req, res) => {
-
   try {
-
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -58,20 +50,16 @@ exports.getOrderById = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       order
     });
-
   } catch (err) {
+    console.error("Get admin order by ID error:", err);
 
-    console.error("Get order error:", err);
-
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch order"
     });
-
   }
-
 };

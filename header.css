@@ -1,29 +1,19 @@
 /* =====================
-   CSS VARIABLES (AUTO THEME)
-   ===================== */
+   CSS VARIABLES
+===================== */
 :root {
   --bg: #ffffff;
-  --text: #111111;
+  --text: #111827;
   --muted: #6b7280;
   --border: #e5e7eb;
-  --accent: #111111;
+  --accent: #111827;
   --panel: #f9fafb;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0b0b0d;
-    --text: #f5f5f5;
-    --muted: #9ca3af;
-    --border: #1f2933;
-    --accent: #ffffff;
-    --panel: #111318;
-  }
+  --shadow: rgba(17, 24, 39, 0.08);
 }
 
 /* =====================
-   RESET (BASIC)
-   ===================== */
+   RESET
+===================== */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -43,7 +33,7 @@ a {
 
 /* =====================
    HEADER
-   ===================== */
+===================== */
 .site-header {
   position: sticky;
   top: 0;
@@ -54,7 +44,7 @@ a {
 
 .nav {
   max-width: 1280px;
-  margin: auto;
+  margin: 0 auto;
   padding: 0 24px;
   height: 72px;
   display: flex;
@@ -66,11 +56,12 @@ a {
   font-weight: 800;
   font-size: 20px;
   letter-spacing: -0.5px;
+  color: var(--text);
 }
 
 /* =====================
    MAIN MENU
-   ===================== */
+===================== */
 .menu {
   display: flex;
   gap: 32px;
@@ -82,6 +73,7 @@ a {
   padding: 24px 0;
   font-weight: 500;
   cursor: pointer;
+  color: var(--text);
 }
 
 .menu-item:hover {
@@ -90,14 +82,18 @@ a {
 
 /* =====================
    MEGA MENU
-   ===================== */
+===================== */
 .mega {
   position: absolute;
-  left: 0px;
+  left: 0;
   top: 72px;
-  width: 48vw;
-  background: var(--panel);
-  border-top: 1px solid var(--border);
+  min-width: 540px;
+  max-width: 780px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 12px 28px var(--shadow);
   opacity: 0;
   pointer-events: none;
   transform: translateY(10px);
@@ -111,17 +107,15 @@ a {
 }
 
 .mega-inner {
-  max-width: 1280px;
-  margin: auto;
-  padding: 32px 24px;
+  padding: 28px 24px;
   display: grid;
-  grid-template-columns: repeat(4, 100px);
-  gap: 14px;
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
+  gap: 18px;
 }
 
 .mega h4 {
-  margin-bottom: 12px;
-  font-size: 13px;
+  margin-bottom: 10px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
@@ -130,124 +124,67 @@ a {
 .mega a {
   display: block;
   padding: 6px 0;
-  font-size: 15px;
+  font-size: 14px;
+  color: var(--text);
 }
 
 .mega a:hover {
+  color: var(--accent);
   text-decoration: underline;
 }
 
 /* =====================
    ACTIONS
-   ===================== */
+===================== */
 .actions {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
 }
 
 .icon-btn {
   border: 1px solid var(--border);
-  background: transparent;
+  background: var(--bg);
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   color: var(--text);
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .icon-btn:hover {
   background: var(--panel);
+  border-color: #d1d5db;
 }
 
 /* =====================
-   MOBILE (TEMPORARY)
-   ===================== */
-@media (max-width: 900px) {
-  .menu {
-    display: none;
-  }
-}
-/* =====================
-   MOBILE PANEL
-   ===================== */
-.mobile-panel {
-  position: fixed;
-  top: 0;
-  right: -100%;
-  width: 80%;
-  height: 100vh;
-  background: var(--bg);
-  box-shadow: -2px 0 10px rgba(0,0,0,0.2);
-  padding: 24px;
-  transition: right 0.3s ease;
-  z-index: 2000;
-}
-
-.mobile-panel.open {
-  right: 0;
-}
-
-.mobile-panel .mobile-menu-items {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 32px;
-}
-
-#mobile-toggle {
-  display: none; /* يظهر فقط على الموبايل */
-}
-
-@media (max-width: 900px) {
-  #mobile-toggle {
-    display: block;
-  }
-}
-
-.mobile-submenu {
-  display: none;
-  flex-direction: column;
-  gap: 12px;
-  margin-left: 16px;
-  margin-top: 8px;
-}
-
-.mobile-item button.mobile-toggle-sub {
-  background: none;
-  border: none;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 8px 0;
-  width: 100%;
-  text-align: left;
-}
-
-.mobile-item button.mobile-toggle-sub:hover {
-  color: var(--accent);
-}
-
-/* =====================
-   SEARCH INPUT
-   ===================== */
+   SEARCH
+===================== */
 .search-wrapper {
   position: relative;
 }
 
-#search-input {
+#search-input-header {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 8px);
   right: 0;
-  margin-top: 8px;
-  padding: 6px 12px;
+  width: 220px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 10px;
   background: var(--bg);
   color: var(--text);
+  box-shadow: 0 10px 24px var(--shadow);
+}
+
+#search-input-header:focus {
+  outline: none;
+  border-color: #9ca3af;
 }
 
 /* =====================
-   CART COUNTER
-   ===================== */
+   CART
+===================== */
 .cart-wrapper {
   position: relative;
 }
@@ -256,21 +193,26 @@ a {
   position: absolute;
   top: -6px;
   right: -6px;
-  background: red;
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  padding: 2px 6px;
-  border-radius: 50%;
+  background: #111827;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-
-/* Cart Modal */
+/* =====================
+   CART MODAL
+===================== */
 .cart-modal {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.6);
+  inset: 0;
+  background: rgba(17, 24, 39, 0.45);
   display: none;
   justify-content: center;
   align-items: center;
@@ -278,21 +220,34 @@ a {
 }
 
 .cart-content {
-  background: #fff;
+  background: var(--bg);
   padding: 24px;
-  border-radius: 12px;
+  border-radius: 16px;
   width: 90%;
-  max-width: 400px;
+  max-width: 420px;
   position: relative;
+  border: 1px solid var(--border);
+  box-shadow: 0 14px 32px var(--shadow);
+}
+
+.cart-content h3 {
+  margin-bottom: 16px;
+  color: var(--text);
 }
 
 .cart-close {
   position: absolute;
-  top: 8px; right: 12px;
+  top: 10px;
+  right: 12px;
   font-size: 24px;
   background: none;
   border: none;
+  color: var(--muted);
   cursor: pointer;
+}
+
+.cart-close:hover {
+  color: var(--text);
 }
 
 #cart-items-list {
@@ -305,19 +260,115 @@ a {
   margin-bottom: 12px;
   display: flex;
   justify-content: space-between;
+  gap: 10px;
+  color: #374151;
+}
+
+.cart-total {
+  margin-top: 12px;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .checkout-btn {
   width: 100%;
+  margin-top: 16px;
   padding: 12px;
-  background: black;
-  color: white;
+  background: #111827;
+  color: #ffffff;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
+  transition: background 0.2s ease;
 }
 
 .checkout-btn:hover {
-  opacity: 0.9;
+  background: #1f2937;
+}
+
+/* =====================
+   MOBILE PANEL
+===================== */
+.mobile-panel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: min(86vw, 360px);
+  height: 100vh;
+  background: var(--bg);
+  box-shadow: -8px 0 24px var(--shadow);
+  padding: 24px;
+  transition: right 0.3s ease;
+  z-index: 2000;
+  border-left: 1px solid var(--border);
+}
+
+.mobile-panel[aria-hidden="false"] {
+  right: 0;
+}
+
+.mobile-menu-items {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.mobile-menu-items a {
+  color: var(--text);
+  padding: 8px 0;
+}
+
+.mobile-submenu {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  margin-left: 14px;
+  margin-top: 8px;
+}
+
+.mobile-item button.mobile-toggle-sub {
+  background: none;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 0;
+  width: 100%;
+  text-align: left;
+  color: var(--text);
+}
+
+.mobile-item button.mobile-toggle-sub:hover {
+  color: var(--accent);
+}
+
+#mobile-toggle {
+  display: none;
+}
+
+#mobile-close {
+  width: auto;
+  padding: 8px 10px;
+}
+
+/* =====================
+   RESPONSIVE
+===================== */
+@media (max-width: 900px) {
+  .menu {
+    display: none;
+  }
+
+  #mobile-toggle {
+    display: inline-flex;
+  }
+
+  .nav {
+    padding: 0 16px;
+  }
+
+  .actions {
+    gap: 8px;
+  }
 }

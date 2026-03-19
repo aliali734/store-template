@@ -52,8 +52,8 @@ const productSchema = new mongoose.Schema(
 
     compareAtPrice: {
       type: Number,
-      min: 0,
-      default: 0
+      default: 0,
+      min: 0
     },
 
     stock: {
@@ -66,7 +66,7 @@ const productSchema = new mongoose.Schema(
       type: [String],
       required: true,
       validate: {
-        validator: arr => Array.isArray(arr) && arr.length > 0,
+        validator: (arr) => Array.isArray(arr) && arr.length > 0,
         message: "At least one size is required"
       }
     },
@@ -75,7 +75,7 @@ const productSchema = new mongoose.Schema(
       type: [String],
       required: true,
       validate: {
-        validator: arr => Array.isArray(arr) && arr.length > 0,
+        validator: (arr) => Array.isArray(arr) && arr.length > 0,
         message: "At least one color is required"
       }
     },

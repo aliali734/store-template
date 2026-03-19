@@ -15,28 +15,19 @@ const {
 } = require("../controllers/order.controller");
 
 // =======================
-// ADMIN ROUTES (must be BEFORE "/:id")
+// ADMIN ROUTES
+// Must be before "/:id"
 // =======================
 router.get("/admin/all", protect(["admin"]), getAllOrders);
-router.patch("/admin/:id/status", verifyCsrf, protect(["admin"]), updateOrderStatus);
+router.patch("/admin/:id/status", protect(["admin"]), verifyCsrf, updateOrderStatus);
 
 // =======================
 // USER ROUTES
 // =======================
-
-// create order (COD)
-router.post("/", verifyCsrf, protect(), createOrder);
-
-// user orders
+router.post("/", protect(), verifyCsrf, createOrder);
 router.get("/my", protect(), getMyOrders);
-
-// get single order
 router.get("/:id", protect(), getOrderById);
-
-// update order
-router.put("/:id", verifyCsrf, protect(), updateOrder);
-
-// delete order
-router.delete("/:id", verifyCsrf, protect(), deleteOrder);
+router.put("/:id", protect(), verifyCsrf, updateOrder);
+router.delete("/:id", protect(), verifyCsrf, deleteOrder);
 
 module.exports = router;

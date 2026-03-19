@@ -4,36 +4,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login</title>
+  <link rel="stylesheet" href="login.css" />
 </head>
 <body>
-  <h2>Login</h2>
+  <main class="auth-page">
+    <div class="auth-box">
+      <h2>Login</h2>
 
-<form id="login-form">
-  <input type="email" id="email" placeholder="Email" required />
-  <input type="password" id="password" placeholder="Password" required />
-  <button type="submit">Login</button>
+      <form id="login-form">
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit">Login</button>
 
-  <p style="margin-top:10px;">
-    <a href="forgot-password.html">Forgot password?</a>
-  </p>
+        <p class="auth-link">
+          <a href="forgot-password.html">Forgot password?</a>
+        </p>
 
-  <p style="margin-top:10px;">
-    Don't have an account?
-    <a href="register.html">Register</a>
-  </p>
-</form>
+        <p class="auth-link">
+          Don’t have an account?
+          <a href="register.html">Register</a>
+        </p>
+      </form>
 
-  <p id="auth-message"></p>
-    <script src="config.js"></script>
-  <a href="register.html"></a>
+      <p id="auth-message"></p>
+    </div>
+  </main>
+
+  <script src="config.js"></script>
   <script src="api.js"></script>
   <script src="auth.js"></script>
 </body>
 </html>
-
-<!-- login.html
-register.html
-forgot-password.html
-reset-password.html
-orders.html
-admin.html -->

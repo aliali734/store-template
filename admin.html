@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
 
@@ -47,18 +47,18 @@
           <input type="text" id="name" placeholder="Product name" required />
           <textarea id="description" placeholder="Description" required></textarea>
 
-          <label>Brand</label>
+          <label for="brand">Brand</label>
           <select id="brand" required>
             <option value="">Select brand</option>
             <option value="nike">Nike</option>
             <option value="adidas">Adidas</option>
             <option value="zara">Zara</option>
-            <option value="hm">H&M</option>
+            <option value="hm">H&amp;M</option>
             <option value="puma">Puma</option>
             <option value="other">Other</option>
           </select>
 
-          <label>Category</label>
+          <label for="category">Category</label>
           <select id="category" required>
             <option value="">Select category</option>
             <option value="t-shirts">T-Shirts</option>
@@ -74,7 +74,7 @@
             <option value="accessories">Accessories</option>
           </select>
 
-          <label>Audience</label>
+          <label for="audience">Audience</label>
           <select id="audience">
             <option value="unisex">Unisex</option>
             <option value="men">Men</option>
@@ -86,7 +86,7 @@
           <input type="number" id="compareAtPrice" placeholder="Compare at price" />
           <input type="number" id="stock" placeholder="Stock" required />
 
-          <label>Sizes</label>
+          <label for="sizes">Sizes</label>
           <select id="sizes" multiple>
             <option value="XS">XS</option>
             <option value="S">S</option>
@@ -96,7 +96,7 @@
             <option value="XXL">XXL</option>
           </select>
 
-          <label>Colors</label>
+          <label for="colors">Colors</label>
           <select id="colors" multiple>
             <option value="black">Black</option>
             <option value="white">White</option>
@@ -109,12 +109,12 @@
           </select>
 
           <label>
-            <input type="checkbox" id="featured">
+            <input type="checkbox" id="featured" />
             Featured product
           </label>
 
           <label>
-            <input type="checkbox" id="isActive" checked>
+            <input type="checkbox" id="isActive" checked />
             Active
           </label>
 
@@ -132,12 +132,17 @@
         </div>
 
         <form id="header-form" enctype="multipart/form-data">
-          <label>Logo:</label>
+          <label for="header-logo">Logo:</label>
           <input type="file" id="header-logo" accept="image/*" />
-          <img id="logoPreview" src="" alt="Logo Preview" width="80" /><br><br>
+          <img id="logoPreview" src="" alt="Logo Preview" width="80" />
 
-          <label>Categories (comma separated):</label>
-          <input type="text" id="header-categories" placeholder="Category1, Category2" />
+          <label for="header-categories">Categories (comma separated):</label>
+          <input
+            type="text"
+            id="header-categories"
+            placeholder="Category1, Category2"
+          />
+
           <button type="submit">Save Header</button>
           <p id="headerMessage"></p>
         </form>
@@ -168,6 +173,7 @@
       <div id="ordersTable"></div>
     </section>
   </main>
+
   <script src="config.js"></script>
   <script src="api.js"></script>
   <script src="admin.js"></script>

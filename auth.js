@@ -1,8 +1,11 @@
-// js/auth.js
+// auth.js
 
 const authMessage = document.getElementById("auth-message");
 
-function showMessage(message, color = "red") {
+// =====================
+// UI MESSAGE
+// =====================
+function showMessage(message, color = "#b91c1c") {
   if (!authMessage) return;
   authMessage.textContent = message;
   authMessage.style.color = color;
@@ -14,7 +17,7 @@ function clearMessage() {
 }
 
 // =====================
-// GET CSRF TOKEN FROM BACKEND DIRECTLY
+// GET CSRF TOKEN FROM BACKEND
 // =====================
 async function getCsrfToken() {
   try {
@@ -24,13 +27,21 @@ async function getCsrfToken() {
     });
 
     const data = await res.json().catch(() => ({}));
-
-    console.log("CSRF response:", data);
-
     return data.csrfToken || null;
   } catch (err) {
     console.error("Failed to initialize CSRF:", err);
     return null;
+  }
+}
+
+// =====================
+// SAFE JSON PARSER
+// =====================
+async function safeJson(res) {
+  try {
+    return await res.json();
+  } catch {
+    return {};
   }
 }
 
@@ -54,20 +65,9 @@ async function getCsrfToken() {
       window.location.href = "index.html";
     }
   } catch (err) {
-    console.error("Token verification failed:", err);
+    console.error("Token verification failed on auth pages:", err);
   }
 })();
-
-// =====================
-// SAFE JSON PARSER
-// =====================
-async function safeJson(res) {
-  try {
-    return await res.json();
-  } catch {
-    return {};
-  }
-}
 
 // =====================
 // REGISTER
@@ -98,14 +98,12 @@ if (registerForm) {
     try {
       const csrfToken = await getCsrfToken();
 
-      console.log("Register CSRF token:", csrfToken);
-
       const res = await fetch(`${API_BASE}/auth/register`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "x-csrf-token": csrfToken
+          ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
         },
         body: JSON.stringify({ name, email, password })
       });
@@ -113,10 +111,10 @@ if (registerForm) {
       const data = await safeJson(res);
 
       if (!res.ok) {
-        return showMessage(data.message || "Register failed ❌");
+        return showMessage(data.message || "Register failed");
       }
 
-      showMessage("Registered successfully ✅ Redirecting...", "green");
+      showMessage("Registered successfully. Redirecting...", "#166534");
 
       setTimeout(() => {
         window.location.href = "login.html";
@@ -152,14 +150,12 @@ if (loginForm) {
     try {
       const csrfToken = await getCsrfToken();
 
-      console.log("Login CSRF token:", csrfToken);
-
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "x-csrf-token": csrfToken
+          ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
         },
         body: JSON.stringify({ email, password })
       });
@@ -167,11 +163,11 @@ if (loginForm) {
       const data = await safeJson(res);
 
       if (!res.ok) {
-        return showMessage(data.message || "Login failed ❌");
+        return showMessage(data.message || "Login failed");
       }
 
-      showMessage("Login successful ✅ Redirecting...", "green");
-      
+      showMessage("Login successful. Redirecting...", "#166534");
+
       setTimeout(() => {
         window.location.href = "index.html";
       }, 700);
@@ -193,14 +189,14 @@ async function logout() {
       method: "POST",
       credentials: "include",
       headers: {
-        "x-csrf-token": csrfToken
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
       }
     });
   } catch (err) {
     console.error("Logout failed:", err);
+  } finally {
+    window.location.href = "login.html";
   }
-
-  window.location.href = "login.html";
 }
 
 window.logout = logout;

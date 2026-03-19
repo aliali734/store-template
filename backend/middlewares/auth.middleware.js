@@ -3,21 +3,33 @@ const jwt = require("jsonwebtoken");
 const protect = (roles = []) => {
   return (req, res, next) => {
     try {
+      if (!process.env.JWT_SECRET) {
+        console.error("JWT_SECRET is missing");
+
+        return res.status(500).json({
+          success: false,
+          message: "Server configuration error"
+        });
+      }
+
       let token = null;
 
-      // 1️⃣ Read token from cookie
+      // Read token from cookie
       if (req.cookies?.token) {
         token = req.cookies.token;
       }
 
-      // 2️⃣ Fallback: Authorization header
+      // Fallback: Authorization header
       const auth = req.headers?.authorization;
       if (!token && auth && auth.startsWith("Bearer ")) {
         token = auth.split(" ")[1];
       }
 
       if (!token) {
-        return res.status(401).json({ message: "No authentication token" });
+        return res.status(401).json({
+          success: false,
+          message: "No authentication token"
+        });
       }
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -27,16 +39,22 @@ const protect = (roles = []) => {
         role: decoded.role
       };
 
-      // Role protection
+      // Role-based protection
       if (roles.length && !roles.includes(req.user.role)) {
-        return res.status(403).json({ message: "Access denied" });
+        return res.status(403).json({
+          success: false,
+          message: "Access denied"
+        });
       }
 
-      next();
-
+      return next();
     } catch (err) {
       console.error("Auth middleware error:", err.message);
-      return res.status(401).json({ message: "Invalid or expired token" });
+
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired token"
+      });
     }
   };
 };

@@ -2,9 +2,9 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const cookieParser = require("cookie-parser");
 const path = require("path");
 const fs = require("fs");
+const cookieParser = require("cookie-parser");
 
 const connectDB = require("./config/db");
 const { setCsrfCookie } = require("./middlewares/csrf.middleware");
@@ -30,11 +30,11 @@ uploadDirs.forEach((dir) => {
 // CORS CONFIG
 // ===============================
 const allowedOrigins = [
-  "https://aliali734.github.io",
   "http://127.0.0.1:5500",
   "http://localhost:5500",
-  "http://localhost:3000"
-];
+  "http://localhost:3000",
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -66,12 +66,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ===============================
-// COOKIE PARSER + CSRF
+// COOKIES + CSRF
 // ===============================
 app.use(cookieParser());
 app.use(setCsrfCookie);
 
-// ✅ PUBLIC CSRF ROUTE
+// Public CSRF route
 app.get("/api/csrf", (req, res) => {
   res.json({
     success: true,
@@ -87,10 +87,11 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // ===============================
 // ROUTES
 // ===============================
-app.use("/api/test", require("./routes/test.routes"));
 app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api/product", require("./routes/product.routes"));
 app.use("/api/orders", require("./routes/order.routes"));
+app.use("/api/test", require("./routes/test.routes"));
+app.use("/api/email-test", require("./routes/email-test.routes"));
 app.use("/api/header", require("./routes/header.routes"));
 
 // ===============================
@@ -105,6 +106,7 @@ app.get("/", (req, res) => {
 // ===============================
 app.use((err, req, res, next) => {
   console.error("Server error:", err.message);
+
   res.status(500).json({
     success: false,
     message: err.message || "Internal server error"
@@ -124,7 +126,7 @@ const startServer = async () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
   } catch (err) {
-    console.error("Failed to start server:", err.message);
+    console.error("❌ Failed to start server:", err.message);
     process.exit(1);
   }
 };

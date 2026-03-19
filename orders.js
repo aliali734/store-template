@@ -1,17 +1,37 @@
-// js/orders.js
+// orders.js
 
 const ordersContainer = document.getElementById("orders-container");
+
+// =====================
+// GET CSRF TOKEN
+// =====================
+async function getCsrfToken() {
+  try {
+    const res = await fetch(`${API_BASE}/csrf`, {
+      method: "GET",
+      credentials: "include"
+    });
+
+    const data = await res.json().catch(() => ({}));
+    return data.csrfToken || null;
+  } catch (err) {
+    console.error("Failed to initialize CSRF:", err);
+    return null;
+  }
+}
 
 // =====================
 // FORCE LOGOUT
 // =====================
 async function forceLogout() {
   try {
+    const csrfToken = await getCsrfToken();
+
     await fetch(`${API_BASE}/auth/logout`, {
       method: "POST",
       credentials: "include",
       headers: {
-        ...csrfHeaders()
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
       }
     });
   } catch (e) {
@@ -26,13 +46,14 @@ async function forceLogout() {
 // =====================
 async function ordersApiFetch(path, options = {}) {
   const isFormData = options.body instanceof FormData;
+  const csrfToken = await getCsrfToken();
 
   const res = await fetch(`${API_BASE}${path}`, {
     method: options.method || "GET",
     credentials: "include",
     headers: {
       ...(!isFormData ? { "Content-Type": "application/json" } : {}),
-      ...csrfHeaders(),
+      ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
       ...(options.headers || {})
     },
     body: options.body
@@ -84,10 +105,10 @@ async function loadMyOrders() {
 
   try {
     const res = await ordersApiFetch("/orders/my");
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      ordersContainer.innerHTML = `<p style="color:red">${data.message || "Failed to load orders"}</p>`;
+      ordersContainer.innerHTML = `<p style="color:#b91c1c">${data.message || "Failed to load orders"}</p>`;
       return;
     }
 
@@ -101,7 +122,7 @@ async function loadMyOrders() {
     renderOrders(orders);
   } catch (err) {
     console.error(err);
-    ordersContainer.innerHTML = "<p style='color:red'>Error loading orders</p>";
+    ordersContainer.innerHTML = "<p style='color:#b91c1c'>Error loading orders</p>";
   }
 }
 
@@ -118,7 +139,7 @@ async function cancelOrder(orderId) {
       body: JSON.stringify({ status: "cancelled" })
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       alert(data.message || "Failed to cancel order");
@@ -138,15 +159,15 @@ async function cancelOrder(orderId) {
 function getStatusLabel(order) {
   switch (order.status) {
     case "pending":
-      return `<span class="paid-label">Pending ⏳</span>`;
+      return `<span class="paid-label">Pending</span>`;
     case "confirmed":
-      return `<span class="paid-label">Confirmed ✅</span>`;
+      return `<span class="paid-label">Confirmed</span>`;
     case "shipped":
-      return `<span class="paid-label">Shipped 🚚</span>`;
+      return `<span class="paid-label">Shipped</span>`;
     case "delivered":
-      return `<span class="paid-label">Delivered 📦</span>`;
+      return `<span class="paid-label">Delivered</span>`;
     case "cancelled":
-      return `<span class="paid-label">Cancelled ❌</span>`;
+      return `<span class="paid-label">Cancelled</span>`;
     default:
       return `<span class="paid-label">${order.status}</span>`;
   }
@@ -169,7 +190,9 @@ function renderOrders(orders) {
         (item) => `
           <li>
             ${item.name} × ${item.quantity}
-            <span style="float:right">$${(Number(item.price || 0) * Number(item.quantity || 0)).toFixed(2)}</span>
+            <span class="item-total">$${(
+              Number(item.price || 0) * Number(item.quantity || 0)
+            ).toFixed(2)}</span>
           </li>
         `
       )
@@ -184,7 +207,7 @@ function renderOrders(orders) {
       <p><strong>Payment:</strong> ${order.paymentMethod || "cash"}</p>
       <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
       ${statusLabel}
-      <ul style="margin-top:10px;">
+      <ul class="order-items-list">
         ${itemsHtml}
       </ul>
       ${
@@ -192,7 +215,6 @@ function renderOrders(orders) {
           ? `<button type="button" class="cancel-order-btn" data-id="${order._id}">Cancel Order</button>`
           : ""
       }
-      <hr/>
     `;
 
     ordersContainer.appendChild(div);

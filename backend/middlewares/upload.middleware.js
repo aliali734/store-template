@@ -7,17 +7,15 @@ const path = require("path");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (file.fieldname === "logo") {
-      cb(null, "uploads/header");
-    } else {
-      cb(null, "uploads/products");
+      return cb(null, "uploads/header");
     }
+
+    return cb(null, "uploads/products");
   },
 
   filename: (req, file, cb) => {
-    const uniqueName =
-      Date.now() + "-" + Math.round(Math.random() * 1e9);
-
-    cb(null, uniqueName + path.extname(file.originalname));
+    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    return cb(null, uniqueName + path.extname(file.originalname));
   }
 });
 
@@ -34,10 +32,10 @@ const fileFilter = (req, file, cb) => {
   const mime = allowedTypes.test(file.mimetype);
 
   if (ext && mime) {
-    cb(null, true);
-  } else {
-    cb(new Error("Images only"));
+    return cb(null, true);
   }
+
+  return cb(new Error("Only image files are allowed (jpeg, jpg, png, webp)."));
 };
 
 // =====================
