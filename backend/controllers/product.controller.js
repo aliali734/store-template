@@ -1,5 +1,10 @@
 const mongoose = require("mongoose");
 const Product = require("../models/product");
+const {
+  buildProductFilter,
+  buildSortOption,
+  buildPagination
+} = require("../utils/productFilter");
 
 // ============================
 // SLUG GENERATOR
@@ -88,74 +93,9 @@ const createProduct = async (req, res) => {
 // ============================
 const getProducts = async (req, res) => {
   try {
-    const page = Math.max(parseInt(req.query.page) || 1, 1);
-    const limit = Math.min(parseInt(req.query.limit) || 12, 100);
-    const skip = (page - 1) * limit;
-
-    const {
-      search,
-      category,
-      audience,
-      size,
-      color,
-      priceMin,
-      priceMax,
-      inStock,
-      featured,
-      sort
-    } = req.query;
-
-    const filter = { isActive: true };
-
-    if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-        { brand: { $regex: search, $options: "i" } }
-      ];
-    }
-
-    if (category) filter.category = category;
-    if (audience) filter.audience = audience;
-    if (size) filter.sizes = size;
-    if (color) filter.colors = color;
-
-    if (priceMin || priceMax) {
-      filter.price = {};
-      if (priceMin) filter.price.$gte = Number(priceMin);
-      if (priceMax) filter.price.$lte = Number(priceMax);
-    }
-
-    if (inStock === "true") {
-      filter.stock = { $gt: 0 };
-    }
-
-    if (featured === "true") {
-      filter.featured = true;
-    }
-
-    let sortOption = { createdAt: -1 };
-
-    switch (sort) {
-      case "price_asc":
-        sortOption = { price: 1 };
-        break;
-      case "price_desc":
-        sortOption = { price: -1 };
-        break;
-      case "oldest":
-        sortOption = { createdAt: 1 };
-        break;
-      case "newest":
-        sortOption = { createdAt: -1 };
-        break;
-      case "name_asc":
-        sortOption = { name: 1 };
-        break;
-      case "name_desc":
-        sortOption = { name: -1 };
-        break;
-    }
+    const filter = buildProductFilter(req.query);
+    const sortOption = buildSortOption(req.query.sort);
+    const { page, limit, skip } = buildPagination(req.query);
 
     const total = await Product.countDocuments(filter);
 

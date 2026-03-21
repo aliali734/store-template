@@ -5,19 +5,6 @@ let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let currentPage = 1;
 let totalPages = 1;
 
-let filters = {
-  search: "",
-  category: "",
-  audience: "",
-  size: "",
-  color: "",
-  priceMin: "",
-  priceMax: "",
-  inStock: "",
-  featured: "",
-  sort: "newest"
-};
-
 let cartCountEl;
 
 // =====================
@@ -149,7 +136,7 @@ async function initHeader() {
 
     applyUrlFilters();
     syncFilterInputsFromState();
-    setupFilters();
+    setupFilters(() => loadProducts(1));
 
     const checkoutBtn = document.getElementById("checkout-btn");
     checkoutBtn?.addEventListener("click", checkout);
@@ -470,20 +457,7 @@ async function loadProducts(page = 1) {
   showProductsSkeleton();
 
   try {
-    const query = new URLSearchParams({
-      page,
-      limit: 9,
-      search: filters.search || "",
-      category: filters.category || "",
-      audience: filters.audience || "",
-      size: filters.size || "",
-      color: filters.color || "",
-      priceMin: filters.priceMin || "",
-      priceMax: filters.priceMax || "",
-      inStock: filters.inStock || "",
-      featured: filters.featured || "",
-      sort: filters.sort || "newest"
-    });
+    const query = buildFilterQuery(page, 9);
 
     const data = await apiFetch(`/product?${query}`);
 
@@ -570,61 +544,6 @@ async function renderProducts() {
 }
 
 // =====================
-// APPLY URL FILTERS
-// =====================
-function applyUrlFilters() {
-  const params = new URLSearchParams(window.location.search);
-
-  filters.search = params.get("search") || "";
-  filters.category = params.get("category") || "";
-  filters.audience = params.get("audience") || "";
-  filters.size = params.get("size") || "";
-  filters.color = params.get("color") || "";
-  filters.priceMin = params.get("priceMin") || "";
-  filters.priceMax = params.get("priceMax") || "";
-  filters.inStock = params.get("inStock") || "";
-  filters.featured = params.get("featured") || "";
-  filters.sort = params.get("sort") || "newest";
-}
-
-// =====================
-// SYNC FILTER INPUTS
-// =====================
-function syncFilterInputsFromState() {
-  const searchInput = document.getElementById("search-input");
-  const headerSearch = document.getElementById("search-input-header");
-
-  const categoryInput = document.getElementById("filter-category");
-  const audienceInput = document.getElementById("filter-audience");
-  const sizeInput = document.getElementById("filter-size");
-  const colorInput = document.getElementById("filter-color");
-
-  const minInput = document.getElementById("filter-minPrice");
-  const maxInput = document.getElementById("filter-maxPrice");
-
-  const inStockInput = document.getElementById("filter-inStock");
-  const featuredInput = document.getElementById("filter-featured");
-
-  const sortInput = document.getElementById("filter-sort");
-
-  if (searchInput) searchInput.value = filters.search;
-  if (headerSearch) headerSearch.value = filters.search;
-
-  if (categoryInput) categoryInput.value = filters.category;
-  if (audienceInput) audienceInput.value = filters.audience;
-  if (sizeInput) sizeInput.value = filters.size;
-  if (colorInput) colorInput.value = filters.color;
-
-  if (minInput) minInput.value = filters.priceMin;
-  if (maxInput) maxInput.value = filters.priceMax;
-
-  if (inStockInput) inStockInput.checked = filters.inStock === "true";
-  if (featuredInput) featuredInput.checked = filters.featured === "true";
-
-  if (sortInput) sortInput.value = filters.sort;
-}
-
-// =====================
 // ADD TO CART
 // =====================
 function initAddToCart() {
@@ -689,152 +608,6 @@ function renderPagination() {
   }
 
   container.appendChild(fragment);
-}
-
-// =====================
-// FILTERS
-// =====================
-function debounce(fn, delay = 400) {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => fn(...args), delay);
-  };
-}
-
-function updateFiltersURL() {
-  const params = new URLSearchParams();
-
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value) params.set(key, value);
-  });
-
-  const newUrl =
-    window.location.pathname +
-    (params.toString() ? `?${params.toString()}` : "");
-
-  window.history.replaceState(null, "", newUrl);
-}
-
-function setupFilters() {
-  const searchInput = document.getElementById("search-input");
-  const headerSearch = document.getElementById("search-input-header");
-
-  const categoryInput = document.getElementById("filter-category");
-  const audienceInput = document.getElementById("filter-audience");
-  const sizeInput = document.getElementById("filter-size");
-  const colorInput = document.getElementById("filter-color");
-
-  const minInput = document.getElementById("filter-minPrice");
-  const maxInput = document.getElementById("filter-maxPrice");
-
-  const inStockInput = document.getElementById("filter-inStock");
-  const featuredInput = document.getElementById("filter-featured");
-
-  const sortInput = document.getElementById("filter-sort");
-  const resetBtn = document.getElementById("reset-filters");
-
-  searchInput?.addEventListener(
-    "input",
-    debounce((e) => {
-      filters.search = e.target.value;
-
-      if (headerSearch) headerSearch.value = e.target.value;
-
-      updateFiltersURL();
-      loadProducts(1);
-    })
-  );
-
-  categoryInput?.addEventListener("change", (e) => {
-    filters.category = e.target.value;
-    updateFiltersURL();
-    loadProducts(1);
-  });
-
-  audienceInput?.addEventListener("change", (e) => {
-    filters.audience = e.target.value;
-    updateFiltersURL();
-    loadProducts(1);
-  });
-
-  sizeInput?.addEventListener("change", (e) => {
-    filters.size = e.target.value;
-    updateFiltersURL();
-    loadProducts(1);
-  });
-
-  colorInput?.addEventListener("change", (e) => {
-    filters.color = e.target.value;
-    updateFiltersURL();
-    loadProducts(1);
-  });
-
-  minInput?.addEventListener(
-    "input",
-    debounce((e) => {
-      filters.priceMin = e.target.value;
-      updateFiltersURL();
-      loadProducts(1);
-    })
-  );
-
-  maxInput?.addEventListener(
-    "input",
-    debounce((e) => {
-      filters.priceMax = e.target.value;
-      updateFiltersURL();
-      loadProducts(1);
-    })
-  );
-
-  inStockInput?.addEventListener("change", (e) => {
-    filters.inStock = e.target.checked ? "true" : "";
-    updateFiltersURL();
-    loadProducts(1);
-  });
-
-  featuredInput?.addEventListener("change", (e) => {
-    filters.featured = e.target.checked ? "true" : "";
-    updateFiltersURL();
-    loadProducts(1);
-  });
-
-  sortInput?.addEventListener("change", (e) => {
-    filters.sort = e.target.value;
-    updateFiltersURL();
-    loadProducts(1);
-  });
-
-  resetBtn?.addEventListener("click", () => {
-    filters = {
-      search: "",
-      category: "",
-      audience: "",
-      size: "",
-      color: "",
-      priceMin: "",
-      priceMax: "",
-      inStock: "",
-      featured: "",
-      sort: "newest"
-    };
-
-    if (searchInput) searchInput.value = "";
-    if (headerSearch) headerSearch.value = "";
-    if (categoryInput) categoryInput.value = "";
-    if (audienceInput) audienceInput.value = "";
-    if (sizeInput) sizeInput.value = "";
-    if (colorInput) colorInput.value = "";
-    if (minInput) minInput.value = "";
-    if (maxInput) maxInput.value = "";
-    if (inStockInput) inStockInput.checked = false;
-    if (featuredInput) featuredInput.checked = false;
-    if (sortInput) sortInput.value = "newest";
-
-    updateFiltersURL();
-    loadProducts(1);
-  });
 }
 
 // =====================
