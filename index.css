@@ -53,6 +53,7 @@ body {
   gap: 12px;
   align-items: center;
   flex-wrap: nowrap;
+  flex-direction: row;
 }
 
 /* =========================
