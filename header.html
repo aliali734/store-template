@@ -1,37 +1,36 @@
-<link rel="stylesheet" href="header.css" />
+<link rel="stylesheet" href="css/header.css" />
+<link rel="stylesheet" href="css/mega-menu.css" />
 
 <header class="site-header">
   <nav class="nav">
-    <!-- Dynamic logo -->
+
+    <!-- ====== LOGO ====== -->
     <a href="index.html" class="logo" id="site-logo-link">
       <span id="site-logo-text">Clothing Store</span>
     </a>
 
-    <!-- Dynamic desktop menu -->
-    <div class="menu" id="desktop-menu"></div>
-
-    <!-- Mobile toggle -->
+    <!-- ====== MOBILE TOGGLE ====== -->
     <button id="mobile-toggle" class="icon-btn" aria-label="Open Menu">☰</button>
 
-    <!-- Dynamic mobile menu -->
-    <div id="mobile-panel" class="mobile-panel" aria-hidden="true">
-      <button id="mobile-close" class="icon-btn" aria-label="Close Menu">✖</button>
-      <div class="mobile-menu-items" id="mobile-menu"></div>
-    </div>
-
+    <!-- ====== ACTIONS (search, cart, auth) ====== -->
     <div class="actions">
+
+      <!-- Search -->
       <div class="search-wrapper">
         <button id="search-toggle" class="icon-btn" aria-label="Search">🔍</button>
         <input
           type="text"
           id="search-input-header"
           placeholder="Search..."
-          style="display: none;"
+          style="display:none;"
         />
       </div>
 
+      <!-- Cart -->
       <div class="cart-wrapper">
-        <button class="icon-btn" aria-label="Cart">🛒</button>
+        <button class="icon-btn" aria-label="Cart">
+          🛒 <span id="cart-count">0</span>
+        </button>
 
         <div id="cart-modal" class="cart-modal">
           <div class="cart-content">
@@ -46,13 +45,29 @@
             </button>
           </div>
         </div>
-
-        <span id="cart-count">0</span>
       </div>
 
+      <!-- Auth -->
       <a id="login-link" class="icon-btn" href="login.html" style="display:none;">Login</a>
       <a id="register-link" class="icon-btn" href="register.html" style="display:none;">Register</a>
       <button id="logout-btn" class="icon-btn" type="button" style="display:none;">Logout</button>
     </div>
+
   </nav>
+
+  <!-- ====== DESKTOP MEGA MENU (below nav bar) ====== -->
+  <div class="menu" id="desktop-menu"></div>
+
+  <!-- ====== MOBILE OVERLAY ====== -->
+  <div id="mobile-overlay" class="mobile-overlay"></div>
+
+  <!-- ====== MOBILE PANEL ====== -->
+  <div id="mobile-panel" aria-hidden="true">
+    <div class="mobile-panel-header">
+      <span>Menu</span>
+      <button id="mobile-close" aria-label="Close Menu">&times;</button>
+    </div>
+    <div id="mobile-menu"></div>
+  </div>
+
 </header>

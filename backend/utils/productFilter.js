@@ -13,7 +13,8 @@ function buildProductFilter(query) {
     priceMin,
     priceMax,
     inStock,
-    featured
+    featured,
+    promo
   } = query;
 
   const filter = { isActive: true };
@@ -43,6 +44,10 @@ function buildProductFilter(query) {
 
   if (featured === "true") {
     filter.featured = true;
+  }
+
+  if (promo === "true") {
+    filter.compareAtPrice = { $gt: 0 };
   }
 
   return filter;

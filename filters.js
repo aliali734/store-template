@@ -13,6 +13,7 @@ const filters = {
   priceMax: "",
   inStock: "",
   featured: "",
+  promo: "",
   sort: "newest"
 };
 
@@ -42,6 +43,7 @@ function applyUrlFilters() {
   filters.priceMax = params.get("priceMax") || "";
   filters.inStock = params.get("inStock") || "";
   filters.featured = params.get("featured") || "";
+  filters.promo = params.get("promo") || "";
   filters.sort = params.get("sort") || "newest";
 }
 
@@ -78,6 +80,7 @@ function buildFilterQuery(page = 1, limit = 9) {
     priceMax: filters.priceMax || "",
     inStock: filters.inStock || "",
     featured: filters.featured || "",
+    promo: filters.promo || "",
     sort: filters.sort || "newest"
   });
 }
@@ -96,6 +99,7 @@ function syncFilterInputsFromState() {
   const maxInput = document.getElementById("filter-maxPrice");
   const inStockInput = document.getElementById("filter-inStock");
   const featuredInput = document.getElementById("filter-featured");
+  const promoInput = document.getElementById("filter-promo");
   const sortInput = document.getElementById("filter-sort");
 
   if (searchInput) searchInput.value = filters.search;
@@ -108,6 +112,7 @@ function syncFilterInputsFromState() {
   if (maxInput) maxInput.value = filters.priceMax;
   if (inStockInput) inStockInput.checked = filters.inStock === "true";
   if (featuredInput) featuredInput.checked = filters.featured === "true";
+  if (promoInput) promoInput.checked = filters.promo === "true";
   if (sortInput) sortInput.value = filters.sort;
 }
 
@@ -125,6 +130,7 @@ function setupFilters(onFilterChange) {
   const maxInput = document.getElementById("filter-maxPrice");
   const inStockInput = document.getElementById("filter-inStock");
   const featuredInput = document.getElementById("filter-featured");
+  const promoInput = document.getElementById("filter-promo");
   const sortInput = document.getElementById("filter-sort");
   const resetBtn = document.getElementById("reset-filters");
 
@@ -192,6 +198,12 @@ function setupFilters(onFilterChange) {
     onFilterChange();
   });
 
+  promoInput?.addEventListener("change", (e) => {
+    filters.promo = e.target.checked ? "true" : "";
+    updateFiltersURL();
+    onFilterChange();
+  });
+
   sortInput?.addEventListener("change", (e) => {
     filters.sort = e.target.value;
     updateFiltersURL();
@@ -217,6 +229,7 @@ function resetFilters() {
   filters.priceMax = "";
   filters.inStock = "";
   filters.featured = "";
+  filters.promo = "";
   filters.sort = "newest";
 
   syncFilterInputsFromState();

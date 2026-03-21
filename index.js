@@ -185,6 +185,26 @@ function renderHeaderLogo(logoPath) {
 }
 
 // =====================
+// MEGA LINK HTML HELPER
+// =====================
+function buildMegaLinkHTML(link) {
+  const url = link.url || "#";
+  const label = link.label || "";
+  const isPromo = url.includes("promo=true");
+
+  let labelHtml = label;
+
+  if (isPromo) {
+    labelHtml = label.replace(
+      /(Sale|Promo|sale|promo|On Sale|on sale)/i,
+      '<span class="promo-text">$1</span>'
+    );
+  }
+
+  return `<a href="${url}">${labelHtml}</a>`;
+}
+
+// =====================
 // DESKTOP MENU
 // =====================
 function renderDesktopMenu(menu) {
@@ -194,9 +214,7 @@ function renderDesktopMenu(menu) {
   desktopMenu.innerHTML = "";
 
   menu.forEach((menuItem) => {
-    const sections = Array.isArray(menuItem.sections)
-      ? menuItem.sections
-      : [];
+    const sections = Array.isArray(menuItem.sections) ? menuItem.sections : [];
 
     if (!sections.length) {
       desktopMenu.insertAdjacentHTML(
@@ -209,12 +227,23 @@ function renderDesktopMenu(menu) {
     const sectionsHtml = sections
       .map((section) => {
         const linksHtml = (section.links || [])
-          .map((link) => `<a href="${link.url || "#"}">${link.label || ""}</a>`)
+          .map((link, i, arr) => {
+            const html = buildMegaLinkHTML(link);
+            const isPromo = (link.url || "").includes("promo=true");
+
+            const nextLink = arr[i + 1];
+            const nextIsPromo = nextLink && (nextLink.url || "").includes("promo=true");
+            const addDivider = isPromo && !nextIsPromo;
+
+            return addDivider
+              ? html + '<div class="mega-link-divider"></div>'
+              : html;
+          })
           .join("");
 
         return `
-          <div>
-            <h4>${section.title || ""}</h4>
+          <div class="mega-section">
+            <h4 class="mega-section-title">${section.title || ""}</h4>
             ${linksHtml}
           </div>
         `;
@@ -232,7 +261,7 @@ function renderDesktopMenu(menu) {
           </div>
         </div>
       </div>
-    `
+      `
     );
   });
 }
@@ -247,15 +276,38 @@ function renderMobileMenu(menu) {
   mobileMenu.innerHTML = "";
 
   menu.forEach((menuItem) => {
-    const links = (menuItem.sections || []).flatMap((section) => section.links || []);
+    const sections = Array.isArray(menuItem.sections) ? menuItem.sections : [];
 
-    if (!links.length) {
-      mobileMenu.insertAdjacentHTML("beforeend", `<a href="#">${menuItem.title}</a>`);
+    if (!sections.length) {
+      mobileMenu.insertAdjacentHTML(
+        "beforeend",
+        `<a href="#">${menuItem.title}</a>`
+      );
       return;
     }
 
-    const linksHtml = links
-      .map((link) => `<a href="${link.url || "#"}">${link.label || ""}</a>`)
+    const sectionsHtml = sections
+      .map((section) => {
+        const linksHtml = (section.links || [])
+          .map((link, i, arr) => {
+            const html = buildMegaLinkHTML(link);
+            const isPromo = (link.url || "").includes("promo=true");
+
+            const nextLink = arr[i + 1];
+            const nextIsPromo = nextLink && (nextLink.url || "").includes("promo=true");
+            const addDivider = isPromo && !nextIsPromo;
+
+            return addDivider
+              ? html + '<div class="mega-link-divider"></div>'
+              : html;
+          })
+          .join("");
+
+        return `
+          <div class="mobile-submenu-title">${section.title || ""}</div>
+          ${linksHtml}
+        `;
+      })
       .join("");
 
     mobileMenu.insertAdjacentHTML(
@@ -264,10 +316,10 @@ function renderMobileMenu(menu) {
       <div class="mobile-item">
         <button type="button" class="mobile-toggle-sub">${menuItem.title} ▾</button>
         <div class="mobile-submenu">
-          ${linksHtml}
+          ${sectionsHtml}
         </div>
       </div>
-    `
+      `
     );
   });
 }
@@ -279,31 +331,56 @@ function setupHeaderInteractions() {
   const mobileToggle = document.getElementById("mobile-toggle");
   const mobileClose = document.getElementById("mobile-close");
   const mobilePanel = document.getElementById("mobile-panel");
+  const mobileOverlay = document.getElementById("mobile-overlay");
 
   const searchToggle = document.getElementById("search-toggle");
   const headerSearch = document.getElementById("search-input-header");
   const pageSearch = document.getElementById("search-input");
 
+  // ---- Open mobile panel ----
   mobileToggle?.addEventListener("click", () => {
     if (!mobilePanel) return;
     mobilePanel.setAttribute("aria-hidden", "false");
+    mobileOverlay?.classList.add("active");
+    document.body.style.overflow = "hidden";
   });
 
-  mobileClose?.addEventListener("click", () => {
+  // ---- Close mobile panel ----
+  function closeMobilePanel() {
     if (!mobilePanel) return;
     mobilePanel.setAttribute("aria-hidden", "true");
-  });
+    mobileOverlay?.classList.remove("active");
+    document.body.style.overflow = "";
+  }
 
+  mobileClose?.addEventListener("click", closeMobilePanel);
+  mobileOverlay?.addEventListener("click", closeMobilePanel);
+
+  // ---- Mobile submenu accordion ----
   document.querySelectorAll(".mobile-toggle-sub").forEach((btn) => {
     btn.addEventListener("click", () => {
       const submenu = btn.nextElementSibling;
       if (!submenu) return;
 
       const isOpen = submenu.style.display === "block";
-      submenu.style.display = isOpen ? "none" : "block";
+
+      // Close all other submenus
+      document.querySelectorAll(".mobile-submenu").forEach((sub) => {
+        sub.style.display = "none";
+      });
+
+      document.querySelectorAll(".mobile-toggle-sub").forEach((b) => {
+        b.classList.remove("active");
+      });
+
+      if (!isOpen) {
+        submenu.style.display = "block";
+        btn.classList.add("active");
+      }
     });
   });
 
+  // ---- Search toggle ----
   searchToggle?.addEventListener("click", () => {
     if (!headerSearch) return;
 
@@ -315,6 +392,7 @@ function setupHeaderInteractions() {
     if (isHidden) headerSearch.focus();
   });
 
+  // ---- Header search input ----
   headerSearch?.addEventListener(
     "input",
     debounce((e) => {
@@ -362,13 +440,14 @@ function saveCart() {
 }
 
 function setupCartModal() {
-  const cartBtn = document.querySelector(".cart-wrapper button");
+  const cartBtn = document.querySelector(".cart-wrapper .icon-btn");
   const modal = document.getElementById("cart-modal");
   const closeBtn = document.getElementById("cart-close");
 
   if (!modal) return;
 
-  cartBtn?.addEventListener("click", () => {
+  cartBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
     renderCartModal();
     modal.style.display = "flex";
   });
