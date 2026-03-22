@@ -58,28 +58,22 @@
             <option value="other">Other</option>
           </select>
 
-          <label for="category">Category</label>
-          <select id="category" required>
-            <option value="">Select category</option>
-            <option value="t-shirts">T-Shirts</option>
-            <option value="shirts">Shirts</option>
-            <option value="hoodies">Hoodies</option>
-            <option value="jackets">Jackets</option>
-            <option value="pants">Pants</option>
-            <option value="jeans">Jeans</option>
-            <option value="shorts">Shorts</option>
-            <option value="dresses">Dresses</option>
-            <option value="skirts">Skirts</option>
-            <option value="activewear">Activewear</option>
-            <option value="accessories">Accessories</option>
-          </select>
-
           <label for="audience">Audience</label>
           <select id="audience">
             <option value="unisex">Unisex</option>
             <option value="men">Men</option>
             <option value="women">Women</option>
             <option value="kids">Kids</option>
+          </select>
+
+          <label for="department">Department</label>
+          <select id="department" required>
+            <option value="">Select department</option>
+          </select>
+
+          <label for="category">Category</label>
+          <select id="category" required>
+            <option value="">Select category</option>
           </select>
 
           <input type="number" id="price" placeholder="Price" required />
@@ -156,9 +150,10 @@
               <tr>
                 <th>Image</th>
                 <th>Name</th>
+                <th>Department</th>
+                <th>Category</th>
                 <th>Price</th>
                 <th>Stock</th>
-                <th>Category</th>
                 <th>Actions</th>
               </tr>
             </thead>

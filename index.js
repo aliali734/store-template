@@ -1,5 +1,3 @@
-// index.js
-
 let products = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let currentPage = 1;
@@ -135,6 +133,7 @@ async function initHeader() {
     setupHeaderInteractions();
 
     applyUrlFilters();
+    await loadFilterTaxonomy();
     syncFilterInputsFromState();
     setupFilters(() => loadProducts(1));
 
@@ -337,7 +336,6 @@ function setupHeaderInteractions() {
   const headerSearch = document.getElementById("search-input-header");
   const pageSearch = document.getElementById("search-input");
 
-  // ---- Open mobile panel ----
   mobileToggle?.addEventListener("click", () => {
     if (!mobilePanel) return;
     mobilePanel.setAttribute("aria-hidden", "false");
@@ -345,7 +343,6 @@ function setupHeaderInteractions() {
     document.body.style.overflow = "hidden";
   });
 
-  // ---- Close mobile panel ----
   function closeMobilePanel() {
     if (!mobilePanel) return;
     mobilePanel.setAttribute("aria-hidden", "true");
@@ -356,7 +353,6 @@ function setupHeaderInteractions() {
   mobileClose?.addEventListener("click", closeMobilePanel);
   mobileOverlay?.addEventListener("click", closeMobilePanel);
 
-  // ---- Mobile submenu accordion ----
   document.querySelectorAll(".mobile-toggle-sub").forEach((btn) => {
     btn.addEventListener("click", () => {
       const submenu = btn.nextElementSibling;
@@ -364,7 +360,6 @@ function setupHeaderInteractions() {
 
       const isOpen = submenu.style.display === "block";
 
-      // Close all other submenus
       document.querySelectorAll(".mobile-submenu").forEach((sub) => {
         sub.style.display = "none";
       });
@@ -380,7 +375,6 @@ function setupHeaderInteractions() {
     });
   });
 
-  // ---- Search toggle ----
   searchToggle?.addEventListener("click", () => {
     if (!headerSearch) return;
 
@@ -392,7 +386,6 @@ function setupHeaderInteractions() {
     if (isHidden) headerSearch.focus();
   });
 
-  // ---- Header search input ----
   headerSearch?.addEventListener(
     "input",
     debounce((e) => {
@@ -537,7 +530,6 @@ async function loadProducts(page = 1) {
 
   try {
     const query = buildFilterQuery(page, 9);
-
     const data = await apiFetch(`/product?${query}`);
 
     products = data.products || [];

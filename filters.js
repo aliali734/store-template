@@ -1,10 +1,9 @@
-// filters.js
-
 // =====================
 // FILTER STATE
 // =====================
 const filters = {
   search: "",
+  department: "",
   category: "",
   audience: "",
   size: "",
@@ -16,6 +15,9 @@ const filters = {
   promo: "",
   sort: "newest"
 };
+
+let productTaxonomy = {};
+let productDepartments = [];
 
 // =====================
 // DEBOUNCE
@@ -29,12 +31,74 @@ function debounce(fn, delay = 400) {
 }
 
 // =====================
+// LOAD TAXONOMY
+// =====================
+async function loadFilterTaxonomy() {
+  try {
+    const data = await apiFetch("/product/meta/taxonomy");
+
+    if (!data.success) {
+      throw new Error("Failed to load taxonomy");
+    }
+
+    productTaxonomy = data.taxonomy || {};
+    productDepartments = data.departments || [];
+
+    populateDepartmentFilter(filters.department);
+    populateCategoryFilter(filters.department, filters.category);
+  } catch (err) {
+    console.error("Failed to load filter taxonomy:", err);
+  }
+}
+
+function populateDepartmentFilter(selectedDepartment = "") {
+  const departmentInput = document.getElementById("filter-department");
+  if (!departmentInput) return;
+
+  departmentInput.innerHTML = `<option value="">All departments</option>`;
+
+  productDepartments.forEach((department) => {
+    const option = document.createElement("option");
+    option.value = department;
+    option.textContent = humanizeLabel(department);
+    option.selected = department === selectedDepartment;
+    departmentInput.appendChild(option);
+  });
+}
+
+function populateCategoryFilter(department = "", selectedCategory = "") {
+  const categoryInput = document.getElementById("filter-category");
+  if (!categoryInput) return;
+
+  categoryInput.innerHTML = `<option value="">All categories</option>`;
+
+  const categories = department
+    ? (productTaxonomy[department] || [])
+    : [];
+
+  categories.forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = humanizeLabel(category);
+    option.selected = category === selectedCategory;
+    categoryInput.appendChild(option);
+  });
+}
+
+function humanizeLabel(value) {
+  return String(value || "")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+// =====================
 // READ FILTERS FROM URL
 // =====================
 function applyUrlFilters() {
   const params = new URLSearchParams(window.location.search);
 
   filters.search = params.get("search") || "";
+  filters.department = params.get("department") || "";
   filters.category = params.get("category") || "";
   filters.audience = params.get("audience") || "";
   filters.size = params.get("size") || "";
@@ -72,6 +136,7 @@ function buildFilterQuery(page = 1, limit = 9) {
     page,
     limit,
     search: filters.search || "",
+    department: filters.department || "",
     category: filters.category || "",
     audience: filters.audience || "",
     size: filters.size || "",
@@ -91,6 +156,7 @@ function buildFilterQuery(page = 1, limit = 9) {
 function syncFilterInputsFromState() {
   const searchInput = document.getElementById("search-input");
   const headerSearch = document.getElementById("search-input-header");
+  const departmentInput = document.getElementById("filter-department");
   const categoryInput = document.getElementById("filter-category");
   const audienceInput = document.getElementById("filter-audience");
   const sizeInput = document.getElementById("filter-size");
@@ -104,6 +170,7 @@ function syncFilterInputsFromState() {
 
   if (searchInput) searchInput.value = filters.search;
   if (headerSearch) headerSearch.value = filters.search;
+  if (departmentInput) departmentInput.value = filters.department;
   if (categoryInput) categoryInput.value = filters.category;
   if (audienceInput) audienceInput.value = filters.audience;
   if (sizeInput) sizeInput.value = filters.size;
@@ -122,6 +189,7 @@ function syncFilterInputsFromState() {
 function setupFilters(onFilterChange) {
   const searchInput = document.getElementById("search-input");
   const headerSearch = document.getElementById("search-input-header");
+  const departmentInput = document.getElementById("filter-department");
   const categoryInput = document.getElementById("filter-category");
   const audienceInput = document.getElementById("filter-audience");
   const sizeInput = document.getElementById("filter-size");
@@ -143,6 +211,14 @@ function setupFilters(onFilterChange) {
       onFilterChange();
     })
   );
+
+  departmentInput?.addEventListener("change", (e) => {
+    filters.department = e.target.value;
+    filters.category = "";
+    populateCategoryFilter(filters.department, "");
+    updateFiltersURL();
+    onFilterChange();
+  });
 
   categoryInput?.addEventListener("change", (e) => {
     filters.category = e.target.value;
@@ -212,6 +288,8 @@ function setupFilters(onFilterChange) {
 
   resetBtn?.addEventListener("click", () => {
     resetFilters();
+    populateDepartmentFilter("");
+    populateCategoryFilter("", "");
     onFilterChange();
   });
 }
@@ -221,6 +299,7 @@ function setupFilters(onFilterChange) {
 // =====================
 function resetFilters() {
   filters.search = "";
+  filters.department = "";
   filters.category = "";
   filters.audience = "";
   filters.size = "";
@@ -241,9 +320,12 @@ function resetFilters() {
 // =====================
 window.filters = filters;
 window.debounce = debounce;
+window.loadFilterTaxonomy = loadFilterTaxonomy;
 window.applyUrlFilters = applyUrlFilters;
 window.updateFiltersURL = updateFiltersURL;
 window.buildFilterQuery = buildFilterQuery;
 window.syncFilterInputsFromState = syncFilterInputsFromState;
 window.setupFilters = setupFilters;
 window.resetFilters = resetFilters;
+window.populateDepartmentFilter = populateDepartmentFilter;
+window.populateCategoryFilter = populateCategoryFilter;

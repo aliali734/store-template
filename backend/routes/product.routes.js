@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
+  getProductTaxonomy,
   createProduct,
   getProducts,
   getProductById,
@@ -14,6 +15,7 @@ const protect = require("../middlewares/auth.middleware");
 const upload = require("../middlewares/upload.middleware");
 
 /* ================= PUBLIC ROUTES ================= */
+router.get("/meta/taxonomy", getProductTaxonomy);
 router.get("/", getProducts);
 router.get("/slug/:slug", getProductBySlug);
 router.get("/:id", getProductById);

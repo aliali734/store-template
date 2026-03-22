@@ -1,5 +1,3 @@
-// admin.js
-
 const productsBody = document.getElementById("productsBody");
 const loginSection = document.getElementById("login-section");
 const dashboardSection = document.getElementById("dashboard-section");
@@ -20,6 +18,7 @@ const productIdInput = document.getElementById("productId");
 const nameInput = document.getElementById("name");
 const descriptionInput = document.getElementById("description");
 const brandInput = document.getElementById("brand");
+const departmentInput = document.getElementById("department");
 const categoryInput = document.getElementById("category");
 const audienceInput = document.getElementById("audience");
 const priceInput = document.getElementById("price");
@@ -39,6 +38,9 @@ const headerLogo = document.getElementById("header-logo");
 const logoPreview = document.getElementById("logoPreview");
 const headerCategories = document.getElementById("header-categories");
 const headerMessage = document.getElementById("headerMessage");
+
+let productTaxonomy = {};
+let productDepartments = [];
 
 // =====================
 // CSRF TOKEN FROM BACKEND
@@ -123,6 +125,7 @@ async function checkAdminAuth() {
       return;
     }
 
+    await loadProductTaxonomy();
     showDashboard();
     loadProducts();
   } catch (err) {
@@ -215,9 +218,74 @@ function setMultiSelectValues(selectEl, values = []) {
 }
 
 // =====================
+// TAXONOMY
+// =====================
+async function loadProductTaxonomy() {
+  try {
+    const res = await adminApiFetch("/product/meta/taxonomy");
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || "Failed to load taxonomy");
+    }
+
+    productTaxonomy = data.taxonomy || {};
+    productDepartments = data.departments || [];
+
+    populateDepartmentOptions();
+  } catch (err) {
+    console.error("Failed to load product taxonomy:", err);
+  }
+}
+
+function populateDepartmentOptions(selectedDepartment = "") {
+  if (!departmentInput) return;
+
+  departmentInput.innerHTML = `<option value="">Select department</option>`;
+
+  productDepartments.forEach((department) => {
+    const option = document.createElement("option");
+    option.value = department;
+    option.textContent = capitalizeLabel(department);
+    option.selected = department === selectedDepartment;
+    departmentInput.appendChild(option);
+  });
+}
+
+function populateCategoryOptions(department, selectedCategory = "") {
+  if (!categoryInput) return;
+
+  categoryInput.innerHTML = `<option value="">Select category</option>`;
+
+  const categories = productTaxonomy[department] || [];
+
+  categories.forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = humanizeCategory(category);
+    option.selected = category === selectedCategory;
+    categoryInput.appendChild(option);
+  });
+}
+
+function capitalizeLabel(value) {
+  return String(value || "")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function humanizeCategory(value) {
+  return capitalizeLabel(value);
+}
+
+departmentInput?.addEventListener("change", () => {
+  populateCategoryOptions(departmentInput.value);
+});
+
+// =====================
 // MODAL
 // =====================
-openBtn?.addEventListener("click", () => {
+openBtn?.addEventListener("click", async () => {
   modalTitle.textContent = "Add Product";
   submitBtn.textContent = "Add";
   productIdInput.value = "";
@@ -229,6 +297,9 @@ openBtn?.addEventListener("click", () => {
 
   if (isActiveInput) isActiveInput.checked = true;
   if (featuredInput) featuredInput.checked = false;
+
+  populateDepartmentOptions("");
+  populateCategoryOptions("");
 
   modal.classList.remove("hidden");
   overlay.classList.remove("hidden");
@@ -262,8 +333,9 @@ form?.addEventListener("submit", async (e) => {
   formData.append("name", nameInput.value);
   formData.append("description", descriptionInput.value);
   formData.append("brand", brandInput.value);
-  formData.append("category", categoryInput.value);
   formData.append("audience", audienceInput.value);
+  formData.append("department", departmentInput.value);
+  formData.append("category", categoryInput.value);
   formData.append("price", priceInput.value);
   formData.append("compareAtPrice", compareAtPriceInput.value || 0);
   formData.append("stock", stockInput.value);
@@ -306,6 +378,8 @@ form?.addEventListener("submit", async (e) => {
     setTimeout(() => {
       closeModal();
       form.reset();
+      populateDepartmentOptions("");
+      populateCategoryOptions("");
       setMultiSelectValues(sizesInput, []);
       setMultiSelectValues(colorsInput, []);
       loadProducts();
@@ -339,7 +413,7 @@ function renderProducts(products) {
 
   if (!products.length) {
     productsBody.innerHTML =
-      `<tr><td colspan="6" style="text-align:center;">No products</td></tr>`;
+      `<tr><td colspan="7" style="text-align:center;">No products</td></tr>`;
     return;
   }
 
@@ -359,9 +433,10 @@ function renderProducts(products) {
         <img src="${imgSrc}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;">
       </td>
       <td>${product.name}</td>
+      <td>${product.department || "-"}</td>
+      <td>${product.category || "-"}</td>
       <td>$${product.price}</td>
       <td>${product.stock}</td>
-      <td>${product.category || "-"}</td>
       <td class="actions">
         <button type="button" class="btn edit">Edit</button>
         <button type="button" class="btn delete">Delete</button>
@@ -406,11 +481,13 @@ function openEditPopup(product) {
   nameInput.value = product.name || "";
   descriptionInput.value = product.description || "";
   brandInput.value = product.brand || "";
-  categoryInput.value = product.category || "";
   audienceInput.value = product.audience || "unisex";
   priceInput.value = product.price ?? "";
   compareAtPriceInput.value = product.compareAtPrice ?? 0;
   stockInput.value = product.stock ?? "";
+
+  populateDepartmentOptions(product.department || "");
+  populateCategoryOptions(product.department || "", product.category || "");
 
   setMultiSelectValues(
     sizesInput,

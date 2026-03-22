@@ -6,9 +6,11 @@ const {
   buildPagination
 } = require("../utils/productFilter");
 const {
+  CATALOG_TAXONOMY,
   normalizeCatalogValue,
   isValidDepartment,
   isValidCategoryForDepartment,
+  getAllowedDepartments,
   getAllowedCategories
 } = require("../utils/catalogTaxonomy");
 
@@ -23,6 +25,26 @@ function makeSlug(text) {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 }
+
+// ============================
+// GET PRODUCT TAXONOMY
+// ============================
+const getProductTaxonomy = async (req, res) => {
+  try {
+    return res.json({
+      success: true,
+      taxonomy: CATALOG_TAXONOMY,
+      departments: getAllowedDepartments()
+    });
+  } catch (error) {
+    console.error("Get product taxonomy error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load product taxonomy"
+    });
+  }
+};
 
 // ============================
 // CREATE PRODUCT
@@ -385,6 +407,7 @@ const deleteProduct = async (req, res) => {
 };
 
 module.exports = {
+  getProductTaxonomy,
   createProduct,
   getProducts,
   getProductBySlug,

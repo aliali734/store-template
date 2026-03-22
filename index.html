@@ -42,25 +42,28 @@
         <div class="divider"></div>
 
         <div class="filter-block">
-          <select id="filter-category">
-            <option value="">All categories</option>
-            <option value="tops">Tops</option>
-            <option value="pants">Pants</option>
-            <option value="dresses">Dresses</option>
-            <option value="jackets">Jackets</option>
-            <option value="hoodies">Hoodies</option>
-          </select>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="filter-block">
           <select id="filter-audience">
             <option value="">All audiences</option>
             <option value="men">Men</option>
             <option value="women">Women</option>
             <option value="kids">Kids</option>
             <option value="unisex">Unisex</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="filter-block">
+          <select id="filter-department">
+            <option value="">All departments</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="filter-block">
+          <select id="filter-category">
+            <option value="">All categories</option>
           </select>
         </div>
 
@@ -87,6 +90,9 @@
             <option value="blue">Blue</option>
             <option value="red">Red</option>
             <option value="green">Green</option>
+            <option value="gray">Gray</option>
+            <option value="beige">Beige</option>
+            <option value="brown">Brown</option>
           </select>
         </div>
 
@@ -113,6 +119,13 @@
           </label>
         </div>
 
+        <div class="filter-block">
+          <label>
+            <input type="checkbox" id="filter-promo" />
+            On sale only
+          </label>
+        </div>
+
         <div class="divider"></div>
 
         <div class="filter-block">
@@ -131,6 +144,7 @@
 
   <script src="config.js"></script>
   <script src="api.js"></script>
+  <script src="filters.js"></script>
   <script src="index.js"></script>
 </body>
 </html>
