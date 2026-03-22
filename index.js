@@ -6,6 +6,17 @@ let totalPages = 1;
 let cartCountEl;
 
 // =====================
+// LOCAL SAFE DEBOUNCE
+// =====================
+function safeDebounce(fn, delay = 400) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), delay);
+  };
+}
+
+// =====================
 // GET CSRF TOKEN
 // =====================
 async function getCsrfToken() {
@@ -388,7 +399,7 @@ function setupHeaderInteractions() {
 
   headerSearch?.addEventListener(
     "input",
-    debounce((e) => {
+    safeDebounce((e) => {
       filters.search = e.target.value;
 
       if (pageSearch) pageSearch.value = e.target.value;
