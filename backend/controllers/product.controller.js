@@ -5,6 +5,12 @@ const {
   buildSortOption,
   buildPagination
 } = require("../utils/productFilter");
+const {
+  normalizeCatalogValue,
+  isValidDepartment,
+  isValidCategoryForDepartment,
+  getAllowedCategories
+} = require("../utils/catalogTaxonomy");
 
 // ============================
 // SLUG GENERATOR
@@ -41,6 +47,25 @@ const createProduct = async (req, res) => {
           .filter(Boolean)
       : [];
 
+    const department = normalizeCatalogValue(req.body.department || "clothing");
+    const category = normalizeCatalogValue(req.body.category);
+
+    if (!isValidDepartment(department)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid department",
+        allowedCategories: []
+      });
+    }
+
+    if (!isValidCategoryForDepartment(department, category)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid category for department "${department}"`,
+        allowedCategories: getAllowedCategories(department)
+      });
+    }
+
     const slug = req.body.slug
       ? makeSlug(req.body.slug)
       : makeSlug(req.body.name);
@@ -59,8 +84,9 @@ const createProduct = async (req, res) => {
       slug,
       description: req.body.description || "",
       brand: req.body.brand || "",
-      category: req.body.category,
-      audience: req.body.audience || "unisex",
+      department,
+      category,
+      audience: normalizeCatalogValue(req.body.audience || "unisex"),
       price: Number(req.body.price),
       compareAtPrice: Number(req.body.compareAtPrice || 0),
       stock: Number(req.body.stock || 0),
@@ -213,11 +239,40 @@ const updateProduct = async (req, res) => {
       });
     }
 
+    const nextDepartment =
+      req.body.department !== undefined
+        ? normalizeCatalogValue(req.body.department)
+        : product.department;
+
+    const nextCategory =
+      req.body.category !== undefined
+        ? normalizeCatalogValue(req.body.category)
+        : product.category;
+
+    if (!isValidDepartment(nextDepartment)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid department",
+        allowedCategories: []
+      });
+    }
+
+    if (!isValidCategoryForDepartment(nextDepartment, nextCategory)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid category for department "${nextDepartment}"`,
+        allowedCategories: getAllowedCategories(nextDepartment)
+      });
+    }
+
     if (req.body.name !== undefined) product.name = req.body.name;
     if (req.body.description !== undefined) product.description = req.body.description;
     if (req.body.brand !== undefined) product.brand = req.body.brand;
-    if (req.body.category !== undefined) product.category = req.body.category;
-    if (req.body.audience !== undefined) product.audience = req.body.audience;
+    if (req.body.department !== undefined) product.department = nextDepartment;
+    if (req.body.category !== undefined) product.category = nextCategory;
+    if (req.body.audience !== undefined) {
+      product.audience = normalizeCatalogValue(req.body.audience);
+    }
     if (req.body.price !== undefined) product.price = Number(req.body.price);
 
     if (req.body.compareAtPrice !== undefined) {

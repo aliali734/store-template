@@ -1,11 +1,7 @@
-// utils/productFilter.js
-
-// ============================
-// BUILD FILTER QUERY
-// ============================
 function buildProductFilter(query) {
   const {
     search,
+    department,
     category,
     audience,
     size,
@@ -27,8 +23,9 @@ function buildProductFilter(query) {
     ];
   }
 
-  if (category) filter.category = category;
-  if (audience) filter.audience = audience;
+  if (department) filter.department = String(department).toLowerCase();
+  if (category) filter.category = String(category).toLowerCase();
+  if (audience) filter.audience = String(audience).toLowerCase();
   if (size) filter.sizes = size;
   if (color) filter.colors = color;
 
@@ -53,9 +50,6 @@ function buildProductFilter(query) {
   return filter;
 }
 
-// ============================
-// BUILD SORT OPTION
-// ============================
 function buildSortOption(sort) {
   switch (sort) {
     case "price_asc":
@@ -75,9 +69,6 @@ function buildSortOption(sort) {
   }
 }
 
-// ============================
-// BUILD PAGINATION
-// ============================
 function buildPagination(query) {
   const page = Math.max(parseInt(query.page) || 1, 1);
   const limit = Math.min(parseInt(query.limit) || 12, 100);

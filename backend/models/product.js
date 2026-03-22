@@ -31,6 +31,14 @@ const productSchema = new mongoose.Schema(
       maxlength: 60
     },
 
+    department: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      enum: ["shoes", "clothing", "accessories"],
+      default: "clothing"
+    },
+
     category: {
       type: String,
       required: true,
@@ -100,7 +108,19 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-productSchema.index({ name: "text", description: "text", brand: "text" });
+productSchema.index({
+  name: "text",
+  description: "text",
+  brand: "text"
+});
+
+productSchema.index({
+  audience: 1,
+  department: 1,
+  category: 1,
+  featured: 1,
+  isActive: 1
+});
 
 module.exports =
   mongoose.models.Product || mongoose.model("Product", productSchema);
