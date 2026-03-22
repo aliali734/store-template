@@ -1,0 +1,7 @@
+exclude:
+  - backend/
+  - backend/node_modules/
+  - backend/uploads/
+  - backend/.env
+  - node_modules/
+  - vendor/
