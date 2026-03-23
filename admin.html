@@ -7,21 +7,21 @@
   <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
-
   <aside class="sidebar">
     <h2>Admin Panel</h2>
     <ul>
       <li><a href="#" data-section="dashboard">Dashboard</a></li>
       <li><a href="#" data-section="products">Products</a></li>
       <li><a href="#" data-section="orders">Orders</a></li>
-      <li><button id="openHeaderModal" type="button">Edit Header</button></li>
-      <li><button id="logoutBtn" type="button">Logout</button></li>
+      <li><button type="button" id="openHeaderModal">Header Settings</button></li>
+      <li><button type="button" id="logoutBtn">Logout</button></li>
     </ul>
   </aside>
 
   <main class="main">
+    <!-- LOGIN SECTION -->
     <section id="login-section">
-      <h2>Admin Login</h2>
+      <h1>Admin Login</h1>
       <form id="login-form">
         <input type="email" id="email" placeholder="Email" required />
         <input type="password" id="password" placeholder="Password" required />
@@ -30,148 +30,174 @@
       <p id="login-message"></p>
     </section>
 
+    <!-- DASHBOARD SECTION -->
     <section id="dashboard-section" class="hidden">
-      <button id="openAddProduct" type="button">➕ Add Product</button>
+      <h1>Dashboard</h1>
 
-      <div id="overlay" class="overlay hidden"></div>
-
-      <div id="productModal" class="modal hidden">
-        <div class="modal-header">
-          <h2 id="modalTitle">Add Product</h2>
-          <button id="closeModal" type="button">&times;</button>
+      <div class="stats-cards">
+        <div class="card">
+          <h3>Products</h3>
+          <p>Manage all store products</p>
         </div>
-
-        <form id="product-form" enctype="multipart/form-data">
-          <input type="hidden" id="productId" />
-
-          <input type="text" id="name" placeholder="Product name" required />
-          <textarea id="description" placeholder="Description" required></textarea>
-
-          <label for="brand">Brand</label>
-          <select id="brand" required>
-            <option value="">Select brand</option>
-            <option value="nike">Nike</option>
-            <option value="adidas">Adidas</option>
-            <option value="zara">Zara</option>
-            <option value="hm">H&amp;M</option>
-            <option value="puma">Puma</option>
-            <option value="other">Other</option>
-          </select>
-
-          <label for="audience">Audience</label>
-          <select id="audience">
-            <option value="unisex">Unisex</option>
-            <option value="men">Men</option>
-            <option value="women">Women</option>
-            <option value="kids">Kids</option>
-          </select>
-
-          <label for="department">Department</label>
-          <select id="department" required>
-            <option value="">Select department</option>
-          </select>
-
-          <label for="category">Category</label>
-          <select id="category" required>
-            <option value="">Select category</option>
-          </select>
-
-          <input type="number" id="price" placeholder="Price" required />
-          <input type="number" id="compareAtPrice" placeholder="Compare at price" />
-          <input type="number" id="stock" placeholder="Stock" required />
-
-          <label for="sizes">Sizes</label>
-          <select id="sizes" multiple>
-            <option value="XS">XS</option>
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-            <option value="XXL">XXL</option>
-          </select>
-
-          <label for="colors">Colors</label>
-          <select id="colors" multiple>
-            <option value="black">Black</option>
-            <option value="white">White</option>
-            <option value="gray">Gray</option>
-            <option value="blue">Blue</option>
-            <option value="red">Red</option>
-            <option value="green">Green</option>
-            <option value="beige">Beige</option>
-            <option value="brown">Brown</option>
-          </select>
-
-          <label>
-            <input type="checkbox" id="featured" />
-            Featured product
-          </label>
-
-          <label>
-            <input type="checkbox" id="isActive" checked />
-            Active
-          </label>
-
-          <input type="file" id="image" accept="image/*" multiple />
-
-          <button type="submit" id="submitBtn">Save</button>
-          <p id="message"></p>
-        </form>
+        <div class="card">
+          <h3>Orders</h3>
+          <p>View and update customer orders</p>
+        </div>
+        <div class="card">
+          <h3>Header</h3>
+          <p>Update logo settings safely</p>
+        </div>
       </div>
-
-      <div id="headerModal" class="modal hidden">
-        <div class="modal-header">
-          <h2>Edit Header</h2>
-          <button id="closeHeaderModal" type="button">&times;</button>
-        </div>
-
-        <form id="header-form" enctype="multipart/form-data">
-          <label for="header-logo">Logo:</label>
-          <input type="file" id="header-logo" accept="image/*" />
-          <img id="logoPreview" src="" alt="Logo Preview" width="80" />
-
-          <label for="header-categories">Categories (comma separated):</label>
-          <input
-            type="text"
-            id="header-categories"
-            placeholder="Category1, Category2"
-          />
-
-          <button type="submit">Save Header</button>
-          <p id="headerMessage"></p>
-        </form>
-      </div>
-
-      <section class="products-section">
-        <h2>Products</h2>
-        <div class="table-wrapper">
-          <table class="products-table">
-            <thead>
-              <tr>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Department</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="productsBody"></tbody>
-          </table>
-        </div>
-      </section>
     </section>
 
-    <section id="orders-section" class="hidden">
-      <h2>Orders</h2>
-      <div id="ordersTable"></div>
+    <!-- PRODUCTS SECTION -->
+    <section class="products-section hidden">
+      <h2>Products</h2>
+      <button type="button" id="openAddProduct">Add Product</button>
+
+      <div class="table-wrapper">
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="productsBody"></tbody>
+        </table>
+      </div>
     </section>
+
+    <!-- ORDERS SECTION -->
+    <section id="orders-section" class="hidden"></section>
   </main>
+
+  <!-- OVERLAY -->
+  <div id="overlay" class="overlay hidden"></div>
+
+  <!-- PRODUCT MODAL -->
+  <div id="productModal" class="modal hidden">
+    <div class="modal-header">
+      <h2 id="modalTitle">Add Product</h2>
+      <button type="button" id="closeModal">&times;</button>
+    </div>
+
+    <form id="product-form">
+      <input type="hidden" id="productId" />
+
+      <label for="name">Name</label>
+      <input type="text" id="name" required />
+
+      <label for="description">Description</label>
+      <textarea id="description"></textarea>
+
+      <label for="brand">Brand</label>
+      <input type="text" id="brand" />
+
+      <label for="department">Department</label>
+      <select id="department" required>
+        <option value="">Select department</option>
+      </select>
+
+      <label for="category">Category</label>
+      <select id="category" required>
+        <option value="">Select category</option>
+      </select>
+
+      <label for="audience">Audience</label>
+      <select id="audience" required>
+        <option value="men">Men</option>
+        <option value="women">Women</option>
+        <option value="kids">Kids</option>
+        <option value="unisex">Unisex</option>
+      </select>
+
+      <label for="price">Price</label>
+      <input type="number" id="price" min="0" step="0.01" required />
+
+      <label for="compareAtPrice">Compare At Price</label>
+      <input type="number" id="compareAtPrice" min="0" step="0.01" />
+
+      <label for="stock">Stock</label>
+      <input type="number" id="stock" min="0" required />
+
+      <label for="sizes">Sizes</label>
+      <select id="sizes" multiple required>
+        <option value="XS">XS</option>
+        <option value="S">S</option>
+        <option value="M">M</option>
+        <option value="L">L</option>
+        <option value="XL">XL</option>
+      </select>
+
+      <label for="colors">Colors</label>
+      <select id="colors" multiple required>
+        <option value="black">Black</option>
+        <option value="white">White</option>
+        <option value="blue">Blue</option>
+        <option value="red">Red</option>
+        <option value="green">Green</option>
+        <option value="gray">Gray</option>
+        <option value="beige">Beige</option>
+        <option value="brown">Brown</option>
+      </select>
+
+      <label for="image">Images</label>
+      <input type="file" id="image" multiple accept="image/*" />
+
+      <label>
+        <input type="checkbox" id="featured" />
+        Featured
+      </label>
+
+      <label>
+        <input type="checkbox" id="isActive" checked />
+        Active
+      </label>
+
+      <p id="message"></p>
+      <button type="submit" id="submitBtn">Save</button>
+    </form>
+  </div>
+
+  <!-- HEADER MODAL -->
+  <div id="headerModal" class="modal hidden">
+    <div class="modal-header">
+      <h2>Header Settings</h2>
+      <button type="button" id="closeHeaderModal">&times;</button>
+    </div>
+
+    <form id="header-form">
+      <label for="header-logo">Header Logo</label>
+      <input type="file" id="header-logo" accept="image/*" />
+      <img
+        id="logoPreview"
+        src=""
+        alt="Logo Preview"
+        style="max-width: 140px; max-height: 80px;"
+      />
+
+      <label for="header-categories">Mega Menu</label>
+      <textarea
+        id="header-categories"
+        rows="4"
+        readonly
+        disabled
+      >Mega menu structure is managed from backend defaults / database. Logo can be updated here only.</textarea>
+
+      <p id="headerMessage"></p>
+      <button type="submit">Save Logo</button>
+    </form>
+  </div>
 
   <script src="config.js"></script>
   <script src="api.js"></script>
-  <script src="admin.js"></script>
   <script src="admin-orders.js"></script>
+  <script src="admin.js"></script>
 </body>
 </html>
