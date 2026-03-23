@@ -197,8 +197,27 @@ function renderHeaderLogo(logoPath) {
 // =====================
 // MEGA LINK HTML HELPER
 // =====================
+function normalizeMenuUrl(rawUrl) {
+  const url = String(rawUrl || "#").trim();
+
+  if (!url || url === "#") return "#";
+
+  // Keep external links unchanged
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  // GitHub Pages fix:
+  // convert "/index.html?..." to "index.html?..."
+  if (url.startsWith("/index.html")) {
+    return url.replace(/^\/index\.html/, "index.html");
+  }
+
+  return url;
+}
+
 function buildMegaLinkHTML(link) {
-  const url = link.url || "#";
+  const url = normalizeMenuUrl(link.url);
   const label = link.label || "";
   const isPromo = url.includes("promo=true");
 
