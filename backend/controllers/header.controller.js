@@ -1,3 +1,8 @@
+const Header = require("../models/header");
+
+// ============================
+// DEFAULT MENU
+// ============================
 const defaultMenu = [
   {
     title: "Men",
@@ -164,3 +169,83 @@ const defaultMenu = [
     ]
   }
 ];
+// ============================
+// GET HEADER
+// ============================
+const getHeader = async (req, res) => {
+  try {
+    let header = await Header.findOne();
+
+    if (!header) {
+      header = await Header.create({
+        logo: "",
+        menu: defaultMenu
+      });
+    } else if (!header.menu || header.menu.length === 0) {
+      header.menu = defaultMenu;
+      await header.save();
+    }
+
+    return res.json({
+      success: true,
+      header
+    });
+  } catch (error) {
+    console.error("Get header error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load header"
+    });
+  }
+};
+
+// ============================
+// UPDATE HEADER
+// ============================
+const updateHeader = async (req, res) => {
+  try {
+    let header = await Header.findOne();
+
+    if (!header) {
+      header = await Header.create({
+        logo: "",
+        menu: defaultMenu
+      });
+    }
+
+    if (req.body.menu) {
+      try {
+        header.menu = JSON.parse(req.body.menu);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid menu JSON format"
+        });
+      }
+    }
+
+    if (req.file) {
+      header.logo = `/uploads/header/${req.file.filename}`;
+    }
+
+    await header.save();
+
+    return res.json({
+      success: true,
+      header
+    });
+  } catch (error) {
+    console.error("Update header error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update header"
+    });
+  }
+};
+
+module.exports = {
+  getHeader,
+  updateHeader
+};
