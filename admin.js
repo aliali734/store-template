@@ -535,40 +535,39 @@ async function loadHeaderSettings() {
         ? `${SERVER_BASE}${data.header.logo}`
         : "";
 
-      const menuTitles = Array.isArray(data.header.menu)
-        ? data.header.menu.map((item) => item.title).join(", ")
-        : "";
+      if (headerCategories) {
+        headerCategories.value =
+          "Mega menu structure is managed from backend defaults / database. Logo can be updated here only.";
+        headerCategories.readOnly = true;
+        headerCategories.disabled = true;
+      }
 
-      headerCategories.value = menuTitles;
+      if (headerMessage) {
+        headerMessage.textContent = "";
+      }
     }
   } catch (err) {
     console.error("Failed to load header settings:", err);
+
+    if (headerMessage) {
+      headerMessage.textContent = "Failed to load header settings";
+      headerMessage.style.color = "#b91c1c";
+    }
   }
 }
 
 // =====================
 // UPDATE HEADER
+// Logo only — do not overwrite mega menu
 // =====================
 headerForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const formData = new FormData();
 
-  if (headerLogo.files[0]) {
+  if (headerLogo?.files?.[0]) {
     formData.append("logo", headerLogo.files[0]);
   }
-
-  const titles = headerCategories.value
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-  const menu = titles.map((title) => ({
-    title,
-    sections: []
-  }));
-
-  formData.append("menu", JSON.stringify(menu));
 
   try {
     const res = await adminApiFetch("/header", {
@@ -584,7 +583,11 @@ headerForm?.addEventListener("submit", async (e) => {
       return;
     }
 
-    headerMessage.textContent = "Header updated";
+    if (data.header?.logo) {
+      logoPreview.src = `${SERVER_BASE}${data.header.logo}`;
+    }
+
+    headerMessage.textContent = "Header logo updated successfully";
     headerMessage.style.color = "#166534";
   } catch (err) {
     console.error(err);
