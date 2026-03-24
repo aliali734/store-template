@@ -17,6 +17,39 @@ function safeDebounce(fn, delay = 400) {
 }
 
 // =====================
+// IMAGE URL RESOLVER
+// Supports both:
+// - full Cloudinary URLs
+// - old local /uploads/... paths
+// =====================
+function resolveImageUrl(path, fallback = "https://via.placeholder.com/300") {
+  if (!path) return fallback;
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${SERVER_BASE}${path}`;
+}
+
+// =====================
+// MENU URL NORMALIZER
+// Makes "/index.html?..."
+// work correctly on GitHub Pages
+// =====================
+function normalizeMenuUrl(rawUrl) {
+  const url = String(rawUrl || "#").trim();
+
+  if (!url || url === "#") return "#";
+
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  if (url.startsWith("/index.html")) {
+    return url.replace(/^\/index\.html/, "index.html");
+  }
+
+  return url;
+}
+
+// =====================
 // GET CSRF TOKEN
 // =====================
 async function getCsrfToken() {
@@ -188,7 +221,7 @@ function renderHeaderLogo(logoPath) {
 
   if (logoPath) {
     logoText.innerHTML =
-      `<img src="${SERVER_BASE}${logoPath}" alt="Logo" style="height:40px;object-fit:contain;">`;
+      `<img src="${resolveImageUrl(logoPath, "")}" alt="Logo" style="height:40px;object-fit:contain;">`;
   } else {
     logoText.textContent = "Clothing Store";
   }
@@ -197,25 +230,6 @@ function renderHeaderLogo(logoPath) {
 // =====================
 // MEGA LINK HTML HELPER
 // =====================
-function normalizeMenuUrl(rawUrl) {
-  const url = String(rawUrl || "#").trim();
-
-  if (!url || url === "#") return "#";
-
-  // Keep external links unchanged
-  if (/^https?:\/\//i.test(url)) {
-    return url;
-  }
-
-  // GitHub Pages fix:
-  // convert "/index.html?..." to "index.html?..."
-  if (url.startsWith("/index.html")) {
-    return url.replace(/^\/index\.html/, "index.html");
-  }
-
-  return url;
-}
-
 function buildMegaLinkHTML(link) {
   const url = normalizeMenuUrl(link.url);
   const label = link.label || "";
@@ -258,10 +272,11 @@ function renderDesktopMenu(menu) {
         const linksHtml = (section.links || [])
           .map((link, i, arr) => {
             const html = buildMegaLinkHTML(link);
-            const isPromo = (link.url || "").includes("promo=true");
+            const isPromo = normalizeMenuUrl(link.url).includes("promo=true");
 
             const nextLink = arr[i + 1];
-            const nextIsPromo = nextLink && (nextLink.url || "").includes("promo=true");
+            const nextIsPromo =
+              nextLink && normalizeMenuUrl(nextLink.url).includes("promo=true");
             const addDivider = isPromo && !nextIsPromo;
 
             return addDivider
@@ -308,9 +323,11 @@ function renderMobileMenu(menu) {
     const sections = Array.isArray(menuItem.sections) ? menuItem.sections : [];
 
     if (!sections.length) {
+      const href = normalizeMenuUrl(menuItem.url || "#");
+
       mobileMenu.insertAdjacentHTML(
         "beforeend",
-        `<a href="#">${menuItem.title}</a>`
+        `<a href="${href}">${menuItem.title}</a>`
       );
       return;
     }
@@ -320,10 +337,11 @@ function renderMobileMenu(menu) {
         const linksHtml = (section.links || [])
           .map((link, i, arr) => {
             const html = buildMegaLinkHTML(link);
-            const isPromo = (link.url || "").includes("promo=true");
+            const isPromo = normalizeMenuUrl(link.url).includes("promo=true");
 
             const nextLink = arr[i + 1];
-            const nextIsPromo = nextLink && (nextLink.url || "").includes("promo=true");
+            const nextIsPromo =
+              nextLink && normalizeMenuUrl(nextLink.url).includes("promo=true");
             const addDivider = isPromo && !nextIsPromo;
 
             return addDivider
@@ -623,9 +641,7 @@ async function renderProducts() {
       ? product.images[0]
       : product.images || "";
 
-    const imageUrl = firstImage
-      ? `${SERVER_BASE}${firstImage}`
-      : "https://via.placeholder.com/300";
+    const imageUrl = resolveImageUrl(firstImage);
 
     const cardHTML = template
       .replace(/{{_id}}/g, product._id)

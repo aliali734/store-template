@@ -43,6 +43,18 @@ let productTaxonomy = {};
 let productDepartments = [];
 
 // =====================
+// IMAGE URL RESOLVER
+// Supports both:
+// - Cloudinary full URLs
+// - old local /uploads/... paths
+// =====================
+function resolveImageUrl(path, fallback = "https://via.placeholder.com/50") {
+  if (!path) return fallback;
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${SERVER_BASE}${path}`;
+}
+
+// =====================
 // CSRF TOKEN FROM BACKEND
 // =====================
 async function getCsrfToken() {
@@ -424,9 +436,7 @@ function renderProducts(products) {
       ? product.images[0]
       : product.images || "";
 
-    const imgSrc = firstImage
-      ? `${SERVER_BASE}${firstImage}`
-      : "https://via.placeholder.com/50";
+    const imgSrc = resolveImageUrl(firstImage);
 
     tr.innerHTML = `
       <td>
@@ -532,7 +542,7 @@ async function loadHeaderSettings() {
 
     if (data.success) {
       logoPreview.src = data.header.logo
-        ? `${SERVER_BASE}${data.header.logo}`
+        ? resolveImageUrl(data.header.logo, "")
         : "";
 
       if (headerCategories) {
@@ -584,7 +594,7 @@ headerForm?.addEventListener("submit", async (e) => {
     }
 
     if (data.header?.logo) {
-      logoPreview.src = `${SERVER_BASE}${data.header.logo}`;
+      logoPreview.src = resolveImageUrl(data.header.logo, "");
     }
 
     headerMessage.textContent = "Header logo updated successfully";

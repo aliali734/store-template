@@ -1,6 +1,16 @@
-// product.js
-
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+// =====================
+// IMAGE URL RESOLVER
+// Supports both:
+// - Cloudinary full URLs
+// - old local /uploads/... paths
+// =====================
+function resolveImageUrl(path, fallback = "https://via.placeholder.com/400") {
+  if (!path) return fallback;
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${SERVER_BASE}${path}`;
+}
 
 // =====================
 // TOAST
@@ -143,12 +153,12 @@ async function loadProduct() {
     }
 
     if (product.images && product.images.length) {
-      mainImg.src = `${SERVER_BASE}${product.images[0]}`;
+      mainImg.src = resolveImageUrl(product.images[0]);
 
       thumbsContainer.innerHTML = product.images
         .map(
           (src) => `
-            <img class="thumb" src="${SERVER_BASE}${src}" alt="Thumbnail" />
+            <img class="thumb" src="${resolveImageUrl(src)}" alt="Thumbnail" />
           `
         )
         .join("");
@@ -160,6 +170,7 @@ async function loadProduct() {
       });
     } else {
       mainImg.src = "https://via.placeholder.com/400";
+      thumbsContainer.innerHTML = "";
     }
 
     nameEl.textContent = product.name || "Product";
@@ -205,15 +216,19 @@ addBtn?.addEventListener("click", () => {
 // =====================
 async function loadRelatedProducts(category) {
   try {
-    const data = await apiFetch(`/product?category=${encodeURIComponent(category)}&limit=4`);
+    const data = await apiFetch(
+      `/product?category=${encodeURIComponent(category)}&limit=4`
+    );
+
     const related = (data.products || []).filter((p) => p._id !== productId);
 
     relatedContainer.innerHTML = related
       .map((p) => {
         const firstImage = Array.isArray(p.images) ? p.images[0] : "";
-        const imageSrc = firstImage
-          ? `${SERVER_BASE}${firstImage}`
-          : "https://via.placeholder.com/300";
+        const imageSrc = resolveImageUrl(
+          firstImage,
+          "https://via.placeholder.com/300"
+        );
 
         return `
           <div class="related-card" onclick="window.location.href='product.html?id=${p._id}'">
@@ -232,7 +247,8 @@ async function loadRelatedProducts(category) {
     }
   } catch (err) {
     console.error(err);
-    relatedContainer.innerHTML = "<p style='color:#b91c1c;'>Failed to load related products</p>";
+    relatedContainer.innerHTML =
+      "<p style='color:#b91c1c;'>Failed to load related products</p>";
   }
 }
 

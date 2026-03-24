@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const streamifier = require("streamifier");
+const cloudinary = require("../config/cloudinary");
 const Product = require("../models/product");
 const {
   buildProductFilter,
@@ -27,6 +29,23 @@ function makeSlug(text) {
 }
 
 // ============================
+// CLOUDINARY UPLOAD HELPER
+// ============================
+function uploadBufferToCloudinary(buffer, folder) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+}
+
+// ============================
 // GET PRODUCT TAXONOMY
 // ============================
 const getProductTaxonomy = async (req, res) => {
@@ -51,9 +70,17 @@ const getProductTaxonomy = async (req, res) => {
 // ============================
 const createProduct = async (req, res) => {
   try {
-    const imageUrls = req.files
-      ? req.files.map((file) => `/uploads/products/${file.filename}`)
-      : [];
+    let imageUrls = [];
+
+    if (req.files && req.files.length > 0) {
+      const uploadedImages = await Promise.all(
+        req.files.map((file) =>
+          uploadBufferToCloudinary(file.buffer, "store-template/products")
+        )
+      );
+
+      imageUrls = uploadedImages.map((img) => img.secure_url);
+    }
 
     const sizes = req.body.sizes
       ? req.body.sizes
@@ -348,9 +375,13 @@ const updateProduct = async (req, res) => {
     }
 
     if (req.files && req.files.length > 0) {
-      product.images = req.files.map(
-        (file) => `/uploads/products/${file.filename}`
+      const uploadedImages = await Promise.all(
+        req.files.map((file) =>
+          uploadBufferToCloudinary(file.buffer, "store-template/products")
+        )
       );
+
+      product.images = uploadedImages.map((img) => img.secure_url);
     }
 
     await product.save();

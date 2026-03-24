@@ -2,22 +2,9 @@ const multer = require("multer");
 const path = require("path");
 
 // =====================
-// STORAGE
+// MEMORY STORAGE
 // =====================
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    if (file.fieldname === "logo") {
-      return cb(null, "uploads/header");
-    }
-
-    return cb(null, "uploads/products");
-  },
-
-  filename: (req, file, cb) => {
-    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    return cb(null, uniqueName + path.extname(file.originalname));
-  }
-});
+const storage = multer.memoryStorage();
 
 // =====================
 // FILE FILTER
