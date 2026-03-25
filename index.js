@@ -1,792 +1,650 @@
-let products = [];
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let currentPage = 1;
-let totalPages = 1;
+  /* ===========================================================================================================================================================================================================================================================
+ .testimonials
+   ==========================================================================================================================================================================================================================================================*/
+/* about-orbits-click-only.js
+   Show big circle only on button click. No hover-based showing.
+*/
+(function () {
+  function init() {
+    const desc = document.querySelector('.about .desc') || document.querySelector('.desc');
+    const orbit1 = document.getElementById('orbit1');
+    const orbit2 = document.getElementById('orbit2');
+    if (!desc || !orbit1 || !orbit2) return;
 
-let cartCountEl;
+    // Map small buttons in orbit2 -> big panels in orbit1 using aria-controls
+    const buttons = Array.from(orbit2.querySelectorAll('button.circle'))
 
-// =====================
-// LOCAL SAFE DEBOUNCE
-// =====================
-function safeDebounce(fn, delay = 400) {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => fn(...args), delay);
-  };
-}
+    const bigById = {};
+    Array.from(orbit1.querySelectorAll('.circle[id]')).forEach(b => bigById[b.id] = b);
 
-// =====================
-// IMAGE URL RESOLVER
-// Supports both:
-// - full Cloudinary URLs
-// - old local /uploads/... paths
-// =====================
-function resolveImageUrl(path, fallback = "https://via.placeholder.com/300") {
-  if (!path) return fallback;
-  if (/^https?:\/\//i.test(path)) return path;
-  return `${SERVER_BASE}${path}`;
-}
-
-// =====================
-// MENU URL NORMALIZER
-// Makes "/index.html?..."
-// work correctly on GitHub Pages
-// =====================
-function normalizeMenuUrl(rawUrl) {
-  const url = String(rawUrl || "#").trim();
-
-  if (!url || url === "#") return "#";
-
-  if (/^https?:\/\//i.test(url)) {
-    return url;
-  }
-
-  if (url.startsWith("/index.html")) {
-    return url.replace(/^\/index\.html/, "index.html");
-  }
-
-  return url;
-}
-
-// =====================
-// GET CSRF TOKEN
-// =====================
-async function getCsrfToken() {
-  try {
-    const res = await fetch(`${API_BASE}/csrf`, {
-      method: "GET",
-      credentials: "include"
+    const map = new Map();
+    buttons.forEach(btn => {
+      const ctrl = btn.getAttribute('aria-controls');
+      if (ctrl && bigById[ctrl]) map.set(btn, bigById[ctrl]);
     });
 
-    const data = await res.json().catch(() => ({}));
-    return data.csrfToken || null;
-  } catch (err) {
-    console.error("Failed to initialize CSRF:", err);
-    return null;
-  }
-}
+    // Init states
+    map.forEach((big, btn) => {
+      big.classList.remove('is-visible');
+      big.setAttribute('aria-hidden', 'true');
+      if (!big.hasAttribute('tabindex')) big.setAttribute('tabindex', '-1'); // allow focus if needed
+      btn.setAttribute('aria-expanded', 'false');
+    });
 
-// =====================
-// FORCE LOGOUT
-// =====================
-async function forceLogout() {
-  try {
-    const csrfToken = await getCsrfToken();
-
-    await fetch(`${API_BASE}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
+    // Pause/resume helpers (toggle CSS class, CSS must respond to .paused)
+    function pauseOrbit() {
+      orbit1.classList.add('paused');
+      orbit2.classList.add('paused');
+      desc.classList.add('paused');
+    }
+    function resumeOrbit() {
+      const anyOpen = Object.values(bigById).some(b => b.classList && b.classList.contains('is-visible'));
+      if (!anyOpen) {
+        orbit1.classList.remove('paused');
+        orbit2.classList.remove('paused');
+        desc.classList.remove('paused');
       }
-    });
-  } catch (e) {
-    console.error("Logout request failed:", e);
-  } finally {
-    window.location.href = "login.html";
-  }
-}
-
-// =====================
-// API FETCH WRAPPER
-// =====================
-async function shopApiFetch(path, options = {}) {
-  const isFormData = options.body instanceof FormData;
-  const csrfToken = await getCsrfToken();
-
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: options.method || "GET",
-    credentials: "include",
-    headers: {
-      ...(!isFormData ? { "Content-Type": "application/json" } : {}),
-      ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
-      ...(options.headers || {})
-    },
-    body: options.body
-  });
-
-  if (res.status === 401 || res.status === 403) {
-    await forceLogout();
-    throw new Error("Unauthorized");
-  }
-
-  return res;
-}
-
-// =====================
-// PROTECT PAGE
-// =====================
-(async function protectPage() {
-  try {
-    const res = await fetch(`${API_BASE}/test/user`, {
-      credentials: "include"
-    });
-
-    if (!res.ok) {
-      throw new Error("Session invalid");
     }
 
-    console.log("User session verified");
-  } catch (err) {
-    console.error("Session verification failed:", err);
-    alert("Your session has expired. Please login again.");
-    window.location.href = "login.html";
+    function hideAll() {
+      map.forEach((big, btn) => {
+        big.classList.remove('is-visible');
+        big.setAttribute('aria-hidden', 'true');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.classList.remove('is-expanded');
+      });
+      resumeOrbit();
+    }
+
+    function showFor(btn) {
+      const big = map.get(btn);
+      if (!big) return;
+      // hide others
+      map.forEach((otherBig, otherBtn) => {
+        if (otherBig !== big) {
+          otherBig.classList.remove('is-visible');
+          otherBig.setAttribute('aria-hidden', 'true');
+          otherBtn.setAttribute('aria-expanded', 'false');
+          otherBtn.classList.remove('is-expanded');
+        }
+      });
+      big.classList.add('is-visible');
+      big.setAttribute('aria-hidden', 'false');
+      btn.setAttribute('aria-expanded', 'true');
+      btn.classList.add('is-expanded');
+      pauseOrbit();
+      // Move focus into big for keyboard users optionally:
+      // big.focus(); // uncomment if you want focus to jump
+    }
+
+    // Toggle behavior on click. Buttons are real <button>, so keyboard works out of the box.
+    map.forEach((big, btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // prevent document click from immediately closing
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        if (expanded) {
+          hideAll();
+          btn.focus(); // keep focus tidy
+        } else {
+          showFor(btn);
+        }
+      });
+
+      // Optional: keep big open if user clicks inside it
+      big.addEventListener('click', (ev) => ev.stopPropagation());
+    });
+
+    // Click outside closes all
+    document.addEventListener('click', (e) => {
+      // If click target is neither a mapped button nor one of the big panels, close.
+      const clickedButton = buttons.find(b => b.contains(e.target) || b === e.target);
+      const clickedBig = Object.values(bigById).find(b => b.contains(e.target) || b === e.target);
+      if (!clickedButton && !clickedBig) hideAll();
+    });
+
+    // Escape closes
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' || e.key === 'Esc') hideAll();
+    });
+
+    // Wheel: do NOT open bigs on scroll — we only pause orbit briefly for clarity
+    let wheelTimer = null;
+    orbit2.addEventListener('wheel', (ev) => {
+      // pause briefly while user scrolls inside orbit area
+      pauseOrbit();
+      clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(resumeOrbit, 220);
+    }, { passive: true });
+    orbit1.addEventListener('wheel', (ev) => {
+      pauseOrbit();
+      clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(resumeOrbit, 220);
+    }, { passive: true });
+
+    // Responsive: hide on small screens (optional)
+    function handleResponsive() {
+      if (window.innerWidth <= 768) hideAll();
+    }
+    handleResponsive();
+    let rt;
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(handleResponsive, 120); });
   }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  
 })();
 
-// =====================
-// TOAST NOTIFICATION
-// =====================
-function showToast(message, type = "success") {
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
 
-  document.body.appendChild(toast);
 
-  setTimeout(() => toast.classList.add("show"), 50);
 
-  setTimeout(() => {
-    toast.classList.remove("show");
-    setTimeout(() => toast.remove(), 300);
-  }, 2000);
-}
+  /* ===========================================================================================================================================================================================================================================================
+ .testimonials
+   ==========================================================================================================================================================================================================================================================*/
 
-// =====================
-// LOAD HEADER TEMPLATE + DATA
-// =====================
-async function initHeader() {
-  try {
-    const res = await fetch("header.html");
-    const html = await res.text();
-
-    const headerEl = document.getElementById("header");
-    if (!headerEl) return;
-
-    headerEl.innerHTML = html;
-
-    await loadDynamicHeader();
-
-    setupAuthHeader();
-
-    cartCountEl = document.getElementById("cart-count");
-
-    updateCartCounter();
-    setupCartModal();
-    setupHeaderInteractions();
-
-    applyUrlFilters();
-    await loadFilterTaxonomy();
-    syncFilterInputsFromState();
-    setupFilters(() => loadProducts(1));
-
-    const checkoutBtn = document.getElementById("checkout-btn");
-    checkoutBtn?.addEventListener("click", checkout);
-
-    loadProducts(1);
-  } catch (err) {
-    console.error("Failed to initialize header:", err);
-  }
-}
-
-initHeader();
-
-// =====================
-// LOAD HEADER DATA + STORE SETTINGS
-// =====================
-async function loadDynamicHeader() {
-  try {
-    const [headerData, settingsData] = await Promise.all([
-      apiFetch("/header"),
-      apiFetch("/settings")
-    ]);
-
-    if (headerData.success && headerData.header) {
-      const { header } = headerData;
-      renderHeaderLogo(header.logo);
-      renderDesktopMenu(header.menu || []);
-      renderMobileMenu(header.menu || []);
-    }
-
-    if (settingsData.success && settingsData.settings) {
-      window.applyStoreSettingsToUI?.(settingsData.settings);
-    }
-  } catch (err) {
-    console.error("Failed to load dynamic header/settings:", err);
-  }
-}
-
-// =====================
-// RENDER LOGO
-// =====================
-function renderHeaderLogo(logoPath) {
-  const logoText = document.getElementById("site-logo-text");
-
-  if (!logoText) return;
-
-  if (logoPath) {
-    logoText.innerHTML =
-      `<img src="${resolveImageUrl(logoPath, "")}" alt="Logo" style="height:40px;object-fit:contain;">`;
-  } else {
-    logoText.textContent = "Clothing Store";
-  }
-}
-
-// =====================
-// MEGA LINK HTML HELPER
-// =====================
-function buildMegaLinkHTML(link) {
-  const url = normalizeMenuUrl(link.url);
-  const label = link.label || "";
-  const isPromo = url.includes("promo=true");
-
-  let labelHtml = label;
-
-  if (isPromo) {
-    labelHtml = label.replace(
-      /(Sale|Promo|sale|promo|On Sale|on sale)/i,
-      '<span class="promo-text">$1</span>'
-    );
-  }
-
-  return `<a href="${url}">${labelHtml}</a>`;
-}
-
-// =====================
-// DESKTOP MENU
-// =====================
-function renderDesktopMenu(menu) {
-  const desktopMenu = document.getElementById("desktop-menu");
-  if (!desktopMenu) return;
-
-  desktopMenu.innerHTML = "";
-
-  menu.forEach((menuItem) => {
-    const sections = Array.isArray(menuItem.sections) ? menuItem.sections : [];
-
-    if (!sections.length) {
-      const href = normalizeMenuUrl(menuItem.url || "#");
-
-      desktopMenu.insertAdjacentHTML(
-        "beforeend",
-        `<a class="menu-item" href="${href}">${menuItem.title}</a>`
-      );
-      return;
-    }
-
-    const sectionsHtml = sections
-      .map((section) => {
-        const linksHtml = (section.links || [])
-          .map((link, i, arr) => {
-            const html = buildMegaLinkHTML(link);
-            const isPromo = normalizeMenuUrl(link.url).includes("promo=true");
-
-            const nextLink = arr[i + 1];
-            const nextIsPromo =
-              nextLink && normalizeMenuUrl(nextLink.url).includes("promo=true");
-            const addDivider = isPromo && !nextIsPromo;
-
-            return addDivider
-              ? html + '<div class="mega-link-divider"></div>'
-              : html;
-          })
-          .join("");
-
-        return `
-          <div class="mega-section">
-            <h4 class="mega-section-title">${section.title || ""}</h4>
-            ${linksHtml}
-          </div>
-        `;
-      })
-      .join("");
-
-    desktopMenu.insertAdjacentHTML(
-      "beforeend",
-      `
-      <div class="menu-item">
-        ${menuItem.title}
-        <div class="mega">
-          <div class="mega-inner">
-            ${sectionsHtml}
-          </div>
-        </div>
-      </div>
-      `
-    );
+  document.addEventListener('DOMContentLoaded', () => {
+    // small delay so fonts/images don't jump
+    requestAnimationFrame(() => document.querySelector('.hero').classList.add('loaded'));
   });
-}
+  
 
-// =====================
-// MOBILE MENU
-// =====================
-function renderMobileMenu(menu) {
-  const mobileMenu = document.getElementById("mobile-menu");
-  if (!mobileMenu) return;
+  // Theme toggle — add to template1.js or separate file included after it
 
-  mobileMenu.innerHTML = "";
+(function () {
+  const LS_KEY = 'site-theme'; // localStorage key
+  const toggle = document.getElementById('theme-toggle');
+  if (!toggle) return;
 
-  menu.forEach((menuItem) => {
-    const sections = Array.isArray(menuItem.sections) ? menuItem.sections : [];
+  // Read explicit user preference from localStorage if present
+  const saved = localStorage.getItem(LS_KEY); // 'dark'|'light' or null
 
-    if (!sections.length) {
-      const href = normalizeMenuUrl(menuItem.url || "#");
+  // Detect system preference
+  const systemPrefDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-      mobileMenu.insertAdjacentHTML(
-        "beforeend",
-        `<a href="${href}">${menuItem.title}</a>`
-      );
-      return;
-    }
+  // Apply theme function
+  function applyTheme(theme) {
+    if (theme === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
 
-    const sectionsHtml = sections
-      .map((section) => {
-        const linksHtml = (section.links || [])
-          .map((link, i, arr) => {
-            const html = buildMegaLinkHTML(link);
-            const isPromo = normalizeMenuUrl(link.url).includes("promo=true");
-
-            const nextLink = arr[i + 1];
-            const nextIsPromo =
-              nextLink && normalizeMenuUrl(nextLink.url).includes("promo=true");
-            const addDivider = isPromo && !nextIsPromo;
-
-            return addDivider
-              ? html + '<div class="mega-link-divider"></div>'
-              : html;
-          })
-          .join("");
-
-        return `
-          <div class="mobile-submenu-title">${section.title || ""}</div>
-          ${linksHtml}
-        `;
-      })
-      .join("");
-
-    mobileMenu.insertAdjacentHTML(
-      "beforeend",
-      `
-      <div class="mobile-item">
-        <button type="button" class="mobile-toggle-sub">${menuItem.title} ▾</button>
-        <div class="mobile-submenu">
-          ${sectionsHtml}
-        </div>
-      </div>
-      `
-    );
-  });
-}
-
-// =====================
-// HEADER INTERACTIONS
-// =====================
-function setupHeaderInteractions() {
-  const mobileToggle = document.getElementById("mobile-toggle");
-  const mobileClose = document.getElementById("mobile-close");
-  const mobilePanel = document.getElementById("mobile-panel");
-  const mobileOverlay = document.getElementById("mobile-overlay");
-
-  const searchToggle = document.getElementById("search-toggle");
-  const headerSearch = document.getElementById("search-input-header");
-  const pageSearch = document.getElementById("search-input");
-
-  mobileToggle?.addEventListener("click", () => {
-    if (!mobilePanel) return;
-    mobilePanel.setAttribute("aria-hidden", "false");
-    mobileOverlay?.classList.add("active");
-    document.body.style.overflow = "hidden";
-  });
-
-  function closeMobilePanel() {
-    if (!mobilePanel) return;
-    mobilePanel.setAttribute("aria-hidden", "true");
-    mobileOverlay?.classList.remove("active");
-    document.body.style.overflow = "";
+    // update toggle UI
+    const pressed = (theme === 'dark');
+    toggle.setAttribute('aria-pressed', String(pressed));
+    toggle.querySelector('.theme-icon').textContent = pressed ? '☀️' : '🌙';
   }
 
-  mobileClose?.addEventListener("click", closeMobilePanel);
-  mobileOverlay?.addEventListener("click", closeMobilePanel);
+  // Decide initial theme: localStorage > systemPref > default light
+  const initial = saved === 'dark' || (saved === null && systemPrefDark) ? 'dark' : 'light';
+  applyTheme(initial);
 
-  document.querySelectorAll(".mobile-toggle-sub").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const submenu = btn.nextElementSibling;
-      if (!submenu) return;
-
-      const isOpen = submenu.style.display === "block";
-
-      document.querySelectorAll(".mobile-submenu").forEach((sub) => {
-        sub.style.display = "none";
-      });
-
-      document.querySelectorAll(".mobile-toggle-sub").forEach((b) => {
-        b.classList.remove("active");
-      });
-
-      if (!isOpen) {
-        submenu.style.display = "block";
-        btn.classList.add("active");
+  // Listen for system changes (only if user hasn't explicitly chosen)
+  if (window.matchMedia) {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    mq.addEventListener?.('change', e => {
+      // if user has no saved choice, follow system change
+      if (!localStorage.getItem(LS_KEY)) {
+        applyTheme(e.matches ? 'dark' : 'light');
       }
     });
-  });
-
-  searchToggle?.addEventListener("click", () => {
-    if (!headerSearch) return;
-
-    const isHidden =
-      headerSearch.style.display === "none" || !headerSearch.style.display;
-
-    headerSearch.style.display = isHidden ? "inline-block" : "none";
-
-    if (isHidden) headerSearch.focus();
-  });
-
-  headerSearch?.addEventListener(
-    "input",
-    safeDebounce((e) => {
-      filters.search = e.target.value;
-
-      if (pageSearch) pageSearch.value = e.target.value;
-
-      updateFiltersURL();
-      loadProducts(1);
-    })
-  );
-}
-
-// =====================
-// AUTH HEADER
-// =====================
-function setupAuthHeader() {
-  const loginLink = document.getElementById("login-link");
-  const registerLink = document.getElementById("register-link");
-  const logoutBtn = document.getElementById("logout-btn");
-
-  if (!loginLink || !registerLink || !logoutBtn) return;
-
-  loginLink.style.display = "none";
-  registerLink.style.display = "none";
-  logoutBtn.style.display = "inline-flex";
-
-  logoutBtn.onclick = forceLogout;
-}
-
-// =====================
-// CART
-// =====================
-function updateCartCounter() {
-  if (!cartCountEl) return;
-
-  const count = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
-  cartCountEl.textContent = count;
-}
-
-function saveCart() {
-  localStorage.setItem("cart", JSON.stringify(cart));
-  updateCartCounter();
-  renderCartModal();
-}
-
-function setupCartModal() {
-  const cartBtn = document.querySelector(".cart-wrapper .icon-btn");
-  const modal = document.getElementById("cart-modal");
-  const closeBtn = document.getElementById("cart-close");
-
-  if (!modal) return;
-
-  cartBtn?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    renderCartModal();
-    modal.style.display = "flex";
-  });
-
-  closeBtn?.addEventListener("click", () => {
-    modal.style.display = "none";
-  });
-
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) modal.style.display = "none";
-  });
-}
-
-function renderCartModal() {
-  const list = document.getElementById("cart-items-list");
-  const totalEl = document.getElementById("cart-total");
-
-  if (!list || !totalEl) return;
-
-  list.innerHTML = "";
-
-  let total = 0;
-
-  if (!cart.length) {
-    list.innerHTML =
-      `<li style="justify-content:center;opacity:.7;">Cart is empty</li>`;
-    totalEl.textContent = "$0";
-    return;
   }
 
-  cart.forEach((item, idx) => {
-    const li = document.createElement("li");
-
-    li.innerHTML = `
-      <span>${item.name}</span>
-      <div>
-        <button type="button" class="dec" ${item.quantity <= 1 ? "disabled" : ""}>-</button>
-        <span>${item.quantity}</span>
-        <button type="button" class="inc">+</button>
-      </div>
-      <span>$${(item.price * item.quantity).toFixed(2)}</span>
-    `;
-
-    const incBtn = li.querySelector(".inc");
-    const decBtn = li.querySelector(".dec");
-
-    incBtn.onclick = () => {
-      item.quantity += 1;
-      saveCart();
-    };
-
-    decBtn.onclick = () => {
-      item.quantity -= 1;
-
-      if (item.quantity <= 0) {
-        cart.splice(idx, 1);
-      }
-
-      saveCart();
-    };
-
-    list.appendChild(li);
-    total += item.price * item.quantity;
+  // Toggle handler
+  toggle.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.contains('dark');
+    const newTheme = isDark ? 'light' : 'dark';
+    applyTheme(newTheme);
+    // persist user choice
+    localStorage.setItem(LS_KEY, newTheme);
   });
 
-  totalEl.textContent = `$${total.toFixed(2)}`;
-}
-
-// =====================
-// PRODUCTS
-// =====================
-function showProductsSkeleton() {
-  const container = document.getElementById("products");
-  if (!container) return;
-
-  container.innerHTML = Array(9).fill(`
-    <div class="product-skeleton">
-      <div class="img"></div>
-      <div class="line"></div>
-      <div class="line short"></div>
-    </div>
-  `).join("");
-}
-
-async function loadProducts(page = 1) {
-  showProductsSkeleton();
-
-  try {
-    const query = buildFilterQuery(page, 9);
-    const data = await apiFetch(`/product?${query}`);
-
-    products = data.products || [];
-    currentPage = data.page || 1;
-    totalPages = data.totalPages || 1;
-
-    updateTitle(data.totalProducts || 0);
-    await renderProducts();
-    renderPagination();
-  } catch (err) {
-    console.error(err);
-
-    const container = document.getElementById("products");
-    if (container) {
-      container.innerHTML = `<p style="color:#b91c1c">Failed to load products</p>`;
-    }
-  }
-}
-
-function updateTitle(total) {
-  const title = document.querySelector(".title");
-  if (!title) return;
-
-  title.textContent = `Products (${total})`;
-}
-
-// =====================
-// RENDER PRODUCTS
-// =====================
-async function renderProducts() {
-  const container = document.getElementById("products");
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  let template = "";
-
-  try {
-    const res = await fetch("product-card.html");
-    template = await res.text();
-  } catch (err) {
-    console.error("Failed to load product template:", err);
-    container.innerHTML = "<p>Template error</p>";
-    return;
-  }
-
-  if (!products.length) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <h3>No products found</h3>
-        <p>Try changing filters or search</p>
-      </div>
-    `;
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-
-  products.forEach((product) => {
-    const firstImage = Array.isArray(product.images)
-      ? product.images[0]
-      : product.images || "";
-
-    const imageUrl = resolveImageUrl(firstImage);
-
-    const cardHTML = template
-      .replace(/{{_id}}/g, product._id)
-      .replace(/{{image}}/g, imageUrl)
-      .replace(/{{name}}/g, product.name || "")
-      .replace(/{{category}}/g, product.category || "")
-      .replace(/{{price}}/g, product.price ?? 0);
-
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = cardHTML;
-
-    fragment.appendChild(wrapper.firstElementChild);
-  });
-
-  container.appendChild(fragment);
-  initAddToCart();
-}
-
-// =====================
-// ADD TO CART
-// =====================
-function initAddToCart() {
-  const buttons = document.querySelectorAll(".add-to-cart-btn");
-
-  buttons.forEach((btn) => {
-    btn.onclick = (e) => {
+  // keyboard accessibility (optional: toggle with Enter/Space handled by button by default)
+  toggle.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      e.stopPropagation();
-
-      const card = btn.closest(".product-card");
-      if (!card) return;
-
-      const id = card.dataset.id;
-      const product = products.find((p) => p._id === id);
-      if (!product) return;
-
-      const existing = cart.find((item) => item.id === product._id);
-
-      if (existing) {
-        existing.quantity += 1;
-      } else {
-        cart.push({
-          id: product._id,
-          name: product.name || "Product",
-          price: Number(product.price) || 0,
-          quantity: 1
-        });
-      }
-
-      saveCart();
-      showToast("Added to cart");
-    };
+      toggle.click();
+    }
   });
+})();
+
+
+  /* ===========================================================================================================================================================================================================================================================
+ .testimonials
+   ==========================================================================================================================================================================================================================================================*/
+
+
+function handleResponsive() {
+  const circles = document.querySelectorAll(".orbit3 ");
+
+  if (window.innerWidth <= 768) {
+    circles.forEach(c => c.style.animation = "none"); 
+  } else {
+    circles.forEach(c => c.style.animation = "spin 40s linear infinite"); 
+  }
 }
 
-// =====================
-// PAGINATION
-// =====================
-function renderPagination() {
-  const container = document.getElementById("pagination");
-  if (!container) return;
 
-  container.innerHTML = "";
+window.addEventListener("resize", handleResponsive);
 
-  if (totalPages <= 1) return;
 
-  const fragment = document.createDocumentFragment();
 
-  for (let i = 1; i <= totalPages; i++) {
-    const btn = document.createElement("button");
 
-    btn.textContent = i;
-    btn.disabled = i === currentPage;
 
-    btn.onclick = () => {
-      loadProducts(i);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    };
+document.addEventListener("DOMContentLoaded", () => {
+    const orbit3     = document.getElementById("orbit3");
+    const orbit4     = document.getElementById("orbit4");
+    const circle7    = document.getElementById("circle7");
+    const circle77   = document.getElementById("circle77");
+    const circle8    = document.getElementById("circle8");
+    const circle88 = document.getElementById("circle88");
+    const circle9 = document.getElementById("circle9");
+    const circle99 = document.getElementById("circle99");
+    const circle10 = document.getElementById("circle10");
+    const circle1010 = document.getElementById("circle1010");
+    const circle12 = document.getElementById("circle12");
+    const circle1212 = document.getElementById("circle1212");
+    const circle13 = document.getElementById("circle13");
+    const circle1313 = document.getElementById("circle1313");
+  
 
-    fragment.appendChild(btn);
-  }
 
-  container.appendChild(fragment);
-}
+      // hide big circle initially
+      circle7.style.visibility= "hidden";
+      circle8.style.visibility= "hidden";
+      circle9.style.visibility= "hidden";
+      circle10.style.visibility= "hidden";
+      circle12.style.visibility= "hidden";
+      circle13.style.visibility= "hidden";
 
-// =====================
-// CHECKOUT
-// =====================
-async function checkout() {
-  if (!cart.length) {
-    alert("Cart is empty");
-    return;
-  }
+      
+      if (window.innerWidth > 768) {
 
-  showToast("Placing your order...", "info");
+    orbit4.addEventListener("mouseenter", () => {  
+        // pause ALL rotating elements (orbit + circles)
+        document.querySelectorAll(".orbit3, .orbit4, .po2, .circle, .content7, .content77, .content8, .content88, .content9, .content99, .content10, .content1010, .content12, .content1212, .content13, .content1313")
+          .forEach(el => el.style.animationPlayState = "paused");
 
-  const productsPayload = cart.map((item) => ({
-    product: item.id,
-    quantity: item.quantity
-  }));
+      });
+  
+      orbit4.addEventListener("mouseleave", () => {
+        // resume ALL rotating elements
+        document.querySelectorAll(".orbit3, .orbit4, .po2, .circle, .content7, .content77, .content8, .content88, .content9, .content99, .content10, .content1010, .content12, .content1212, .content13, .content1313")
+          .forEach(el => el.style.animationPlayState = "running");
+ 
+      });
+    }});
+  
 
-  try {
-    const res = await shopApiFetch("/orders", {
-      method: "POST",
-      body: JSON.stringify({ products: productsPayload })
+
+
+
+    circle77.addEventListener("mouseenter", () => {
+    circle7.style.visibility = "visible";
+  });  
+  circle88.addEventListener("mouseenter", () => {
+    circle8.style.visibility = "visible";
+  }); 
+  circle99.addEventListener("mouseenter", () => {
+    circle9.style.visibility = "visible";
+  }); 
+  circle1010.addEventListener("mouseenter", () => {
+    circle10.style.visibility = "visible";
+  }); 
+  circle1212.addEventListener("mouseenter", () => {
+    circle12.style.visibility = "visible";
+  }); 
+  circle1313.addEventListener("mouseenter", () => {
+    circle13.style.visibility = "visible";
+  }); 
+
+
+
+  
+
+
+    circle77.addEventListener("mouseleave", () => {
+    circle7.style.visibility= "hidden";  
+  });
+    circle88.addEventListener("mouseleave", () => {
+    circle8.style.visibility= "hidden";  
+  });
+    circle99.addEventListener("mouseleave", () => {
+    circle9.style.visibility= "hidden";  
+  });
+    circle1010.addEventListener("mouseleave", () => {
+    circle10.style.visibility= "hidden";  
+  });
+    circle1212.addEventListener("mouseleave", () => {
+    circle12.style.visibility= "hidden";  
+  });
+    circle1313.addEventListener("mouseleave", () => {
+    circle13.style.visibility= "hidden";  
+  });
+  /* ===========================================================================================================================================================================================================================================================
+ .testimonials
+   ==========================================================================================================================================================================================================================================================*/
+// Accessible mobile menu (drop-in)
+// - Lazy-creates a mobile panel from the desktop nav when first opened.
+// - Keeps original desktop nav intact.
+// - Proper ARIA, focus trap, ESC, click-outside, and resize behaviour.
+
+(function () {
+  const header = document.querySelector('.nav');
+  const toggle = document.getElementById('mobile-toggle');
+  const desktopMenu = document.getElementById('primary-menu'); // desktop nav
+  if (!header || !toggle || !desktopMenu) return;
+
+  // Helpers
+  const focusableSelector = [
+    'a[href]:not([tabindex="-1"])',
+    'button:not([disabled])',
+    'input:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(', ');
+
+  let panel = null;
+  let lastFocusedBeforeOpen = null;
+  let listeners = { };
+
+  function createPanel() {
+    if (panel) return panel;
+
+    // Create panel container
+    panel = document.createElement('div');
+    panel.className = 'nav-panel';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-label', 'Primary menu');
+    panel.tabIndex = -1; // allow programmatic focus
+
+    // Clone the desktop menu but avoid cloning id attributes (to prevent duplicates)
+    const clone = desktopMenu.cloneNode(true);
+
+    // Remove id from the clone root if present
+    if (clone.hasAttribute('id')) clone.removeAttribute('id');
+
+    // Also make sure any descendants don't keep duplicate IDs
+    clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+
+    // Append cloned content
+    panel.appendChild(clone);
+
+    // Add close button at top of panel for easier dismissing on mobile
+    const closeButton = document.createElement('button');
+    closeButton.className = 'nav-panel-close';
+    closeButton.type = 'button';
+    closeButton.innerText = 'Close';
+    closeButton.setAttribute('aria-label', 'Close menu');
+    // place before cloned menu (style with CSS as needed)
+    panel.insertBefore(closeButton, panel.firstChild);
+
+    header.appendChild(panel);
+
+    // close when clicking close button
+    closeButton.addEventListener('click', closeMenu);
+
+    // close on clicks of links inside the panel (use closest)
+    panel.addEventListener('click', (e) => {
+      const a = e.target.closest('a');
+      if (a) closeMenu();
     });
 
-    const data = await res.json().catch(() => ({}));
+    // click outside to close
+    listeners.outsideClick = (e) => {
+      if (!panel.contains(e.target) && !toggle.contains(e.target)) closeMenu();
+    };
 
-    if (!res.ok || !data.order?._id) {
-      showToast(data.message || "Order creation failed", "error");
-      return;
-    }
+    // keydown handler for ESC and focus trapping
+    listeners.keydown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeMenu();
+        return;
+      }
+      if (e.key === 'Tab') {
+        // Focus trap: cycle focus inside panel
+        const nodes = Array.from(panel.querySelectorAll(focusableSelector)).filter(n => n.offsetParent !== null);
+        if (nodes.length === 0) {
+          e.preventDefault();
+          return;
+        }
+        const first = nodes[0];
+        const last = nodes[nodes.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
 
-    localStorage.setItem("currentOrderId", data.order._id);
-
-    cart = [];
-    saveCart();
-
-    window.location.href = "confirmation.html";
-  } catch (err) {
-    console.error(err);
-    showToast("Server error", "error");
+    return panel;
   }
-}
 
-// =====================
-// INIT
-// =====================
-document.addEventListener("DOMContentLoaded", () => {
-  const toggleFilters = document.getElementById("toggle-filters");
-  const aside = document.getElementById("filters");
+  function openMenu() {
+    createPanel();
+    // set unique id for the panel and update toggle aria-controls
+    const panelId = 'mobile-panel';
+    panel.id = panelId;
+    toggle.setAttribute('aria-controls', panelId);
 
-  toggleFilters?.addEventListener("click", () => {
-    if (!aside) return;
+    if (!panel) return;
 
-    const hidden = aside.style.display === "none";
-    aside.style.display = hidden ? "" : "none";
+    lastFocusedBeforeOpen = document.activeElement;
+
+    header.classList.add('menu-open');          // class used for header styling if needed
+    panel.classList.add('open');                // panel visible state (style in CSS)
+    document.body.classList.add('menu-open');   // prevent body scroll via CSS
+
+    // Hide the desktop nav from ATs while panel is open
+    desktopMenu.setAttribute('aria-hidden', 'true');
+
+    toggle.setAttribute('aria-expanded', 'true');
+    toggle.setAttribute('aria-label', 'Close menu');
+
+    // Focus the first focusable element inside panel (prefer real interactive element)
+    const first = panel.querySelector(focusableSelector);
+    if (first) first.focus();
+    else panel.focus();
+
+    // Attach global listeners
+    document.addEventListener('keydown', listeners.keydown);
+    setTimeout(() => document.addEventListener('click', listeners.outsideClick), 0); // defer to avoid immediate close
+  }
+
+  function closeMenu() {
+    if (!panel) return;
+
+    header.classList.remove('menu-open');
+    panel.classList.remove('open');
+    document.body.classList.remove('menu-open');
+
+    desktopMenu.removeAttribute('aria-hidden');
+
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Open menu');
+
+    // remove listeners
+    document.removeEventListener('keydown', listeners.keydown);
+    document.removeEventListener('click', listeners.outsideClick);
+
+    // restore focus to the toggle
+    if (lastFocusedBeforeOpen && typeof lastFocusedBeforeOpen.focus === 'function') {
+      lastFocusedBeforeOpen.focus();
+    } else {
+      toggle.focus();
+    }
+  }
+
+  // Toggle click
+  toggle.addEventListener('click', (e) => {
+    const isOpen = panel && panel.classList && panel.classList.contains('open');
+    if (isOpen) closeMenu();
+    else openMenu();
   });
-});
+
+  // Close panel if viewport expands to desktop (cleanup)
+  window.addEventListener('resize', () => {
+    // When moving to large screen, close mobile panel
+    if (window.innerWidth > 768 && panel && panel.classList.contains('open')) {
+      closeMenu();
+    }
+  });
+
+  // Optional: close on navigation (hashchange) to handle anchor jumps
+  window.addEventListener('hashchange', () => {
+    if (panel && panel.classList.contains('open')) closeMenu();
+  });
+
+})();
+  /* ===========================================================================================================================================================================================================================================================
+ .testimonials
+   ==========================================================================================================================================================================================================================================================*/
+   document.addEventListener("DOMContentLoaded", () => {
+    const grid = document.querySelector(".testimonial-grid");
+    const cards = Array.from(grid.querySelectorAll(".card"));
+  
+    // Sort cards based on their x position (left-to-right)
+    const orderedCards = cards.sort((a, b) => {
+      const aLeft = a.getBoundingClientRect().left;
+      const bLeft = b.getBoundingClientRect().left;
+      return aLeft - bLeft;
+    });
+  
+    console.log("Cards ordered left-to-right:", orderedCards);
+  
+    // Optional: re-append them in sorted order (ensures DOM order matches visual order)
+    orderedCards.forEach(card => grid.appendChild(card));
+  });
+  document.addEventListener("DOMContentLoaded", () => {
+    const grid = document.querySelector(".testimonial-grid");
+    const wrap = document.querySelector(".testimonials .wrap");
+    const rightBtn = document.querySelector(".change-background-r");
+    const leftBtn  = document.querySelector(".change-background-l");
+  
+    let cards = Array.from(grid.querySelectorAll(".card"));
+  
+    // Centers the active card inside the wrap by translating the grid.
+    // Uses bounding boxes so it's responsive.
+    function centerActive(animate = true) {
+      const active = cards.find(c => c.classList.contains('active')) || cards[Math.floor(cards.length/2)];
+      if (!active) return;
+  
+      // Get center x of wrap and active card
+      const wrapRect = wrap.getBoundingClientRect();
+      const activeRect = active.getBoundingClientRect();
+  
+      // distance from wrap center to active center (positive = need to push grid right)
+      const wrapCenterX = wrapRect.left + wrapRect.width / 2;
+      const activeCenterX = activeRect.left + activeRect.width / 2;
+      const delta = wrapCenterX - activeCenterX;
+  
+      // Apply transform to the grid to move active to wrap center.
+      // We set transform directly (not relative) so it works on resize / repeated calls.
+      if (!animate) {
+        // temporarily disable transition
+        grid.style.transition = 'none';
+        grid.style.transform = `translateX(${delta}px)`;
+        // force reflow then restore transition
+        grid.getBoundingClientRect();
+        grid.style.transition = '';
+      }
+    }
+  
+    // Renders DOM order, runs FLIP animation, then recenters
+    function renderCards(animate = true) {
+      // 1) record first positions
+      const firstRects = new Map();
+      cards.forEach(card => firstRects.set(card, card.getBoundingClientRect()));
+  
+      // 2) re-append in new order (this updates the DOM)
+      cards.forEach(card => grid.appendChild(card));
+  
+      // 3) set active class (middle)
+      cards.forEach(c => c.classList.remove("active"));
+      const middleIndex = Math.floor(cards.length / 2);
+      cards[middleIndex].classList.add("active");
+  
+      if (!animate) {
+        // no FLIP, but we still need to center
+        centerActive(false);
+        return;
+      }
+  
+      // 4) record last positions and perform FLIP on each card
+      const lastRects = new Map();
+      cards.forEach(card => lastRects.set(card, card.getBoundingClientRect()));
+  
+      cards.forEach(card => {
+        const first = firstRects.get(card);
+        const last = lastRects.get(card);
+        if (!first || !last) return;
+  
+        const dx = first.left - last.left;
+        const dy = first.top - last.top;
+  
+        if (dx === 0 && dy === 0) return;
+  
+        // Invert
+        card.style.transition = 'none';
+        card.style.transform = `translate(${dx}px, ${dy}px)`;
+  
+        // Force reflow
+        card.getBoundingClientRect();
+  
+        // Play: animate transform back to natural spot
+        requestAnimationFrame(() => {
+          card.style.transition = 'transform .45s cubic-bezier(.2,.9,.3,1)';
+          card.style.transform = '';
+        });
+  
+        // Cleanup when transition ends
+        const cleanup = () => {
+          card.style.transition = '';
+          card.style.transform = '';
+          card.removeEventListener('transitionend', cleanup);
+        };
+        card.addEventListener('transitionend', cleanup);
+      });
+  
+      // After a short delay (equal to the FLIP duration), recenter the grid so the visible
+      // movement looks natural. We call centerActive() slightly after FLIP completes.
+      const FLIP_DURATION = 450; // ms (match the animation above)
+      setTimeout(() => centerActive(true), FLIP_DURATION - 40);
+    }
+  
+    // rotate right: last becomes first
+    function rotateRight() {
+      const last = cards.pop();
+      cards.unshift(last);
+      renderCards(true);
+    }
+  
+    // rotate left: first goes to end
+    function rotateLeft() {
+      const first = cards.shift();
+      cards.push(first);
+      renderCards(true);
+    }
+  
+    // Attach events
+    rightBtn.addEventListener('click', rotateRight);
+    leftBtn.addEventListener('click', rotateLeft);
+  
+    // Re-center on resize (debounced-ish)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => centerActive(false), 120);
+    });
+  
+    // Initial render without FLIP animation
+    renderCards(false);
+  });
+  
+  
+

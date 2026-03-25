@@ -1,163 +1,548 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Clothing Store</title>
+  <head>
+    <!-- Required meta -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clothing Store — Fashion for Men, Women & Kids</title>
+    <meta
+      name="description"
+      content="Shop fashion for men, women, and kids. Discover shoes, clothing, accessories, and featured collections in one modern online store."
+    />
+    <meta name="author" content="Clothing Store" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#111216" />
 
-  <link rel="stylesheet" href="header.css" />
-  <link rel="stylesheet" href="index.css" />
-  <link rel="stylesheet" href="product-card.css" />
-</head>
-<body>
-  <div id="header"></div>
+    <!-- Open Graph -->
+    <meta
+      property="og:title"
+      content="Clothing Store — Fashion for Men, Women & Kids"
+    />
+    <meta
+      property="og:description"
+      content="Discover shoes, clothing, accessories, and featured collections in our modern online store."
+    />
+    <meta
+      property="og:image"
+      content="https://aliali734.github.io/Main-file/1.jpg"
+    />
+    <meta
+      property="og:url"
+      content="https://aliali734.github.io/store-template/"
+    />
+    <meta property="og:type" content="website" />
 
-  <main class="page">
-    <div class="toolbar">
-      <h1 class="title">Products</h1>
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Clothing Store — Fashion for Men, Women & Kids"
+    />
+    <meta
+      name="twitter:description"
+      content="Discover shoes, clothing, accessories, and featured collections in our modern online store."
+    />
+    <meta
+      name="twitter:image"
+      content="https://aliali734.github.io/Main-file/1.jpg"
+    />
 
-      <div class="toolbar-actions">
-        <button id="toggle-filters" class="link-btn" type="button">
-          Hide Filters
-          <span class="icon">⚙️</span>
-        </button>
+    <link rel="canonical" href="https://yourdomain.com/" />
 
-        <select id="filter-sort" class="link-btn">
-          <option value="newest">Newest</option>
-          <option value="oldest">Oldest</option>
-          <option value="price_asc">Price: Low to High</option>
-          <option value="price_desc">Price: High to Low</option>
-          <option value="name_asc">Name: A-Z</option>
-          <option value="name_desc">Name: Z-A</option>
-        </select>
-      </div>
+    <!-- Shared header -->
+    <link rel="stylesheet" href="header.css" />
+
+    <!-- Homepage styles -->
+    <link rel="stylesheet" href="home.css" />
+    <link rel="icon" href="1.JPG" type="image/jpeg" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <script
+      src="https://kit.fontawesome.com/d55f670ce3.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Global CSS variables -->
+    <style>
+      :root {
+        --bg: linear-gradient(90deg, #8e8c91, #e6e7e8, #8e8c91);
+        --h1: #1f2224;
+        --h2: #4b5563;
+        --h3: #5a6168;
+        --text: #111216;
+        --glass: rgba(255, 255, 255, 0.12);
+        --panel: #e6e7e8;
+        --shadow: 0px 5px 30px rgba(0, 0, 0);
+
+        --space-xs: 8px;
+        --space-sm: 12px;
+        --space-md: 20px;
+        --space-lg: 32px;
+        --space-xl: 48px;
+        --space-xxl: 80px;
+
+        --gutter: clamp(16px, 4vw, 40px);
+        --section-pad-vertical: clamp(32px, 6vw, 64px);
+      }
+
+      .dark {
+        --bg: linear-gradient(135deg, #111216, #1f2224);
+        --h1: #f3f4f6;
+        --h2: #d1d5db;
+        --h3: #9ca3af;
+        --text: #e6e7e8;
+        --glass: rgba(17, 18, 22, 0.35);
+        --panel: #1f1f23;
+        --shadow: 0 6px 30px rgba(0, 0, 0, 0.5);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="header"></div>
+
+    <div class="sphere" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
     </div>
 
-    <div class="content">
-      <aside id="filters" class="filters">
-        <div class="filter-block">
-          <input type="text" id="search-input" placeholder="Search products..." />
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <main id="main-content" tabindex="-1">
+      <!-- Hero -->
+      <section id="home" class="hero" aria-labelledby="hero-title">
+        <div class="panels" aria-hidden="true">
+          <div class="panel left"></div>
+          <div class="panel right"></div>
         </div>
 
-        <div class="divider"></div>
+        <div class="hero-content">
+          <div class="hero-left">
+            <h1 id="hero-title">Discover Your<br />Next Favorite<br />Style</h1>
+          </div>
 
-        <div class="filter-block">
-          <select id="filter-audience">
-            <option value="">All audiences</option>
-            <option value="men">Men</option>
-            <option value="women">Women</option>
-            <option value="kids">Kids</option>
-            <option value="unisex">Unisex</option>
-          </select>
+          <div class="hero-right">
+            <p>
+              Shop fashion for men, women, and kids in one place. Explore modern
+              clothing, stylish shoes, and everyday accessories designed for
+              comfort, confidence, and style.
+            </p>
+          </div>
         </div>
-
-        <div class="divider"></div>
-
-        <div class="filter-block">
-          <select id="filter-department">
-            <option value="">All departments</option>
-          </select>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="filter-block">
-          <select id="filter-category">
-            <option value="">All categories</option>
-          </select>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="filter-block">
-          <select id="filter-size">
-            <option value="">All sizes</option>
-            <option value="XS">XS</option>
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-          </select>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="filter-block">
-          <select id="filter-color">
-            <option value="">All colors</option>
-            <option value="black">Black</option>
-            <option value="white">White</option>
-            <option value="blue">Blue</option>
-            <option value="red">Red</option>
-            <option value="green">Green</option>
-            <option value="gray">Gray</option>
-            <option value="beige">Beige</option>
-            <option value="brown">Brown</option>
-          </select>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="filter-block">
-          <input type="number" id="filter-minPrice" placeholder="Min price" />
-          <input type="number" id="filter-maxPrice" placeholder="Max price" />
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="filter-block">
-          <label>
-            <input type="checkbox" id="filter-inStock" />
-            In stock only
-          </label>
-        </div>
-
-        <div class="filter-block">
-          <label>
-            <input type="checkbox" id="filter-featured" />
-            Featured only
-          </label>
-        </div>
-
-        <div class="filter-block">
-          <label>
-            <input type="checkbox" id="filter-promo" />
-            On sale only
-          </label>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="filter-block">
-          <button id="reset-filters" class="filter-item" type="button">
-            Reset Filters
-          </button>
-        </div>
-      </aside>
-
-      <section class="grid-wrap">
-        <section id="products" class="products-grid"></section>
-        <div id="pagination" class="pagination"></div>
       </section>
-    </div>
-  </main>
-  <footer class="site-footer">
-  <div class="footer-inner">
-    <p id="footer-text">© Clothing Store. All rights reserved.</p>
 
-    <div class="footer-socials">
-      <a id="social-facebook" href="#" target="_blank" rel="noopener" style="display:none;">Facebook</a>
-      <a id="social-instagram" href="#" target="_blank" rel="noopener" style="display:none;">Instagram</a>
-      <a id="social-tiktok" href="#" target="_blank" rel="noopener" style="display:none;">TikTok</a>
-      <a id="social-twitter" href="#" target="_blank" rel="noopener" style="display:none;">X</a>
-      <a id="social-whatsapp" href="#" target="_blank" rel="noopener" style="display:none;">WhatsApp</a>
-    </div>
-  </div>
-</footer>
+      <!-- Why Us -->
+      <section id="about" class="about" aria-labelledby="about-title">
+        <h2 id="about-title" class="main-title">Why Shop With Us</h2>
+        <div class="container">
+          <div class="desc">
+            <div class="orbit1" id="orbit1">
+              <div class="circle" id="circle1" role="region" aria-labelledby="circle1-label">
+                <div class="content1">
+                  <h3 id="circle1-label">Quality Products</h3>
+                  <p>
+                    We carefully select products that combine style, comfort,
+                    and reliability. From everyday essentials to standout pieces,
+                    our goal is to offer items customers can trust and enjoy.
+                  </p>
+                </div>
+              </div>
 
-  <script src="config.js"></script>
-  <script src="api.js"></script>
-  <script src="filters.js"></script>
-  <script src="index.js"></script>
-</body>
+              <div class="circle" id="circle2" role="region" aria-labelledby="circle2-label">
+                <div class="content2">
+                  <h3 id="circle2-label">Modern Style</h3>
+                  <p>
+                    Our collections are chosen with today’s trends and timeless
+                    fashion in mind. Whether you want a clean casual look or
+                    something bold, we make it easy to shop your style.
+                  </p>
+                </div>
+              </div>
+
+              <div class="circle" id="circle3" role="region" aria-labelledby="circle3-label">
+                <div class="content3">
+                  <h3 id="circle3-label">Easy Shopping</h3>
+                  <p>
+                    We focus on making online shopping simple and smooth. Browse
+                    categories, explore product details, and place orders easily
+                    with a clean and user-friendly store experience.
+                  </p>
+                </div>
+              </div>
+
+              <div class="circle" id="circle4" role="region" aria-labelledby="circle4-label">
+                <div class="content4">
+                  <h3 id="circle4-label">Fast Ordering</h3>
+                  <p>
+                    Our store is built to help customers order quickly and
+                    confidently. Clear product information and a simple cart and
+                    checkout flow make the process smooth from start to finish.
+                  </p>
+                </div>
+              </div>
+
+              <div class="circle" id="circle5" role="region" aria-labelledby="circle5-label">
+                <div class="content5">
+                  <h3 id="circle5-label">Quick Delivery</h3>
+                  <p>
+                    We value your time. That’s why we aim to process orders
+                    efficiently and keep the path from checkout to delivery as
+                    fast and reliable as possible.
+                  </p>
+                </div>
+              </div>
+
+              <div class="circle" id="circle6" role="region" aria-labelledby="circle6-label">
+                <div class="content6">
+                  <h3 id="circle6-label">Customer Support</h3>
+                  <p>
+                    Good service continues after checkout. If you need help with
+                    an order, product question, or store information, our support
+                    experience is designed to be responsive and helpful.
+                  </p>
+                </div>
+              </div>
+
+              <div class="circleh">
+                <h2 class="po">Everything you need for a better shopping experience</h2>
+              </div>
+            </div>
+
+            <div class="orbit2" id="orbit2" aria-hidden="false">
+              <button class="circle" id="circle11" type="button" aria-controls="circle1">
+                <div class="content11"><i class="fa-solid fa-shirt" aria-hidden="true"></i><p>Quality</p></div>
+              </button>
+
+              <button class="circle" id="circle22" type="button" aria-controls="circle2">
+                <div class="content22"><i class="fa-solid fa-star" aria-hidden="true"></i><p>Style</p></div>
+              </button>
+
+              <button class="circle" id="circle33" type="button" aria-controls="circle3">
+                <div class="content33"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i><p>Shopping</p></div>
+              </button>
+
+              <button class="circle" id="circle44" type="button" aria-controls="circle4">
+                <div class="content44"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i><p>Ordering</p></div>
+              </button>
+
+              <button class="circle" id="circle55" type="button" aria-controls="circle5">
+                <div class="content55"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i><p>Delivery</p></div>
+              </button>
+
+              <button class="circle" id="circle66" type="button" aria-controls="circle6">
+                <div class="content66"><i class="fa-solid fa-headset" aria-hidden="true"></i><p>Support</p></div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Collections -->
+      <section id="projects" class="projects" aria-labelledby="projects-title">
+        <h2 id="projects-title" class="main-title">Featured Collections</h2>
+        <div class="container">
+          <div class="desc">
+            <div class="orbit3" id="orbit3">
+              <div class="circle" id="circle7">
+                <div class="content7">
+                  <h3>Men</h3>
+                  <p>Explore clothing, shoes, and accessories designed for everyday comfort and modern style.</p>
+                </div>
+              </div>
+
+              <div class="circle" id="circle8">
+                <div class="content8">
+                  <h3>Women</h3>
+                  <p>Discover stylish pieces for every season, from casual looks to standout wardrobe essentials.</p>
+                </div>
+              </div>
+
+              <div class="circle" id="circle9">
+                <div class="content9">
+                  <h3>Kids</h3>
+                  <p>Shop practical and comfortable fashion for kids, including shoes, clothing, and accessories.</p>
+                </div>
+              </div>
+
+              <div class="circle" id="circle10">
+                <div class="content10">
+                  <h3>Shoes</h3>
+                  <p>Browse sneakers, boots, sandals, and more to complete every outfit with the right pair.</p>
+                </div>
+              </div>
+
+              <div class="circle" id="circle12">
+                <div class="content12">
+                  <h3>Clothing</h3>
+                  <p>Find everyday basics, seasonal favorites, and stylish pieces for all audiences.</p>
+                </div>
+              </div>
+
+              <div class="circle" id="circle13">
+                <div class="content13">
+                  <h3>Accessories</h3>
+                  <p>Complete your look with bags, hats, watches, socks, and other essential accessories.</p>
+                </div>
+              </div>
+
+              <div class="circleh">
+                <h2 class="po2">Explore our most popular collections</h2>
+              </div>
+            </div>
+
+            <div class="orbit4" id="orbit4" aria-hidden="false">
+              <div class="circle" id="circle77">
+                <a href="shop.html?audience=men"><div class="content77"><h3>Men</h3></div></a>
+              </div>
+
+              <div class="circle" id="circle88">
+                <a href="shop.html?audience=women"><div class="content88"><h3>Women</h3></div></a>
+              </div>
+
+              <div class="circle" id="circle99">
+                <a href="shop.html?audience=kids"><div class="content99"><h3>Kids</h3></div></a>
+              </div>
+
+              <div class="circle" id="circle1010">
+                <a href="shop.html?department=shoes"><div class="content1010"><h3>Shoes</h3></div></a>
+              </div>
+
+              <div class="circle" id="circle1212">
+                <a href="shop.html?department=clothing"><div class="content1212"><h3>Clothing</h3></div></a>
+              </div>
+
+              <div class="circle" id="circle1313">
+                <a href="shop.html?department=accessories"><div class="content1313"><h3>Accessories</h3></div></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Benefits -->
+      <section class="pricing" id="pricing" aria-labelledby="pricing-title">
+        <h2 id="pricing-title" class="main-title">Store Benefits</h2>
+        <div class="container">
+          <div class="plans">
+            <div class="plan">
+              <div class="head">
+                <h3>Wide Selection</h3>
+                <span>01</span>
+              </div>
+              <ul>
+                <li>Men, women, and kids</li>
+                <li>Shoes, clothing, accessories</li>
+                <li>Featured collections</li>
+                <li>Modern catalog browsing</li>
+              </ul>
+              <div class="foot">
+                <a href="shop.html" class="btn">Shop Now</a>
+              </div>
+            </div>
+
+            <div class="plan">
+              <div class="head">
+                <h3>Simple Shopping</h3>
+                <span>02</span>
+              </div>
+              <ul>
+                <li>Clean product pages</li>
+                <li>Easy filtering</li>
+                <li>Quick add to cart</li>
+                <li>Smooth checkout flow</li>
+              </ul>
+              <div class="foot">
+                <a href="shop.html" class="btn">Browse Store</a>
+              </div>
+            </div>
+
+            <div class="plan">
+              <div class="head">
+                <h3>Customer Focused</h3>
+                <span>03</span>
+              </div>
+              <ul>
+                <li>Helpful order experience</li>
+                <li>Account and order tracking</li>
+                <li>Responsive store structure</li>
+                <li>Modern shopping design</li>
+              </ul>
+              <div class="foot">
+                <a href="#contact" class="btn">Get Support</a>
+              </div>
+            </div>
+
+            <div class="plan">
+              <div class="head">
+                <h3>Reliable Experience</h3>
+                <span>04</span>
+              </div>
+              <ul>
+                <li>Secure login system</li>
+                <li>Organized order handling</li>
+                <li>Admin-managed products</li>
+                <li>Easy store management</li>
+              </ul>
+              <div class="foot">
+                <a href="#contact" class="btn">Contact Us</a>
+              </div>
+            </div>
+          </div>
+
+          <p class="contact-text">Need help before or after your order?</p>
+          <a href="#contact" class="contact-link">Contact Support</a>
+        </div>
+      </section>
+
+      <!-- Testimonials -->
+      <section class="testimonials" aria-labelledby="testimonials-title">
+        <i class="fas fa-angle-left change-background-l"></i>
+        <i class="fas fa-angle-right change-background-r"></i>
+        <div class="wrap">
+          <h2 id="testimonials-title" class="main-title">Customer Reviews</h2>
+          <div class="testimonial-grid" role="list">
+            <article class="card" role="listitem">
+              <div class="card-media">
+                <img class="avatar" src="https://i.pravatar.cc/120?img=32" alt="Photo of Amina" />
+              </div>
+              <div class="card-body">
+                <p class="quote">
+                  “Great shopping experience, clean design, and the products arrived exactly as expected. I’ll definitely order again.”
+                </p>
+                <div class="meta">
+                  <div class="meta-text">
+                    <div class="name">Amina S.</div>
+                    <div class="position">Verified Customer</div>
+                  </div>
+                  <div class="rating" aria-hidden="true">★ ★ ★ ★ ★</div>
+                </div>
+              </div>
+            </article>
+
+            <article class="card" role="listitem">
+              <div class="card-media">
+                <img class="avatar" src="https://i.pravatar.cc/120?img=47" alt="Photo of Jonas" />
+              </div>
+              <div class="card-body">
+                <p class="quote">
+                  “Easy to browse, easy to order, and the product quality was excellent. The whole experience felt smooth and professional.”
+                </p>
+                <div class="meta">
+                  <div class="meta-text">
+                    <div class="name">Jonas K.</div>
+                    <div class="position">Verified Customer</div>
+                  </div>
+                  <div class="rating" aria-hidden="true">★ ★ ★ ★ ☆</div>
+                </div>
+              </div>
+            </article>
+
+            <article class="card active" role="listitem">
+              <div class="card-media">
+                <img class="avatar" src="https://i.pravatar.cc/120?img=66" alt="Photo of Leyla" />
+              </div>
+              <div class="card-body">
+                <p class="quote">
+                  “I loved how quickly I found what I needed. The store layout is simple, modern, and very easy to use.”
+                </p>
+                <div class="meta">
+                  <div class="meta-text">
+                    <div class="name">Leyla M.</div>
+                    <div class="position">Verified Customer</div>
+                  </div>
+                  <div class="rating" aria-hidden="true">★ ★ ★ ★ ★</div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Support -->
+      <section id="contact" class="contact" aria-labelledby="contact-title">
+        <h2 id="contact-title" class="main-title">Customer Support</h2>
+        <div class="container">
+          <div class="contact-info">
+            <h3>We’re Here to Help</h3>
+            <p>
+              If you have questions about products, orders, or your shopping
+              experience, feel free to contact our support team.
+            </p>
+            <ul>
+              <li>
+                📧 Email:
+                <a href="mailto:support@yourstore.com">support@yourstore.com</a>
+              </li>
+              <li>
+                <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+                Instagram:
+                <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">@yourstore</a>
+              </li>
+              <li>
+                <i class="fa-brands fa-x-twitter" aria-hidden="true"></i>
+                X:
+                <a href="https://x.com/" target="_blank" rel="noopener noreferrer">@yourstore</a>
+              </li>
+            </ul>
+          </div>
+
+          <form
+            class="contact-form"
+            action="https://formspree.io/f/xblaepgv"
+            method="POST"
+            aria-labelledby="contact-form-title"
+          >
+            <h3 id="contact-form-title" class="sr-only">Contact form</h3>
+
+            <label for="contact-name" class="sr-only">Your name</label>
+            <input id="contact-name" type="text" name="name" placeholder="Your Name" required />
+
+            <label for="contact-email" class="sr-only">Your email</label>
+            <input id="contact-email" type="email" name="email" placeholder="Your Email" required />
+
+            <label for="contact-message" class="sr-only">Your message</label>
+            <textarea id="contact-message" name="message" placeholder="Your Message" required></textarea>
+
+            <button type="submit" class="btn">Send Message</button>
+
+            <input type="hidden" name="_subject" value="New Customer Support Message" />
+            <input type="hidden" name="_next" value="thanks.html" />
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" role="contentinfo">
+      <div class="container">
+        <p>© 2025 Clothing Store. All Rights Reserved.</p>
+        <ul class="footer-links">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">Why Us</a></li>
+          <li><a href="#projects">Collections</a></li>
+          <li><a href="#pricing">Benefits</a></li>
+          <li><a href="#contact">Support</a></li>
+        </ul>
+        <div class="socials" aria-label="Social links">
+          <a href="shop.html">Shop</a>
+          <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href="https://x.com/" target="_blank" rel="noopener noreferrer">X</a>
+          <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="home.js"></script>
+  </body>
 </html>
