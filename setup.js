@@ -18,6 +18,24 @@ const setupBtn = document.getElementById("setup-btn");
 })();
 
 // =====================
+// GET CSRF TOKEN
+// =====================
+async function getCsrfToken() {
+  try {
+    const res = await fetch(`${API_BASE}/csrf`, {
+      method: "GET",
+      credentials: "include"
+    });
+
+    const data = await res.json().catch(() => ({}));
+    return data.csrfToken || null;
+  } catch (err) {
+    console.error("Failed to initialize CSRF:", err);
+    return null;
+  }
+}
+
+// =====================
 // SUBMIT SETUP
 // =====================
 setupForm?.addEventListener("submit", async (e) => {
@@ -48,11 +66,14 @@ setupForm?.addEventListener("submit", async (e) => {
   }
 
   try {
+    const csrfToken = await getCsrfToken();
+
     const res = await fetch(`${API_BASE}/settings`, {
       method: "PUT",
       credentials: "include",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
       },
       body: JSON.stringify(payload)
     });
@@ -70,7 +91,7 @@ setupForm?.addEventListener("submit", async (e) => {
     setupMessage.style.color = "#166534";
 
     setTimeout(() => {
-      window.location.href = "login.html";
+      window.location.href = "setup-admin.html";
     }, 1000);
   } catch (err) {
     console.error(err);
