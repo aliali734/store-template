@@ -1,14 +1,21 @@
-// forgot-password.js
-
 // =====================
-// LOAD HEADER
+// LOAD HEADER + SETTINGS
 // =====================
 fetch("header.html")
   .then((res) => res.text())
-  .then((html) => {
+  .then(async (html) => {
     const headerEl = document.getElementById("header");
     if (headerEl) {
       headerEl.innerHTML = html;
+
+      try {
+        const settingsData = await getStoreSettings();
+        if (settingsData.success && settingsData.settings) {
+          window.applyStoreSettingsToUI?.(settingsData.settings);
+        }
+      } catch (err) {
+        console.error("Failed to load store settings:", err);
+      }
     }
   })
   .catch((err) => console.error("Failed to load header:", err));

@@ -13,6 +13,7 @@
       <li><a href="#" data-section="dashboard">Dashboard</a></li>
       <li><a href="#" data-section="products">Products</a></li>
       <li><a href="#" data-section="orders">Orders</a></li>
+      <li><button type="button" id="openSettingsModal">Store Settings</button></li>
       <li><button type="button" id="openHeaderModal">Header Settings</button></li>
       <li><button type="button" id="logoutBtn">Logout</button></li>
     </ul>
@@ -44,8 +45,8 @@
           <p>View and update customer orders</p>
         </div>
         <div class="card">
-          <h3>Header</h3>
-          <p>Update logo settings safely</p>
+          <h3>Store Settings</h3>
+          <p>Update business information without touching code</p>
         </div>
       </div>
     </section>
@@ -165,6 +166,52 @@
     </form>
   </div>
 
+  <!-- STORE SETTINGS MODAL -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-header">
+      <h2>Store Settings</h2>
+      <button type="button" id="closeSettingsModal">&times;</button>
+    </div>
+
+    <form id="settings-form">
+      <label for="storeName">Store Name</label>
+      <input type="text" id="storeName" />
+
+      <label for="supportEmail">Support Email</label>
+      <input type="email" id="supportEmail" />
+
+      <label for="phone">Phone</label>
+      <input type="text" id="phone" />
+
+      <label for="address">Address</label>
+      <textarea id="address"></textarea>
+
+      <label for="currency">Currency</label>
+      <input type="text" id="currency" placeholder="USD" />
+
+      <label for="footerText">Footer Text</label>
+      <textarea id="footerText"></textarea>
+
+      <label for="facebook">Facebook</label>
+      <input type="text" id="facebook" />
+
+      <label for="instagram">Instagram</label>
+      <input type="text" id="instagram" />
+
+      <label for="tiktok">TikTok</label>
+      <input type="text" id="tiktok" />
+
+      <label for="twitter">X / Twitter</label>
+      <input type="text" id="twitter" />
+
+      <label for="whatsapp">WhatsApp</label>
+      <input type="text" id="whatsapp" />
+
+      <p id="settingsMessage"></p>
+      <button type="submit">Save Settings</button>
+    </form>
+  </div>
+
   <!-- HEADER MODAL -->
   <div id="headerModal" class="modal hidden">
     <div class="modal-header">
@@ -194,10 +241,24 @@
       <button type="submit">Save Logo</button>
     </form>
   </div>
+  <footer class="site-footer">
+  <div class="footer-inner">
+    <p id="footer-text">© Clothing Store. All rights reserved.</p>
+
+    <div class="footer-socials">
+      <a id="social-facebook" href="#" target="_blank" rel="noopener" style="display:none;">Facebook</a>
+      <a id="social-instagram" href="#" target="_blank" rel="noopener" style="display:none;">Instagram</a>
+      <a id="social-tiktok" href="#" target="_blank" rel="noopener" style="display:none;">TikTok</a>
+      <a id="social-twitter" href="#" target="_blank" rel="noopener" style="display:none;">X</a>
+      <a id="social-whatsapp" href="#" target="_blank" rel="noopener" style="display:none;">WhatsApp</a>
+    </div>
+  </div>
+</footer>
 
   <script src="config.js"></script>
   <script src="api.js"></script>
   <script src="admin-orders.js"></script>
   <script src="admin.js"></script>
+  <script src="admin-settings.js"></script>
 </body>
 </html>

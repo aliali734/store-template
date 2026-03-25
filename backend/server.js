@@ -85,7 +85,8 @@ app.use("/api/orders", require("./routes/order.routes"));
 app.use("/api/test", require("./routes/test.routes"));
 app.use("/api/email-test", require("./routes/email-test.routes"));
 app.use("/api/header", require("./routes/header.routes"));
-
+app.use("/api/settings", require("./routes/storeSettings.routes"));
+app.use("/api/setup", require("./routes/setup.routes")); 
 // Health
 app.get("/", (req, res) => {
   res.send("🚀 Backend is running successfully!");

@@ -193,21 +193,27 @@ async function initHeader() {
 initHeader();
 
 // =====================
-// LOAD HEADER DATA
+// LOAD HEADER DATA + STORE SETTINGS
 // =====================
 async function loadDynamicHeader() {
   try {
-    const data = await apiFetch("/header");
+    const [headerData, settingsData] = await Promise.all([
+      apiFetch("/header"),
+      apiFetch("/settings")
+    ]);
 
-    if (!data.success || !data.header) return;
+    if (headerData.success && headerData.header) {
+      const { header } = headerData;
+      renderHeaderLogo(header.logo);
+      renderDesktopMenu(header.menu || []);
+      renderMobileMenu(header.menu || []);
+    }
 
-    const { header } = data;
-
-    renderHeaderLogo(header.logo);
-    renderDesktopMenu(header.menu || []);
-    renderMobileMenu(header.menu || []);
+    if (settingsData.success && settingsData.settings) {
+      window.applyStoreSettingsToUI?.(settingsData.settings);
+    }
   } catch (err) {
-    console.error("Failed to load dynamic header:", err);
+    console.error("Failed to load dynamic header/settings:", err);
   }
 }
 
@@ -260,9 +266,11 @@ function renderDesktopMenu(menu) {
     const sections = Array.isArray(menuItem.sections) ? menuItem.sections : [];
 
     if (!sections.length) {
+      const href = normalizeMenuUrl(menuItem.url || "#");
+
       desktopMenu.insertAdjacentHTML(
         "beforeend",
-        `<a class="menu-item" href="#">${menuItem.title}</a>`
+        `<a class="menu-item" href="${href}">${menuItem.title}</a>`
       );
       return;
     }

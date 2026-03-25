@@ -322,6 +322,10 @@ closeBtn?.addEventListener("click", closeModal);
 overlay?.addEventListener("click", () => {
   closeModal();
   closeHeaderModal();
+
+  if (typeof closeSettingsModal === "function") {
+    closeSettingsModal();
+  }
 });
 
 function closeModal() {
