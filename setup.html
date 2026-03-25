@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Store Setup</title>
+  <link rel="stylesheet" href="setup.css" />
+</head>
+<body>
+  <main class="setup-page">
+    <div class="setup-box">
+      <h1>Welcome</h1>
+      <p>Set up your store without touching code.</p>
+
+      <form id="setup-form">
+        <label for="storeName">Store Name</label>
+        <input type="text" id="storeName" required />
+
+        <label for="supportEmail">Support Email</label>
+        <input type="email" id="supportEmail" />
+
+        <label for="phone">Phone</label>
+        <input type="text" id="phone" />
+
+        <label for="address">Address</label>
+        <textarea id="address"></textarea>
+
+        <label for="currency">Currency</label>
+        <input type="text" id="currency" value="USD" />
+
+        <label for="footerText">Footer Text</label>
+        <textarea id="footerText"></textarea>
+
+        <label for="facebook">Facebook</label>
+        <input type="text" id="facebook" />
+
+        <label for="instagram">Instagram</label>
+        <input type="text" id="instagram" />
+
+        <label for="tiktok">TikTok</label>
+        <input type="text" id="tiktok" />
+
+        <label for="twitter">X / Twitter</label>
+        <input type="text" id="twitter" />
+
+        <label for="whatsapp">WhatsApp</label>
+        <input type="text" id="whatsapp" />
+
+        <p id="setup-message"></p>
+        <button type="submit" id="setup-btn">Save and Continue</button>
+      </form>
+    </div>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script src="setup.js"></script>
+</body>
+</html>

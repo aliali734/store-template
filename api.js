@@ -1,5 +1,23 @@
-const API_BASE = window.APP_CONFIG?.API_BASE || "http://localhost:5000/api";
-const SERVER_BASE = window.APP_CONFIG?.SERVER_BASE || "http://localhost:5000";
+function getSavedAppConfig() {
+  try {
+    const raw = localStorage.getItem("storeTemplateConfig");
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+const savedConfig = getSavedAppConfig();
+
+const API_BASE =
+  savedConfig.API_BASE ||
+  window.APP_CONFIG?.API_BASE ||
+  "http://localhost:5000/api";
+
+const SERVER_BASE =
+  savedConfig.SERVER_BASE ||
+  window.APP_CONFIG?.SERVER_BASE ||
+  "http://localhost:5000";
 
 // =====================
 // GET COOKIE
@@ -124,6 +142,14 @@ function applyStoreSettingsToUI(settings) {
   }
 }
 
+// =====================
+// OPTIONAL CONFIG CHECK
+// =====================
+function hasSavedConnectionConfig() {
+  return Boolean(savedConfig.API_BASE && savedConfig.SERVER_BASE);
+}
+
 // Optional global access
 window.getStoreSettings = getStoreSettings;
 window.applyStoreSettingsToUI = applyStoreSettingsToUI;
+window.hasSavedConnectionConfig = hasSavedConnectionConfig;

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect Store</title>
+  <link rel="stylesheet" href="connect.css" />
+</head>
+<body>
+  <main class="connect-page">
+    <div class="connect-box">
+      <h1>Connect Your Store</h1>
+      <p>Enter your backend URL once. You won’t need to edit code.</p>
+
+      <form id="connect-form">
+        <label for="backendUrl">Backend URL</label>
+        <input
+          type="url"
+          id="backendUrl"
+          placeholder="https://your-backend.onrender.com"
+          required
+        />
+
+        <p id="connect-message"></p>
+        <button type="submit" id="connect-btn">Save and Continue</button>
+      </form>
+    </div>
+  </main>
+
+  <script src="connect.js"></script>
+</body>
+</html>
