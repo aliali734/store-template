@@ -311,16 +311,16 @@ a {
 /* =========================================
    DESKTOP MEGA MENU BAR
    ========================================= */
-
 #desktop-menu {
   display: flex;
   justify-content: center;
-  align-items: stretch;
+  align-items: center;
   position: relative;
-  background: rgba(255, 255, 255, 0.92);
-  border-top: 1px solid rgba(245, 245, 245, 0.8);
-  border-bottom: 1px solid var(--hdr-border);
+  background: transparent;
+  border: none;
   padding: 0 12px;
+  margin-top: -58px;
+  z-index: 1001;
 }
 
 /* =========================================
@@ -329,18 +329,18 @@ a {
 
 .menu-item {
   position: static;
-  padding: 16px 24px;
+  padding: 10px 16px;
   font-weight: 700;
   font-size: 12.5px;
   text-transform: uppercase;
-  letter-spacing: 0.9px;
+  letter-spacing: 0.8px;
   color: var(--hdr-accent);
   cursor: pointer;
   text-decoration: none;
   transition: color 0.2s ease, background 0.2s ease;
   user-select: none;
   white-space: nowrap;
-  border-radius: 10px 10px 0 0;
+  border-radius: 999px;
 }
 
 a.menu-item {
@@ -360,7 +360,7 @@ a.menu-item {
 .mega {
   display: none;
   position: absolute;
-  top: 100%;
+  top: calc(100% + 10px);
   left: 0;
   right: 0;
   width: 100%;
@@ -368,7 +368,8 @@ a.menu-item {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.09);
-  border-top: 1px solid #efefef;
+  border: 1px solid #efefef;
+  border-radius: 18px;
   z-index: 1000;
   padding: 0;
 }
