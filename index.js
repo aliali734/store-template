@@ -169,6 +169,7 @@ fetch("header.html")
 
       if (settingsData.success && settingsData.settings) {
         window.applyStoreSettingsToUI?.(settingsData.settings);
+        applyHomepageSettings(settingsData.settings);
       }
 
       setupHeaderInteractions();
@@ -303,6 +304,58 @@ async function setupAuthHeader() {
     loginLink.style.display = "inline-flex";
     registerLink.style.display = "inline-flex";
     logoutBtn.style.display = "none";
+  }
+}
+
+// =====================
+// APPLY HOMEPAGE SETTINGS
+// =====================
+function applyHomepageSettings(settings) {
+  if (!settings?.homepage) return;
+
+  const homepage = settings.homepage;
+
+  const heroTitleEl = document.getElementById("hero-title");
+  const heroSubtitleEl = document.getElementById("hero-subtitle");
+  const supportHeadlineEl = document.getElementById("support-headline");
+  const supportTextEl = document.getElementById("support-text");
+  const supportEmailLink = document.getElementById("support-email-link");
+  const supportInstagramLink = document.getElementById("support-instagram-link");
+  const supportTwitterLink = document.getElementById("support-twitter-link");
+
+  if (heroTitleEl && homepage.heroTitle) {
+    heroTitleEl.innerHTML = homepage.heroTitle
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .join("<br />");
+  }
+
+  if (heroSubtitleEl && homepage.heroSubtitle) {
+    heroSubtitleEl.textContent = homepage.heroSubtitle;
+  }
+
+  if (supportHeadlineEl && homepage.supportHeadline) {
+    supportHeadlineEl.textContent = homepage.supportHeadline;
+  }
+
+  if (supportTextEl && homepage.supportText) {
+    supportTextEl.textContent = homepage.supportText;
+  }
+
+  if (supportEmailLink && homepage.supportEmail) {
+    supportEmailLink.href = `mailto:${homepage.supportEmail}`;
+    supportEmailLink.textContent = homepage.supportEmail;
+  }
+
+  if (supportInstagramLink && homepage.supportInstagram) {
+    supportInstagramLink.href = homepage.supportInstagram;
+    supportInstagramLink.textContent = "@Instagram";
+  }
+
+  if (supportTwitterLink && homepage.supportTwitter) {
+    supportTwitterLink.href = homepage.supportTwitter;
+    supportTwitterLink.textContent = "@X";
   }
 }
 

@@ -55,7 +55,14 @@ setupForm?.addEventListener("submit", async (e) => {
     instagram: document.getElementById("instagram")?.value || "",
     tiktok: document.getElementById("tiktok")?.value || "",
     twitter: document.getElementById("twitter")?.value || "",
-    whatsapp: document.getElementById("whatsapp")?.value || ""
+    whatsapp: document.getElementById("whatsapp")?.value || "",
+    heroTitle: document.getElementById("heroTitle")?.value || "",
+    heroSubtitle: document.getElementById("heroSubtitle")?.value || "",
+    supportHeadline: document.getElementById("supportHeadline")?.value || "",
+    supportText: document.getElementById("supportText")?.value || "",
+    homepageSupportEmail: document.getElementById("homepageSupportEmail")?.value || "",
+    supportInstagram: document.getElementById("supportInstagram")?.value || "",
+    supportTwitter: document.getElementById("supportTwitter")?.value || ""
   };
 
   if (!payload.storeName.trim()) {

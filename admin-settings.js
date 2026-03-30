@@ -16,6 +16,14 @@ const tiktokInput = document.getElementById("tiktok");
 const twitterInput = document.getElementById("twitter");
 const whatsappInput = document.getElementById("whatsapp");
 
+const heroTitleInput = document.getElementById("heroTitle");
+const heroSubtitleInput = document.getElementById("heroSubtitle");
+const supportHeadlineInput = document.getElementById("supportHeadline");
+const supportTextInput = document.getElementById("supportText");
+const homepageSupportEmailInput = document.getElementById("homepageSupportEmail");
+const supportInstagramInput = document.getElementById("supportInstagram");
+const supportTwitterInput = document.getElementById("supportTwitter");
+
 // =====================
 // MODAL HELPERS
 // =====================
@@ -58,6 +66,14 @@ async function loadStoreSettings() {
     if (twitterInput) twitterInput.value = settings.socialLinks?.twitter || "";
     if (whatsappInput) whatsappInput.value = settings.socialLinks?.whatsapp || "";
 
+    if (heroTitleInput) heroTitleInput.value = settings.homepage?.heroTitle || "";
+    if (heroSubtitleInput) heroSubtitleInput.value = settings.homepage?.heroSubtitle || "";
+    if (supportHeadlineInput) supportHeadlineInput.value = settings.homepage?.supportHeadline || "";
+    if (supportTextInput) supportTextInput.value = settings.homepage?.supportText || "";
+    if (homepageSupportEmailInput) homepageSupportEmailInput.value = settings.homepage?.supportEmail || "";
+    if (supportInstagramInput) supportInstagramInput.value = settings.homepage?.supportInstagram || "";
+    if (supportTwitterInput) supportTwitterInput.value = settings.homepage?.supportTwitter || "";
+
     if (settingsMessage) {
       settingsMessage.textContent = "";
     }
@@ -91,7 +107,14 @@ settingsForm?.addEventListener("submit", async (e) => {
         instagram: instagramInput?.value || "",
         tiktok: tiktokInput?.value || "",
         twitter: twitterInput?.value || "",
-        whatsapp: whatsappInput?.value || ""
+        whatsapp: whatsappInput?.value || "",
+        heroTitle: heroTitleInput?.value || "",
+        heroSubtitle: heroSubtitleInput?.value || "",
+        supportHeadline: supportHeadlineInput?.value || "",
+        supportText: supportTextInput?.value || "",
+        homepageSupportEmail: homepageSupportEmailInput?.value || "",
+        supportInstagram: supportInstagramInput?.value || "",
+        supportTwitter: supportTwitterInput?.value || ""
       })
     });
 
