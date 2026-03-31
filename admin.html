@@ -128,25 +128,10 @@
       <input type="number" id="stock" min="0" required />
 
       <label for="sizes">Sizes</label>
-      <select id="sizes" multiple required>
-        <option value="XS">XS</option>
-        <option value="S">S</option>
-        <option value="M">M</option>
-        <option value="L">L</option>
-        <option value="XL">XL</option>
-      </select>
+      <select id="sizes" multiple required></select>
 
-      <label for="colors">Colors</label>
-      <select id="colors" multiple required>
-        <option value="black">Black</option>
-        <option value="white">White</option>
-        <option value="blue">Blue</option>
-        <option value="red">Red</option>
-        <option value="green">Green</option>
-        <option value="gray">Gray</option>
-        <option value="beige">Beige</option>
-        <option value="brown">Brown</option>
-      </select>
+      <label>Colors</label>
+      <div id="colorsChecklist" class="checklist-group"></div>
 
       <label for="image">Images</label>
       <input type="file" id="image" multiple accept="image/*" />
@@ -262,22 +247,26 @@
       <button type="submit">Save Logo</button>
     </form>
   </div>
-  <footer class="site-footer">
-  <div class="footer-inner">
-    <p id="footer-text">© Clothing Store. All rights reserved.</p>
 
-    <div class="footer-socials">
-      <a id="social-facebook" href="#" target="_blank" rel="noopener" style="display:none;">Facebook</a>
-      <a id="social-instagram" href="#" target="_blank" rel="noopener" style="display:none;">Instagram</a>
-      <a id="social-tiktok" href="#" target="_blank" rel="noopener" style="display:none;">TikTok</a>
-      <a id="social-twitter" href="#" target="_blank" rel="noopener" style="display:none;">X</a>
-      <a id="social-whatsapp" href="#" target="_blank" rel="noopener" style="display:none;">WhatsApp</a>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p id="footer-text">© Clothing Store. All rights reserved.</p>
+
+      <div class="footer-socials">
+        <a id="social-facebook" href="#" target="_blank" rel="noopener" style="display:none;">Facebook</a>
+        <a id="social-instagram" href="#" target="_blank" rel="noopener" style="display:none;">Instagram</a>
+        <a id="social-tiktok" href="#" target="_blank" rel="noopener" style="display:none;">TikTok</a>
+        <a id="social-twitter" href="#" target="_blank" rel="noopener" style="display:none;">X</a>
+        <a id="social-whatsapp" href="#" target="_blank" rel="noopener" style="display:none;">WhatsApp</a>
+      </div>
     </div>
-  </div>
-</footer>
+  </footer>
+
   <script src="onboarding.js"></script>
   <script src="config.js"></script>
   <script src="api.js"></script>
+  <script src="size-options.js"></script>
+  <script src="color-options.js"></script>
   <script src="admin-orders.js"></script>
   <script src="admin.js"></script>
   <script src="admin-settings.js"></script>
