@@ -25,7 +25,7 @@ const priceInput = document.getElementById("price");
 const compareAtPriceInput = document.getElementById("compareAtPrice");
 const stockInput = document.getElementById("stock");
 const sizesInput = document.getElementById("sizes");
-const colorsInput = document.getElementById("colors");
+const colorsChecklist = document.getElementById("colorsChecklist");
 const featuredInput = document.getElementById("featured");
 const isActiveInput = document.getElementById("isActive");
 const imageInput = document.getElementById("image");
@@ -299,6 +299,36 @@ function clearSizeOptions() {
   sizesInput.innerHTML = "";
 }
 
+function populateColorChecklist(selectedColors = []) {
+  if (!colorsChecklist) return;
+
+  const colors = window.getColorOptions ? window.getColorOptions() : [];
+
+  colorsChecklist.innerHTML = colors
+    .map((color) => {
+      const checked = selectedColors.includes(color) ? "checked" : "";
+      return `
+        <label class="checklist-item">
+          <input type="checkbox" value="${color}" ${checked} />
+          <span>${capitalizeLabel(color)}</span>
+        </label>
+      `;
+    })
+    .join("");
+}
+
+function getSelectedColors() {
+  if (!colorsChecklist) return [];
+  return [...colorsChecklist.querySelectorAll('input[type="checkbox"]:checked')].map(
+    (input) => input.value
+  );
+}
+
+function clearColorChecklist() {
+  if (!colorsChecklist) return;
+  populateColorChecklist([]);
+}
+
 function capitalizeLabel(value) {
   return String(value || "")
     .replace(/-/g, " ")
@@ -331,7 +361,7 @@ openBtn?.addEventListener("click", async () => {
   populateDepartmentOptions("");
   populateCategoryOptions("");
   clearSizeOptions();
-  setMultiSelectValues(colorsInput, []);
+  clearColorChecklist();
 
   modal.classList.remove("hidden");
   overlay.classList.remove("hidden");
@@ -377,7 +407,7 @@ form?.addEventListener("submit", async (e) => {
   formData.append("stock", stockInput.value);
 
   const selectedSizes = getMultiSelectValues(sizesInput);
-  const selectedColors = getMultiSelectValues(colorsInput);
+  const selectedColors = getSelectedColors();
 
   formData.append("sizes", selectedSizes.join(","));
   formData.append("colors", selectedColors.join(","));
@@ -417,7 +447,7 @@ form?.addEventListener("submit", async (e) => {
       populateDepartmentOptions("");
       populateCategoryOptions("");
       clearSizeOptions();
-      setMultiSelectValues(colorsInput, []);
+      clearColorChecklist();
       loadProducts();
     }, 600);
   } catch (err) {
@@ -527,8 +557,7 @@ function openEditPopup(product) {
     Array.isArray(product.sizes) ? product.sizes : []
   );
 
-  setMultiSelectValues(
-    colorsInput,
+  populateColorChecklist(
     Array.isArray(product.colors) ? product.colors : []
   );
 
@@ -668,5 +697,6 @@ links.forEach((link) => {
 // LOAD
 // =====================
 document.addEventListener("DOMContentLoaded", () => {
+  populateColorChecklist([]);
   checkAdminAuth();
 });
