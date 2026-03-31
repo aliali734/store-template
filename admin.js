@@ -280,11 +280,11 @@ function populateCategoryOptions(department, selectedCategory = "") {
   });
 }
 
-function populateSizeOptions(department, selectedSizes = []) {
+function populateSizeOptions(department, audience = "", selectedSizes = []) {
   if (!sizesInput) return;
 
-  const sizes = window.getSizesForDepartment
-    ? window.getSizesForDepartment(department)
+  const sizes = window.getSizesForProduct
+    ? window.getSizesForProduct(department, audience)
     : [];
 
   sizesInput.innerHTML = sizes
@@ -341,8 +341,15 @@ function humanizeCategory(value) {
 
 departmentInput?.addEventListener("change", () => {
   const department = departmentInput.value;
+  const audience = audienceInput?.value || "";
   populateCategoryOptions(department);
-  populateSizeOptions(department, []);
+  populateSizeOptions(department, audience, []);
+});
+
+audienceInput?.addEventListener("change", () => {
+  const department = departmentInput?.value || "";
+  const audience = audienceInput.value || "";
+  populateSizeOptions(department, audience, []);
 });
 
 // =====================
@@ -554,6 +561,7 @@ function openEditPopup(product) {
   populateCategoryOptions(product.department || "", product.category || "");
   populateSizeOptions(
     product.department || "",
+    product.audience || "",
     Array.isArray(product.sizes) ? product.sizes : []
   );
 
