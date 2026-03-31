@@ -29,27 +29,6 @@ function resolveImageUrl(path, fallback = "https://via.placeholder.com/300") {
 }
 
 // =====================
-// MENU URL NORMALIZER
-// Makes "/index.html?..."
-// work correctly on GitHub Pages
-// =====================
-function normalizeMenuUrl(rawUrl) {
-  const url = String(rawUrl || "#").trim();
-
-  if (!url || url === "#") return "#";
-
-  if (/^https?:\/\//i.test(url)) {
-    return url;
-  }
-
-  if (url.startsWith("/index.html")) {
-    return url.replace(/^\/index\.html/, "index.html");
-  }
-
-  return url;
-}
-
-// =====================
 // GET CSRF TOKEN
 // =====================
 async function getCsrfToken() {
@@ -154,332 +133,14 @@ function showToast(message, type = "success") {
 }
 
 // =====================
-// LOAD HEADER TEMPLATE + DATA
-// =====================
-async function initHeader() {
-  try {
-    const res = await fetch("header.html");
-    const html = await res.text();
-
-    const headerEl = document.getElementById("header");
-    if (!headerEl) return;
-
-    headerEl.innerHTML = html;
-
-    await loadDynamicHeader();
-
-    setupAuthHeader();
-
-    cartCountEl = document.getElementById("cart-count");
-
-    updateCartCounter();
-    setupCartModal();
-    setupHeaderInteractions();
-
-    applyUrlFilters();
-    await loadFilterTaxonomy();
-    syncFilterInputsFromState();
-    setupFilters(() => loadProducts(1));
-
-    const checkoutBtn = document.getElementById("checkout-btn");
-    checkoutBtn?.addEventListener("click", checkout);
-
-    loadProducts(1);
-  } catch (err) {
-    console.error("Failed to initialize header:", err);
-  }
-}
-
-initHeader();
-
-// =====================
-// LOAD HEADER DATA + STORE SETTINGS
-// =====================
-async function loadDynamicHeader() {
-  try {
-    const [headerData, settingsData] = await Promise.all([
-      apiFetch("/header"),
-      apiFetch("/settings")
-    ]);
-
-    if (headerData.success && headerData.header) {
-      const { header } = headerData;
-      renderHeaderLogo(header.logo);
-      renderDesktopMenu(header.menu || []);
-      renderMobileMenu(header.menu || []);
-    }
-
-    if (settingsData.success && settingsData.settings) {
-      window.applyStoreSettingsToUI?.(settingsData.settings);
-    }
-  } catch (err) {
-    console.error("Failed to load dynamic header/settings:", err);
-  }
-}
-
-// =====================
-// RENDER LOGO
-// =====================
-function renderHeaderLogo(logoPath) {
-  const logoText = document.getElementById("site-logo-text");
-
-  if (!logoText) return;
-
-  if (logoPath) {
-    logoText.innerHTML =
-      `<img src="${resolveImageUrl(logoPath, "")}" alt="Logo" style="height:40px;object-fit:contain;">`;
-  } else {
-    logoText.textContent = "Clothing Store";
-  }
-}
-
-// =====================
-// MEGA LINK HTML HELPER
-// =====================
-function buildMegaLinkHTML(link) {
-  const url = normalizeMenuUrl(link.url);
-  const label = link.label || "";
-  const isPromo = url.includes("promo=true");
-
-  let labelHtml = label;
-
-  if (isPromo) {
-    labelHtml = label.replace(
-      /(Sale|Promo|sale|promo|On Sale|on sale)/i,
-      '<span class="promo-text">$1</span>'
-    );
-  }
-
-  return `<a href="${url}">${labelHtml}</a>`;
-}
-
-// =====================
-// DESKTOP MENU
-// =====================
-function renderDesktopMenu(menu) {
-  const desktopMenu = document.getElementById("desktop-menu");
-  if (!desktopMenu) return;
-
-  desktopMenu.innerHTML = "";
-
-  menu.forEach((menuItem) => {
-    const sections = Array.isArray(menuItem.sections) ? menuItem.sections : [];
-
-    if (!sections.length) {
-      const href = normalizeMenuUrl(menuItem.url || "#");
-
-      desktopMenu.insertAdjacentHTML(
-        "beforeend",
-        `<a class="menu-item" href="${href}">${menuItem.title}</a>`
-      );
-      return;
-    }
-
-    const sectionsHtml = sections
-      .map((section) => {
-        const linksHtml = (section.links || [])
-          .map((link, i, arr) => {
-            const html = buildMegaLinkHTML(link);
-            const isPromo = normalizeMenuUrl(link.url).includes("promo=true");
-
-            const nextLink = arr[i + 1];
-            const nextIsPromo =
-              nextLink && normalizeMenuUrl(nextLink.url).includes("promo=true");
-            const addDivider = isPromo && !nextIsPromo;
-
-            return addDivider
-              ? html + '<div class="mega-link-divider"></div>'
-              : html;
-          })
-          .join("");
-
-        return `
-          <div class="mega-section">
-            <h4 class="mega-section-title">${section.title || ""}</h4>
-            ${linksHtml}
-          </div>
-        `;
-      })
-      .join("");
-
-    desktopMenu.insertAdjacentHTML(
-      "beforeend",
-      `
-      <div class="menu-item">
-        ${menuItem.title}
-        <div class="mega">
-          <div class="mega-inner">
-            ${sectionsHtml}
-          </div>
-        </div>
-      </div>
-      `
-    );
-  });
-}
-
-// =====================
-// MOBILE MENU
-// =====================
-function renderMobileMenu(menu) {
-  const mobileMenu = document.getElementById("mobile-menu");
-  if (!mobileMenu) return;
-
-  mobileMenu.innerHTML = "";
-
-  menu.forEach((menuItem) => {
-    const sections = Array.isArray(menuItem.sections) ? menuItem.sections : [];
-
-    if (!sections.length) {
-      const href = normalizeMenuUrl(menuItem.url || "#");
-
-      mobileMenu.insertAdjacentHTML(
-        "beforeend",
-        `<a href="${href}">${menuItem.title}</a>`
-      );
-      return;
-    }
-
-    const sectionsHtml = sections
-      .map((section) => {
-        const linksHtml = (section.links || [])
-          .map((link, i, arr) => {
-            const html = buildMegaLinkHTML(link);
-            const isPromo = normalizeMenuUrl(link.url).includes("promo=true");
-
-            const nextLink = arr[i + 1];
-            const nextIsPromo =
-              nextLink && normalizeMenuUrl(nextLink.url).includes("promo=true");
-            const addDivider = isPromo && !nextIsPromo;
-
-            return addDivider
-              ? html + '<div class="mega-link-divider"></div>'
-              : html;
-          })
-          .join("");
-
-        return `
-          <div class="mobile-submenu-title">${section.title || ""}</div>
-          ${linksHtml}
-        `;
-      })
-      .join("");
-
-    mobileMenu.insertAdjacentHTML(
-      "beforeend",
-      `
-      <div class="mobile-item">
-        <button type="button" class="mobile-toggle-sub">${menuItem.title} ▾</button>
-        <div class="mobile-submenu">
-          ${sectionsHtml}
-        </div>
-      </div>
-      `
-    );
-  });
-}
-
-// =====================
-// HEADER INTERACTIONS
-// =====================
-function setupHeaderInteractions() {
-  const mobileToggle = document.getElementById("mobile-toggle");
-  const mobileClose = document.getElementById("mobile-close");
-  const mobilePanel = document.getElementById("mobile-panel");
-  const mobileOverlay = document.getElementById("mobile-overlay");
-
-  const searchToggle = document.getElementById("search-toggle");
-  const headerSearch = document.getElementById("search-input-header");
-  const pageSearch = document.getElementById("search-input");
-
-  mobileToggle?.addEventListener("click", () => {
-    if (!mobilePanel) return;
-    mobilePanel.setAttribute("aria-hidden", "false");
-    mobileOverlay?.classList.add("active");
-    document.body.style.overflow = "hidden";
-  });
-
-  function closeMobilePanel() {
-    if (!mobilePanel) return;
-    mobilePanel.setAttribute("aria-hidden", "true");
-    mobileOverlay?.classList.remove("active");
-    document.body.style.overflow = "";
-  }
-
-  mobileClose?.addEventListener("click", closeMobilePanel);
-  mobileOverlay?.addEventListener("click", closeMobilePanel);
-
-  document.querySelectorAll(".mobile-toggle-sub").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const submenu = btn.nextElementSibling;
-      if (!submenu) return;
-
-      const isOpen = submenu.style.display === "block";
-
-      document.querySelectorAll(".mobile-submenu").forEach((sub) => {
-        sub.style.display = "none";
-      });
-
-      document.querySelectorAll(".mobile-toggle-sub").forEach((b) => {
-        b.classList.remove("active");
-      });
-
-      if (!isOpen) {
-        submenu.style.display = "block";
-        btn.classList.add("active");
-      }
-    });
-  });
-
-  searchToggle?.addEventListener("click", () => {
-    if (!headerSearch) return;
-
-    const isHidden =
-      headerSearch.style.display === "none" || !headerSearch.style.display;
-
-    headerSearch.style.display = isHidden ? "inline-block" : "none";
-
-    if (isHidden) headerSearch.focus();
-  });
-
-  headerSearch?.addEventListener(
-    "input",
-    safeDebounce((e) => {
-      filters.search = e.target.value;
-
-      if (pageSearch) pageSearch.value = e.target.value;
-
-      updateFiltersURL();
-      loadProducts(1);
-    })
-  );
-}
-
-// =====================
-// AUTH HEADER
-// =====================
-function setupAuthHeader() {
-  const loginLink = document.getElementById("login-link");
-  const registerLink = document.getElementById("register-link");
-  const logoutBtn = document.getElementById("logout-btn");
-
-  if (!loginLink || !registerLink || !logoutBtn) return;
-
-  loginLink.style.display = "none";
-  registerLink.style.display = "none";
-  logoutBtn.style.display = "inline-flex";
-
-  logoutBtn.onclick = forceLogout;
-}
-
-// =====================
 // CART
 // =====================
 function updateCartCounter() {
-  if (!cartCountEl) return;
+  const cartCountElLocal = document.getElementById("cart-count");
+  if (!cartCountElLocal) return;
 
   const count = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
-  cartCountEl.textContent = count;
+  cartCountElLocal.textContent = count;
 }
 
 function saveCart() {
@@ -572,13 +233,15 @@ function showProductsSkeleton() {
   const container = document.getElementById("products");
   if (!container) return;
 
-  container.innerHTML = Array(9).fill(`
-    <div class="product-skeleton">
-      <div class="img"></div>
-      <div class="line"></div>
-      <div class="line short"></div>
-    </div>
-  `).join("");
+  container.innerHTML = Array(9)
+    .fill(`
+      <div class="product-skeleton">
+        <div class="img"></div>
+        <div class="line"></div>
+        <div class="line short"></div>
+      </div>
+    `)
+    .join("");
 }
 
 async function loadProducts(page = 1) {
@@ -780,6 +443,9 @@ async function checkout() {
 // INIT
 // =====================
 document.addEventListener("DOMContentLoaded", () => {
+  updateCartCounter();
+  setupCartModal();
+
   const toggleFilters = document.getElementById("toggle-filters");
   const aside = document.getElementById("filters");
 
@@ -788,5 +454,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const hidden = aside.style.display === "none";
     aside.style.display = hidden ? "" : "none";
+  });
+
+  applyUrlFilters();
+  loadFilterTaxonomy().then(() => {
+    syncFilterInputsFromState();
+    setupFilters(() => loadProducts(1));
+    loadProducts(1);
   });
 });

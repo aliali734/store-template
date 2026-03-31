@@ -280,6 +280,25 @@ function populateCategoryOptions(department, selectedCategory = "") {
   });
 }
 
+function populateSizeOptions(department, selectedSizes = []) {
+  if (!sizesInput) return;
+
+  const sizes = window.getSizesForDepartment
+    ? window.getSizesForDepartment(department)
+    : [];
+
+  sizesInput.innerHTML = sizes
+    .map((size) => `<option value="${size}">${size}</option>`)
+    .join("");
+
+  setMultiSelectValues(sizesInput, selectedSizes);
+}
+
+function clearSizeOptions() {
+  if (!sizesInput) return;
+  sizesInput.innerHTML = "";
+}
+
 function capitalizeLabel(value) {
   return String(value || "")
     .replace(/-/g, " ")
@@ -291,7 +310,9 @@ function humanizeCategory(value) {
 }
 
 departmentInput?.addEventListener("change", () => {
-  populateCategoryOptions(departmentInput.value);
+  const department = departmentInput.value;
+  populateCategoryOptions(department);
+  populateSizeOptions(department, []);
 });
 
 // =====================
@@ -304,14 +325,13 @@ openBtn?.addEventListener("click", async () => {
   form.reset();
   messageEl.textContent = "";
 
-  setMultiSelectValues(sizesInput, []);
-  setMultiSelectValues(colorsInput, []);
-
   if (isActiveInput) isActiveInput.checked = true;
   if (featuredInput) featuredInput.checked = false;
 
   populateDepartmentOptions("");
   populateCategoryOptions("");
+  clearSizeOptions();
+  setMultiSelectValues(colorsInput, []);
 
   modal.classList.remove("hidden");
   overlay.classList.remove("hidden");
@@ -396,7 +416,7 @@ form?.addEventListener("submit", async (e) => {
       form.reset();
       populateDepartmentOptions("");
       populateCategoryOptions("");
-      setMultiSelectValues(sizesInput, []);
+      clearSizeOptions();
       setMultiSelectValues(colorsInput, []);
       loadProducts();
     }, 600);
@@ -502,9 +522,8 @@ function openEditPopup(product) {
 
   populateDepartmentOptions(product.department || "");
   populateCategoryOptions(product.department || "", product.category || "");
-
-  setMultiSelectValues(
-    sizesInput,
+  populateSizeOptions(
+    product.department || "",
     Array.isArray(product.sizes) ? product.sizes : []
   );
 

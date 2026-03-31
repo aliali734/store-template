@@ -1,313 +1,4 @@
 // =====================
-// LOAD DYNAMIC HEADER + STORE SETTINGS
-// =====================
-fetch("header.html")
-  .then((res) => res.text())
-  .then(async (html) => {
-    const headerEl = document.getElementById("header");
-    if (!headerEl) return;
-
-    headerEl.innerHTML = html;
-
-    try {
-      const [headerData, settingsData] = await Promise.all([
-        apiFetch("/header"),
-        getStoreSettings()
-      ]);
-
-      if (headerData.success && headerData.header) {
-        const header = headerData.header;
-
-        // Logo
-        const logoText = document.getElementById("site-logo-text");
-        if (logoText && header.logo) {
-          const logoSrc = /^https?:\/\//i.test(header.logo)
-            ? header.logo
-            : `${SERVER_BASE}${header.logo}`;
-
-          logoText.innerHTML = `<img src="${logoSrc}" alt="Logo" style="height:40px;object-fit:contain;">`;
-        }
-
-        // Desktop menu
-        const desktopMenu = document.getElementById("desktop-menu");
-        if (desktopMenu && Array.isArray(header.menu)) {
-          desktopMenu.innerHTML = "";
-
-          header.menu.forEach((menuItem) => {
-            const sections = Array.isArray(menuItem.sections)
-              ? menuItem.sections
-              : [];
-
-            if (!sections.length) {
-              desktopMenu.insertAdjacentHTML(
-                "beforeend",
-                `<a class="menu-item" href="${menuItem.url || "#"}">${menuItem.title}</a>`
-              );
-              return;
-            }
-
-            const sectionsHtml = sections
-              .map((section) => {
-                const linksHtml = (section.links || [])
-                  .map((link, i, arr) => {
-                    const url = link.url || "#";
-                    const isPromo = url.includes("promo=true");
-
-                    let labelHtml = link.label || "";
-                    if (isPromo) {
-                      labelHtml = labelHtml.replace(
-                        /(Sale|Promo|sale|promo|On Sale|on sale)/i,
-                        '<span class="promo-text">$1</span>'
-                      );
-                    }
-
-                    const html = `<a href="${url}">${labelHtml}</a>`;
-
-                    const nextLink = arr[i + 1];
-                    const nextIsPromo =
-                      nextLink && (nextLink.url || "").includes("promo=true");
-                    const addDivider = isPromo && !nextIsPromo;
-
-                    return addDivider
-                      ? html + '<div class="mega-link-divider"></div>'
-                      : html;
-                  })
-                  .join("");
-
-                return `
-                  <div class="mega-section">
-                    <h4 class="mega-section-title">${section.title || ""}</h4>
-                    ${linksHtml}
-                  </div>
-                `;
-              })
-              .join("");
-
-            desktopMenu.insertAdjacentHTML(
-              "beforeend",
-              `
-              <div class="menu-item">
-                ${menuItem.title}
-                <div class="mega">
-                  <div class="mega-inner">
-                    ${sectionsHtml}
-                  </div>
-                </div>
-              </div>
-              `
-            );
-          });
-        }
-
-        // Mobile menu
-        const mobileMenu = document.getElementById("mobile-menu");
-        if (mobileMenu && Array.isArray(header.menu)) {
-          mobileMenu.innerHTML = "";
-
-          header.menu.forEach((menuItem) => {
-            const sections = Array.isArray(menuItem.sections)
-              ? menuItem.sections
-              : [];
-
-            if (!sections.length) {
-              mobileMenu.insertAdjacentHTML(
-                "beforeend",
-                `<a href="${menuItem.url || "#"}">${menuItem.title}</a>`
-              );
-              return;
-            }
-
-            const sectionsHtml = sections
-              .map((section) => {
-                const linksHtml = (section.links || [])
-                  .map((link, i, arr) => {
-                    const url = link.url || "#";
-                    const isPromo = url.includes("promo=true");
-
-                    let labelHtml = link.label || "";
-                    if (isPromo) {
-                      labelHtml = labelHtml.replace(
-                        /(Sale|Promo|sale|promo|On Sale|on sale)/i,
-                        '<span class="promo-text">$1</span>'
-                      );
-                    }
-
-                    const html = `<a href="${url}">${labelHtml}</a>`;
-
-                    const nextLink = arr[i + 1];
-                    const nextIsPromo =
-                      nextLink && (nextLink.url || "").includes("promo=true");
-                    const addDivider = isPromo && !nextIsPromo;
-
-                    return addDivider
-                      ? html + '<div class="mega-link-divider"></div>'
-                      : html;
-                  })
-                  .join("");
-
-                return `
-                  <div class="mobile-submenu-title">${section.title || ""}</div>
-                  ${linksHtml}
-                `;
-              })
-              .join("");
-
-            mobileMenu.insertAdjacentHTML(
-              "beforeend",
-              `
-              <div class="mobile-item">
-                <button type="button" class="mobile-toggle-sub">${menuItem.title} ▾</button>
-                <div class="mobile-submenu">
-                  ${sectionsHtml}
-                </div>
-              </div>
-              `
-            );
-          });
-        }
-      }
-
-      if (settingsData.success && settingsData.settings) {
-        window.applyStoreSettingsToUI?.(settingsData.settings);
-        applyHomepageSettings(settingsData.settings);
-      }
-
-      setupHeaderInteractions();
-      setupAuthHeader();
-    } catch (err) {
-      console.error("Failed to initialize dynamic header:", err);
-    }
-  })
-  .catch((err) => console.error("Failed to load header:", err));
-
-// =====================
-// HEADER INTERACTIONS
-// =====================
-function setupHeaderInteractions() {
-  const mobileToggle = document.getElementById("mobile-toggle");
-  const mobileClose = document.getElementById("mobile-close");
-  const mobilePanel = document.getElementById("mobile-panel");
-  const mobileOverlay = document.getElementById("mobile-overlay");
-  const searchToggle = document.getElementById("search-toggle");
-  const headerSearch = document.getElementById("search-input-header");
-
-  mobileToggle?.addEventListener("click", () => {
-    if (!mobilePanel) return;
-    mobilePanel.setAttribute("aria-hidden", "false");
-    mobileOverlay?.classList.add("active");
-    document.body.style.overflow = "hidden";
-  });
-
-  function closeMobilePanel() {
-    if (!mobilePanel) return;
-    mobilePanel.setAttribute("aria-hidden", "true");
-    mobileOverlay?.classList.remove("active");
-    document.body.style.overflow = "";
-  }
-
-  mobileClose?.addEventListener("click", closeMobilePanel);
-  mobileOverlay?.addEventListener("click", closeMobilePanel);
-
-  document.querySelectorAll(".mobile-toggle-sub").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const submenu = btn.nextElementSibling;
-      if (!submenu) return;
-
-      const isOpen = submenu.style.display === "block";
-
-      document.querySelectorAll(".mobile-submenu").forEach((sub) => {
-        sub.style.display = "none";
-      });
-
-      document.querySelectorAll(".mobile-toggle-sub").forEach((b) => {
-        b.classList.remove("active");
-      });
-
-      if (!isOpen) {
-        submenu.style.display = "block";
-        btn.classList.add("active");
-      }
-    });
-  });
-
-  searchToggle?.addEventListener("click", () => {
-    if (!headerSearch) return;
-
-    const isHidden =
-      headerSearch.style.display === "none" || !headerSearch.style.display;
-
-    headerSearch.style.display = isHidden ? "inline-block" : "none";
-
-    if (isHidden) headerSearch.focus();
-  });
-}
-
-// =====================
-// AUTH-AWARE HEADER
-// =====================
-async function getCsrfToken() {
-  try {
-    const res = await fetch(`${API_BASE}/csrf`, {
-      method: "GET",
-      credentials: "include"
-    });
-    const data = await res.json().catch(() => ({}));
-    return data.csrfToken || null;
-  } catch (err) {
-    console.error("Failed to initialize CSRF:", err);
-    return null;
-  }
-}
-
-async function logout() {
-  try {
-    const csrfToken = await getCsrfToken();
-
-    await fetch(`${API_BASE}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
-      }
-    });
-  } catch (err) {
-    console.error("Logout failed:", err);
-  } finally {
-    window.location.href = "login.html";
-  }
-}
-
-async function setupAuthHeader() {
-  const loginLink = document.getElementById("login-link");
-  const registerLink = document.getElementById("register-link");
-  const logoutBtn = document.getElementById("logout-btn");
-
-  if (!loginLink || !registerLink || !logoutBtn) return;
-
-  try {
-    const res = await fetch(`${API_BASE}/test/user`, {
-      credentials: "include"
-    });
-
-    if (res.ok) {
-      loginLink.style.display = "none";
-      registerLink.style.display = "none";
-      logoutBtn.style.display = "inline-flex";
-      logoutBtn.onclick = logout;
-    } else {
-      loginLink.style.display = "inline-flex";
-      registerLink.style.display = "inline-flex";
-      logoutBtn.style.display = "none";
-    }
-  } catch (err) {
-    console.error("Auth header check failed:", err);
-    loginLink.style.display = "inline-flex";
-    registerLink.style.display = "inline-flex";
-    logoutBtn.style.display = "none";
-  }
-}
-
-// =====================
 // APPLY HOMEPAGE SETTINGS
 // =====================
 function applyHomepageSettings(settings) {
@@ -358,6 +49,22 @@ function applyHomepageSettings(settings) {
     supportTwitterLink.textContent = "@X";
   }
 }
+
+// =====================
+// LOAD STORE SETTINGS FOR HOMEPAGE
+// =====================
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const settingsData = await getStoreSettings();
+
+    if (settingsData.success && settingsData.settings) {
+      window.applyStoreSettingsToUI?.(settingsData.settings);
+      applyHomepageSettings(settingsData.settings);
+    }
+  } catch (err) {
+    console.error("Failed to load homepage settings:", err);
+  }
+});
 
 // =====================
 // HERO LOAD EFFECT
@@ -523,52 +230,57 @@ document.addEventListener("DOMContentLoaded", () => {
 // =====================
 (function () {
   const LS_KEY = "site-theme";
-  const toggle = document.getElementById("theme-toggle");
-  if (!toggle) return;
 
-  const saved = localStorage.getItem(LS_KEY);
-  const systemPrefDark =
-    window.matchMedia &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.addEventListener("DOMContentLoaded", () => {
+    const toggle = document.getElementById("theme-toggle");
+    if (!toggle) return;
 
-  function applyTheme(theme) {
-    if (theme === "dark") document.documentElement.classList.add("dark");
-    else document.documentElement.classList.remove("dark");
+    const saved = localStorage.getItem(LS_KEY);
+    const systemPrefDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-    toggle.setAttribute("aria-pressed", String(theme === "dark"));
+    function applyTheme(theme) {
+      if (theme === "dark") document.documentElement.classList.add("dark");
+      else document.documentElement.classList.remove("dark");
 
-    const icon = toggle.querySelector(".theme-icon");
-    if (icon) {
-      icon.textContent = theme === "dark" ? "☀️" : "🌙";
+      toggle.setAttribute("aria-pressed", String(theme === "dark"));
+
+      const icon = toggle.querySelector(".theme-icon");
+      if (icon) {
+        icon.textContent = theme === "dark" ? "☀️" : "🌙";
+      }
     }
-  }
 
-  const initial =
-    saved === "dark" || (saved === null && systemPrefDark) ? "dark" : "light";
+    const initial =
+      saved === "dark" || (saved === null && systemPrefDark)
+        ? "dark"
+        : "light";
 
-  applyTheme(initial);
+    applyTheme(initial);
 
-  if (window.matchMedia) {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    mq.addEventListener?.("change", (e) => {
-      if (!localStorage.getItem(LS_KEY)) {
-        applyTheme(e.matches ? "dark" : "light");
+    if (window.matchMedia) {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      mq.addEventListener?.("change", (e) => {
+        if (!localStorage.getItem(LS_KEY)) {
+          applyTheme(e.matches ? "dark" : "light");
+        }
+      });
+    }
+
+    toggle.addEventListener("click", () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      const newTheme = isDark ? "light" : "dark";
+      applyTheme(newTheme);
+      localStorage.setItem(LS_KEY, newTheme);
+    });
+
+    toggle.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggle.click();
       }
     });
-  }
-
-  toggle.addEventListener("click", () => {
-    const isDark = document.documentElement.classList.contains("dark");
-    const newTheme = isDark ? "light" : "dark";
-    applyTheme(newTheme);
-    localStorage.setItem(LS_KEY, newTheme);
-  });
-
-  toggle.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      toggle.click();
-    }
   });
 })();
 

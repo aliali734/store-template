@@ -31,6 +31,29 @@ function debounce(fn, delay = 400) {
 }
 
 // =====================
+// SIZE OPTIONS
+// =====================
+function populateSizeFilter(department = "", selectedSize = "") {
+  const sizeInput = document.getElementById("filter-size");
+  if (!sizeInput) return;
+
+  const sizes = window.getSizesForDepartment
+    ? window.getSizesForDepartment(department)
+    : [];
+
+  sizeInput.innerHTML =
+    `<option value="">All sizes</option>` +
+    sizes
+      .map(
+        (size) =>
+          `<option value="${size}" ${
+            size === selectedSize ? "selected" : ""
+          }>${size}</option>`
+      )
+      .join("");
+}
+
+// =====================
 // LOAD TAXONOMY
 // =====================
 async function loadFilterTaxonomy() {
@@ -46,6 +69,7 @@ async function loadFilterTaxonomy() {
 
     populateDepartmentFilter(filters.department);
     populateCategoryFilter(filters.department, filters.category);
+    populateSizeFilter(filters.department, filters.size);
   } catch (err) {
     console.error("Failed to load filter taxonomy:", err);
   }
@@ -72,9 +96,7 @@ function populateCategoryFilter(department = "", selectedCategory = "") {
 
   categoryInput.innerHTML = `<option value="">All categories</option>`;
 
-  const categories = department
-    ? (productTaxonomy[department] || [])
-    : [];
+  const categories = department ? productTaxonomy[department] || [] : [];
 
   categories.forEach((category) => {
     const option = document.createElement("option");
@@ -168,6 +190,8 @@ function syncFilterInputsFromState() {
   const promoInput = document.getElementById("filter-promo");
   const sortInput = document.getElementById("filter-sort");
 
+  populateSizeFilter(filters.department, filters.size);
+
   if (searchInput) searchInput.value = filters.search;
   if (headerSearch) headerSearch.value = filters.search;
   if (departmentInput) departmentInput.value = filters.department;
@@ -215,7 +239,11 @@ function setupFilters(onFilterChange) {
   departmentInput?.addEventListener("change", (e) => {
     filters.department = e.target.value;
     filters.category = "";
+    filters.size = "";
+
     populateCategoryFilter(filters.department, "");
+    populateSizeFilter(filters.department, "");
+
     updateFiltersURL();
     onFilterChange();
   });
@@ -290,6 +318,7 @@ function setupFilters(onFilterChange) {
     resetFilters();
     populateDepartmentFilter("");
     populateCategoryFilter("", "");
+    populateSizeFilter("", "");
     onFilterChange();
   });
 }
@@ -329,3 +358,4 @@ window.setupFilters = setupFilters;
 window.resetFilters = resetFilters;
 window.populateDepartmentFilter = populateDepartmentFilter;
 window.populateCategoryFilter = populateCategoryFilter;
+window.populateSizeFilter = populateSizeFilter;
