@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 const Payment = require("../models/payment");
 const Order = require("../models/order");
+const {
+  axios,
+  MOYASAR_API_URL,
+  getMoyasarAuthHeader
+} = require("../config/moyasar");
 
 // ============================
 // GET PAYMENT BY ID
@@ -82,7 +87,6 @@ const getPaymentByOrderId = async (req, res) => {
 
 // ============================
 // CREATE PAYMENT RECORD
-// For now: architecture-ready
 // ============================
 const createPayment = async (req, res) => {
   try {
@@ -154,16 +158,15 @@ const createPayment = async (req, res) => {
       order: order._id,
       user: userId,
       amount: order.totalPrice,
-      currency: String(currency || "USD").toUpperCase(),
+      currency: String(currency || "SAR").toUpperCase(),
       method: normalizedMethod,
       provider: normalizedProvider,
-      status: normalizedMethod === "cash" ? "pending" : "pending"
+      status: "pending"
     });
 
-    // sync order
     order.paymentMethod = normalizedMethod;
-    order.paymentProvider = normalizedProvider;
     order.paymentStatus = payment.status;
+    order.paymentProvider = normalizedProvider;
     await order.save();
 
     return res.status(201).json({
@@ -182,8 +185,119 @@ const createPayment = async (req, res) => {
 };
 
 // ============================
+// CREATE MOYASAR PAYMENT
+// ============================
+const createMoyasarPayment = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    const { paymentId, callbackUrl, description } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized"
+      });
+    }
+
+    if (!paymentId || !mongoose.Types.ObjectId.isValid(paymentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid paymentId is required"
+      });
+    }
+
+    const payment = await Payment.findById(paymentId).populate("order");
+
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message: "Payment not found"
+      });
+    }
+
+    if (payment.user.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized for this payment"
+      });
+    }
+
+    if (payment.provider !== "moyasar") {
+      return res.status(400).json({
+        success: false,
+        message: "This payment is not configured for Moyasar"
+      });
+    }
+
+    const amountHalalas = Math.round(Number(payment.amount) * 100);
+
+    const payload = {
+      amount: amountHalalas,
+      currency: payment.currency || "SAR",
+      description: description || `Order #${payment.order?._id || payment.order}`,
+      callback_url: callbackUrl,
+      source: {
+        type: "creditcard",
+        name: payment.order?.user?.name || "Customer",
+        number: "4111111111111111",
+        month: 12,
+        year: 2029,
+        cvc: "123"
+      }
+    };
+
+    // NOTE:
+    // This is scaffold-level integration.
+    // In production, card details should never be sent from your backend like this.
+    // You would use Moyasar hosted fields / secure frontend collection flow.
+
+    const response = await axios.post(MOYASAR_API_URL, payload, {
+      headers: {
+        ...getMoyasarAuthHeader(),
+        "Content-Type": "application/json"
+      }
+    });
+
+    const moyasarData = response.data;
+
+    payment.reference = moyasarData.id || payment.reference;
+    payment.providerResponse = moyasarData;
+
+    if (moyasarData.status === "paid") {
+      payment.status = "paid";
+      payment.paidAt = new Date();
+
+      const order = await Order.findById(payment.order);
+      if (order) {
+        order.paymentStatus = "paid";
+        order.paymentReference = payment.reference;
+        order.paymentProvider = "moyasar";
+        order.isPaid = true;
+        order.paidAt = payment.paidAt;
+        await order.save();
+      }
+    }
+
+    await payment.save();
+
+    return res.json({
+      success: true,
+      message: "Moyasar payment created",
+      payment,
+      gatewayResponse: moyasarData
+    });
+  } catch (error) {
+    console.error("Create Moyasar payment error:", error.response?.data || error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: error.response?.data?.message || "Failed to create Moyasar payment"
+    });
+  }
+};
+
+// ============================
 // UPDATE PAYMENT STATUS
-// For admin or webhook usage later
 // ============================
 const updatePaymentStatus = async (req, res) => {
   try {
@@ -231,7 +345,6 @@ const updatePaymentStatus = async (req, res) => {
 
     await payment.save();
 
-    // sync order
     const order = await Order.findById(payment.order);
     if (order) {
       order.paymentStatus = payment.status;
@@ -261,5 +374,6 @@ module.exports = {
   getPaymentById,
   getPaymentByOrderId,
   createPayment,
+  createMoyasarPayment,
   updatePaymentStatus
 };

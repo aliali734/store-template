@@ -8,19 +8,23 @@ const {
   getPaymentById,
   getPaymentByOrderId,
   createPayment,
+  createMoyasarPayment,
   updatePaymentStatus
-} = require("../controllers/payment");
+} = require("../controllers/payment.controllers");
 
-// Create payment record (user)
+// Create payment record
 router.post("/", protect(), verifyCsrf, createPayment);
 
-// Get payment by ID (user/admin)
+// Create Moyasar payment
+router.post("/moyasar", protect(), verifyCsrf, createMoyasarPayment);
+
+// Get payment by ID
 router.get("/:id", protect(), getPaymentById);
 
-// Get payment by order ID (user/admin)
+// Get payment by order ID
 router.get("/order/:orderId", protect(), getPaymentByOrderId);
 
-// Update payment status (admin for now)
+// Update payment status
 router.patch("/:id/status", protect(["admin"]), verifyCsrf, updatePaymentStatus);
 
 module.exports = router;
