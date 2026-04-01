@@ -2,18 +2,19 @@
 
 <header class="site-header">
   <nav class="nav">
-
     <!-- ====== LOGO ====== -->
     <a href="index.html" class="logo" id="site-logo-link">
       <span id="site-logo-text">Clothing Store</span>
     </a>
+
+    <!-- ====== DESKTOP MENU ====== -->
+    <div class="menu" id="desktop-menu"></div>
 
     <!-- ====== MOBILE TOGGLE ====== -->
     <button id="mobile-toggle" class="icon-btn" aria-label="Open Menu">☰</button>
 
     <!-- ====== ACTIONS ====== -->
     <div class="actions">
-
       <!-- Search -->
       <div class="search-wrapper">
         <button id="search-toggle" class="icon-btn" aria-label="Search">🔍</button>
@@ -35,10 +36,22 @@
           <div class="cart-content">
             <button id="cart-close" class="cart-close" type="button">&times;</button>
             <h3>Your Cart</h3>
+
             <ul id="cart-items-list"></ul>
+
             <div class="cart-total">
               Total: <span id="cart-total">$0</span>
             </div>
+
+            <div class="payment-methods">
+              <label for="payment-method">Payment Method</label>
+              <select id="payment-method">
+                <option value="cash">Cash on Delivery</option>
+                <option value="card">Card / Mada / Apple Pay</option>
+                <option value="bnpl">Buy Now, Pay Later</option>
+              </select>
+            </div>
+
             <button id="checkout-btn" class="checkout-btn" type="button">
               Proceed to Checkout
             </button>
@@ -51,11 +64,7 @@
       <a id="register-link" class="icon-btn" href="register.html" style="display:none;">Register</a>
       <button id="logout-btn" class="icon-btn" type="button" style="display:none;">Logout</button>
     </div>
-
   </nav>
-
-  <!-- ====== DESKTOP MEGA MENU ====== -->
-  <div class="menu" id="desktop-menu"></div>
 
   <!-- ====== MOBILE OVERLAY ====== -->
   <div id="mobile-overlay" class="mobile-overlay"></div>
@@ -68,5 +77,4 @@
     </div>
     <div id="mobile-menu"></div>
   </div>
-
 </header>

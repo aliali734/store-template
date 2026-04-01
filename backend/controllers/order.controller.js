@@ -21,7 +21,7 @@ exports.createOrder = async (req, res) => {
       });
     }
 
-    const { products } = req.body;
+    const { products, paymentMethod } = req.body;
 
     if (!products || !Array.isArray(products) || products.length === 0) {
       return res.status(400).json({
@@ -45,6 +45,24 @@ exports.createOrder = async (req, res) => {
         });
       }
     }
+
+    const requestedPaymentMethod = String(paymentMethod || "cash").toLowerCase();
+
+    const allowedPaymentMethods = ["cash", "card", "wallet", "bnpl"];
+
+    if (!allowedPaymentMethods.includes(requestedPaymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment method"
+      });
+    }
+
+    const paymentProviderMap = {
+      cash: "cod",
+      card: "",
+      wallet: "",
+      bnpl: ""
+    };
 
     const uniqueProductIds = [...new Set(products.map((i) => i.product))];
     const dbProducts = await Product.find({ _id: { $in: uniqueProductIds } });
@@ -82,7 +100,10 @@ exports.createOrder = async (req, res) => {
       user: userId,
       products: items,
       totalPrice,
-      paymentMethod: "cash",
+      paymentMethod: requestedPaymentMethod,
+      paymentStatus: "pending",
+      paymentProvider: paymentProviderMap[requestedPaymentMethod] || "",
+      paymentReference: "",
       status: "pending"
     });
 
@@ -155,8 +176,7 @@ exports.getOrderById = async (req, res) => {
       });
     }
 
-    const order = await Order.findById(id)
-      .populate("user", "name email");
+    const order = await Order.findById(id).populate("user", "name email");
 
     if (!order) {
       return res.status(404).json({
@@ -255,6 +275,16 @@ exports.updateOrder = async (req, res) => {
     }
 
     order.status = "cancelled";
+
+    if (order.isPaid) {
+      order.paymentStatus = "refunded";
+    } else {
+      order.paymentStatus = "failed";
+    }
+
+    order.isPaid = false;
+    order.paidAt = undefined;
+
     await order.save();
 
     return res.json({
@@ -405,12 +435,19 @@ exports.updateOrderStatus = async (req, res) => {
 
     order.status = status;
 
-    if (status === "delivered") {
+    if (status === "delivered" && order.paymentMethod === "cash") {
       order.isPaid = true;
+      order.paymentStatus = "paid";
       order.paidAt = new Date();
     }
 
     if (status === "cancelled") {
+      if (order.isPaid) {
+        order.paymentStatus = "refunded";
+      } else {
+        order.paymentStatus = "failed";
+      }
+
       order.isPaid = false;
       order.paidAt = undefined;
     }

@@ -3,8 +3,6 @@ let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let currentPage = 1;
 let totalPages = 1;
 
-let cartCountEl;
-
 // =====================
 // LOCAL SAFE DEBOUNCE
 // =====================
@@ -136,11 +134,11 @@ function showToast(message, type = "success") {
 // CART
 // =====================
 function updateCartCounter() {
-  const cartCountElLocal = document.getElementById("cart-count");
-  if (!cartCountElLocal) return;
+  const cartCountEl = document.getElementById("cart-count");
+  if (!cartCountEl) return;
 
   const count = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
-  cartCountElLocal.textContent = count;
+  cartCountEl.textContent = count;
 }
 
 function saveCart() {
@@ -396,47 +394,6 @@ function renderPagination() {
   }
 
   container.appendChild(fragment);
-}
-
-// =====================
-// CHECKOUT
-// =====================
-async function checkout() {
-  if (!cart.length) {
-    alert("Cart is empty");
-    return;
-  }
-
-  showToast("Placing your order...", "info");
-
-  const productsPayload = cart.map((item) => ({
-    product: item.id,
-    quantity: item.quantity
-  }));
-
-  try {
-    const res = await shopApiFetch("/orders", {
-      method: "POST",
-      body: JSON.stringify({ products: productsPayload })
-    });
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok || !data.order?._id) {
-      showToast(data.message || "Order creation failed", "error");
-      return;
-    }
-
-    localStorage.setItem("currentOrderId", data.order._id);
-
-    cart = [];
-    saveCart();
-
-    window.location.href = "confirmation.html";
-  } catch (err) {
-    console.error(err);
-    showToast("Server error", "error");
-  }
 }
 
 // =====================
