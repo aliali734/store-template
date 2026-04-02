@@ -369,11 +369,150 @@ const updatePaymentStatus = async (req, res) => {
     });
   }
 };
+// ============================
+// HANDLE MOYASAR RETURN
+// This is a redirect/callback scaffold.
+// ============================
+const handleMoyasarReturn = async (req, res) => {
+  try {
+    const paymentId = req.query.id || req.query.payment_id || "";
+    const status = String(req.query.status || "").toLowerCase();
+
+    if (!paymentId) {
+      return res.status(400).send("Missing payment reference");
+    }
+
+    const payment = await Payment.findOne({ reference: paymentId });
+
+    if (!payment) {
+      return res.status(404).send("Payment not found");
+    }
+
+    const order = await Order.findById(payment.order);
+
+    if (!order) {
+      return res.status(404).send("Order not found");
+    }
+
+    // Basic status mapping scaffold
+    if (status === "paid" || status === "succeeded" || status === "success") {
+      payment.status = "paid";
+      payment.paidAt = new Date();
+
+      order.paymentStatus = "paid";
+      order.isPaid = true;
+      order.paidAt = payment.paidAt;
+      order.paymentReference = payment.reference;
+      order.paymentProvider = payment.provider || "moyasar";
+
+      await payment.save();
+      await order.save();
+
+      return res.redirect(
+        `${process.env.FRONTEND_URL || "http://127.0.0.1:5500"}/confirmation.html`
+      );
+    }
+
+    payment.status = "failed";
+    order.paymentStatus = "failed";
+    order.isPaid = false;
+    order.paidAt = undefined;
+
+    await payment.save();
+    await order.save();
+
+    return res.redirect(
+      `${process.env.FRONTEND_URL || "http://127.0.0.1:5500"}/payment-failed.html?orderId=${order._id}`
+    );
+  } catch (error) {
+    console.error("Moyasar return handler error:", error);
+
+    return res.status(500).send("Payment callback handling failed");
+  }
+};
+
+// ============================
+// HANDLE MOYASAR WEBHOOK
+// Optional scaffold for future secure provider notifications
+// ============================
+const handleMoyasarWebhook = async (req, res) => {
+  try {
+    const payload = req.body || {};
+
+    const paymentReference = payload.id || payload.payment_id || "";
+    const externalStatus = String(payload.status || "").toLowerCase();
+
+    if (!paymentReference) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing payment reference"
+      });
+    }
+
+    const payment = await Payment.findOne({ reference: paymentReference });
+
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message: "Payment not found"
+      });
+    }
+
+    const order = await Order.findById(payment.order);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+
+    payment.providerResponse = payload;
+
+    if (externalStatus === "paid" || externalStatus === "success" || externalStatus === "succeeded") {
+      payment.status = "paid";
+      payment.paidAt = new Date();
+
+      order.paymentStatus = "paid";
+      order.isPaid = true;
+      order.paidAt = payment.paidAt;
+      order.paymentReference = payment.reference;
+      order.paymentProvider = payment.provider || "moyasar";
+    } else if (
+      externalStatus === "failed" ||
+      externalStatus === "cancelled" ||
+      externalStatus === "canceled"
+    ) {
+      payment.status = "failed";
+
+      order.paymentStatus = "failed";
+      order.isPaid = false;
+      order.paidAt = undefined;
+    }
+
+    await payment.save();
+    await order.save();
+
+    return res.json({
+      success: true,
+      message: "Webhook processed successfully"
+    });
+  } catch (error) {
+    console.error("Moyasar webhook handler error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to process webhook"
+    });
+  }
+};
 
 module.exports = {
   getPaymentById,
   getPaymentByOrderId,
   createPayment,
   createMoyasarPayment,
-  updatePaymentStatus
+  updatePaymentStatus,
+  handleMoyasarReturn,
+  handleMoyasarWebhook
 };

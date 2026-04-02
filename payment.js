@@ -125,22 +125,22 @@ async function createPaymentRecord(orderId, paymentMethod) {
 // =====================
 // CREATE MOYASAR PAYMENT
 // =====================
-async function createMoyasarPayment(paymentId) {
-  const callbackUrl = `${window.location.origin}${window.location.pathname.replace(/[^/]+$/, "")}confirmation.html`;
+async function createMoyasarPayment(paymentId, orderId) {
+  const callbackUrl = `${SERVER_BASE}/api/payments/moyasar/return`;
 
   const moyasarRes = await paymentApiFetch("/payments/moyasar", {
     method: "POST",
     body: JSON.stringify({
       paymentId,
       callbackUrl,
-      description: "Store order payment"
+      description: `Order ${orderId}`.trim()
     })
   });
 
   const moyasarData = await moyasarRes.json().catch(() => ({}));
 
   if (!moyasarRes.ok) {
-    throw new Error(moyasarData.message || "Moyasar payment failed");
+    throw new Error(moyasarData.message || "Failed to start Moyasar payment");
   }
 
   return moyasarData;
@@ -158,30 +158,33 @@ function handleCashSuccess(orderId) {
 // =====================
 // HANDLE CARD PAYMENT
 // =====================
-async function handleCardPayment(payment) {
-  const moyasarResult = await createMoyasarPayment(payment._id);
+async function handleCardPayment(payment, order) {
+  const moyasarResult = await createMoyasarPayment(payment._id, order._id);
 
-  // NOTE:
-  // Current backend scaffold may already return payment success/failure
-  // or only provider response placeholder.
-  // For now, we handle the "paid" case if backend marks it so.
-
+  // If backend scaffold already marks payment as paid
   if (moyasarResult.payment?.status === "paid") {
-    localStorage.setItem("currentOrderId", payment.order);
+    localStorage.setItem("currentOrderId", order._id);
     savePaymentCart([]);
     window.location.href = "confirmation.html";
     return;
   }
 
+  // If in future backend returns a payment URL / redirect URL
+  if (moyasarResult.gatewayResponse?.payment_url) {
+    window.location.href = moyasarResult.gatewayResponse.payment_url;
+    return;
+  }
+
+  // Temporary scaffold message
   alert(
-    "Moyasar payment request was created, but the live secure hosted card flow still needs the final integration step."
+    "Moyasar payment request was created. The final secure provider redirect/hosted payment step is the next integration task."
   );
 }
 
 // =====================
 // HANDLE BNPL PAYMENT
 // =====================
-async function handleBnplPayment(payment) {
+async function handleBnplPayment(payment, order) {
   alert(
     "BNPL integration (Tabby/Tamara) is planned next. Payment record was created successfully."
   );
@@ -220,12 +223,12 @@ async function handleCheckout() {
     }
 
     if (paymentMethod === "card") {
-      await handleCardPayment(payment);
+      await handleCardPayment(payment, order);
       return;
     }
 
     if (paymentMethod === "bnpl") {
-      await handleBnplPayment(payment);
+      await handleBnplPayment(payment, order);
       return;
     }
 

@@ -9,7 +9,9 @@ const {
   getPaymentByOrderId,
   createPayment,
   createMoyasarPayment,
-  updatePaymentStatus
+  updatePaymentStatus,
+  handleMoyasarReturn,
+  handleMoyasarWebhook
 } = require("../controllers/payment.controllers");
 
 // Create payment record
@@ -17,6 +19,12 @@ router.post("/", protect(), verifyCsrf, createPayment);
 
 // Create Moyasar payment
 router.post("/moyasar", protect(), verifyCsrf, createMoyasarPayment);
+
+// Moyasar return / callback redirect
+router.get("/moyasar/return", handleMoyasarReturn);
+
+// Moyasar webhook scaffold
+router.post("/moyasar/webhook", express.json(), handleMoyasarWebhook);
 
 // Get payment by ID
 router.get("/:id", protect(), getPaymentById);
