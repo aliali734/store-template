@@ -297,6 +297,109 @@ function setupHeaderInteractions() {
 }
 
 // =====================
+// CART HELPERS
+// =====================
+function getHeaderCart() {
+  try {
+    return JSON.parse(localStorage.getItem("cart")) || [];
+  } catch {
+    return [];
+  }
+}
+
+function updateHeaderCartCounter() {
+  const cartCountEl = document.getElementById("cart-count");
+  if (!cartCountEl) return;
+
+  const cart = getHeaderCart();
+  const count = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+  cartCountEl.textContent = count;
+}
+
+function renderHeaderCartModal() {
+  const list = document.getElementById("cart-items-list");
+  const totalEl = document.getElementById("cart-total");
+
+  if (!list || !totalEl) return;
+
+  const cart = getHeaderCart();
+  list.innerHTML = "";
+
+  let total = 0;
+
+  if (!cart.length) {
+    list.innerHTML =
+      `<li style="justify-content:center;opacity:.7;">Cart is empty</li>`;
+    totalEl.textContent = "$0";
+    return;
+  }
+
+  cart.forEach((item) => {
+    const li = document.createElement("li");
+
+    li.innerHTML = `
+      <span>${item.name}</span>
+      <div>
+        <button type="button" class="dec" ${item.quantity <= 1 ? "disabled" : ""}>-</button>
+        <span>${item.quantity}</span>
+        <button type="button" class="inc">+</button>
+      </div>
+      <span>$${(item.price * item.quantity).toFixed(2)}</span>
+    `;
+
+    const incBtn = li.querySelector(".inc");
+    const decBtn = li.querySelector(".dec");
+
+    incBtn.onclick = () => {
+      item.quantity += 1;
+      localStorage.setItem("cart", JSON.stringify(cart));
+      updateHeaderCartCounter();
+      renderHeaderCartModal();
+    };
+
+    decBtn.onclick = () => {
+      item.quantity -= 1;
+
+      if (item.quantity <= 0) {
+        const index = cart.findIndex((c) => c.id === item.id);
+        if (index > -1) cart.splice(index, 1);
+      }
+
+      localStorage.setItem("cart", JSON.stringify(cart));
+      updateHeaderCartCounter();
+      renderHeaderCartModal();
+    };
+
+    list.appendChild(li);
+    total += item.price * item.quantity;
+  });
+
+  totalEl.textContent = `$${total.toFixed(2)}`;
+}
+
+function setupHeaderCartModal() {
+  const cartBtn = document.querySelector(".cart-wrapper .icon-btn");
+  const modal = document.getElementById("cart-modal");
+  const closeBtn = document.getElementById("cart-close");
+
+  if (!cartBtn || !modal) return;
+
+  cartBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    renderHeaderCartModal();
+    modal.style.display = "flex";
+  });
+
+  closeBtn?.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.style.display = "none";
+  });
+}
+
+// =====================
 // INIT HEADER
 // =====================
 async function initSharedHeader() {
@@ -326,6 +429,8 @@ async function initSharedHeader() {
 
     setupHeaderInteractions();
     await setupHeaderAuth();
+    updateHeaderCartCounter();
+    setupHeaderCartModal();
   } catch (err) {
     console.error("Failed to initialize shared header:", err);
   }
