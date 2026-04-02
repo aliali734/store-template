@@ -161,7 +161,6 @@ function handleCashSuccess(orderId) {
 async function handleCardPayment(payment, order) {
   const moyasarResult = await createMoyasarPayment(payment._id, order._id);
 
-  // If backend scaffold already marks payment as paid
   if (moyasarResult.payment?.status === "paid") {
     localStorage.setItem("currentOrderId", order._id);
     savePaymentCart([]);
@@ -169,13 +168,11 @@ async function handleCardPayment(payment, order) {
     return;
   }
 
-  // If in future backend returns a payment URL / redirect URL
   if (moyasarResult.gatewayResponse?.payment_url) {
     window.location.href = moyasarResult.gatewayResponse.payment_url;
     return;
   }
 
-  // Temporary scaffold message
   alert(
     "Moyasar payment request was created. The final secure provider redirect/hosted payment step is the next integration task."
   );
@@ -210,13 +207,9 @@ async function handleCheckout() {
   }));
 
   try {
-    // 1) Create order
     const order = await createCheckoutOrder(productsPayload, paymentMethod);
-
-    // 2) Create payment record
     const payment = await createPaymentRecord(order._id, paymentMethod);
 
-    // 3) Handle method-specific flow
     if (paymentMethod === "cash") {
       handleCashSuccess(order._id);
       return;
@@ -240,9 +233,26 @@ async function handleCheckout() {
 }
 
 // =====================
+// BIND CHECKOUT BUTTON
+// Works even if header is injected later
+// =====================
+function bindCheckoutButton() {
+  const checkoutBtn = document.getElementById("checkout-btn");
+
+  if (!checkoutBtn) {
+    setTimeout(bindCheckoutButton, 300);
+    return;
+  }
+
+  if (checkoutBtn.dataset.bound === "true") return;
+
+  checkoutBtn.addEventListener("click", handleCheckout);
+  checkoutBtn.dataset.bound = "true";
+}
+
+// =====================
 // INIT
 // =====================
 document.addEventListener("DOMContentLoaded", () => {
-  const checkoutBtn = document.getElementById("checkout-btn");
-  checkoutBtn?.addEventListener("click", handleCheckout);
+  bindCheckoutButton();
 });
