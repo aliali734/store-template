@@ -68,7 +68,7 @@ function getProviderFromMethod(method) {
     case "cash":
       return "cod";
     case "card":
-      return "moyasar";
+      return "stripe";
     case "bnpl":
       return "tabby";
     default:
@@ -123,27 +123,23 @@ async function createPaymentRecord(orderId, paymentMethod) {
 }
 
 // =====================
-// CREATE MOYASAR PAYMENT
+// CREATE STRIPE CHECKOUT SESSION
 // =====================
-async function createMoyasarPayment(paymentId, orderId) {
-  const callbackUrl = `${SERVER_BASE}/api/payments/moyasar/return`;
-
-  const moyasarRes = await paymentApiFetch("/payments/moyasar", {
+async function createStripeCheckoutSession(paymentId) {
+  const stripeRes = await paymentApiFetch("/payments/stripe/create-session", {
     method: "POST",
     body: JSON.stringify({
-      paymentId,
-      callbackUrl,
-      description: `Order ${orderId}`.trim()
+      paymentId
     })
   });
 
-  const moyasarData = await moyasarRes.json().catch(() => ({}));
+  const stripeData = await stripeRes.json().catch(() => ({}));
 
-  if (!moyasarRes.ok) {
-    throw new Error(moyasarData.message || "Failed to start Moyasar payment");
+  if (!stripeRes.ok || !stripeData.url) {
+    throw new Error(stripeData.message || "Failed to create Stripe checkout session");
   }
 
-  return moyasarData;
+  return stripeData;
 }
 
 // =====================
@@ -156,26 +152,19 @@ function handleCashSuccess(orderId) {
 }
 
 // =====================
-// HANDLE CARD PAYMENT
+// HANDLE CARD PAYMENT WITH STRIPE
 // =====================
 async function handleCardPayment(payment, order) {
-  const moyasarResult = await createMoyasarPayment(payment._id, order._id);
+  const stripeSession = await createStripeCheckoutSession(payment._id);
 
-  if (moyasarResult.payment?.status === "paid") {
-    localStorage.setItem("currentOrderId", order._id);
-    savePaymentCart([]);
-    window.location.href = "confirmation.html";
-    return;
-  }
+  // Save order id so confirmation page can still use it after Stripe redirect
+  localStorage.setItem("currentOrderId", order._id);
 
-  if (moyasarResult.gatewayResponse?.payment_url) {
-    window.location.href = moyasarResult.gatewayResponse.payment_url;
-    return;
-  }
+  // Optional: clear cart before redirect
+  savePaymentCart([]);
 
-  alert(
-    "Moyasar payment request was created. The final secure provider redirect/hosted payment step is the next integration task."
-  );
+  // Redirect user to Stripe Checkout
+  window.location.href = stripeSession.url;
 }
 
 // =====================
@@ -207,9 +196,13 @@ async function handleCheckout() {
   }));
 
   try {
+    // 1) Create order
     const order = await createCheckoutOrder(productsPayload, paymentMethod);
+
+    // 2) Create payment record
     const payment = await createPaymentRecord(order._id, paymentMethod);
 
+    // 3) Handle method-specific flow
     if (paymentMethod === "cash") {
       handleCashSuccess(order._id);
       return;

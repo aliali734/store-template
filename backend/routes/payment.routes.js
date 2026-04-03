@@ -9,22 +9,28 @@ const {
   getPaymentByOrderId,
   createPayment,
   createMoyasarPayment,
-  updatePaymentStatus,
   handleMoyasarReturn,
-  handleMoyasarWebhook
+  handleMoyasarWebhook,
+  createStripeCheckoutSession,
+  handleStripeWebhook,
+  updatePaymentStatus
 } = require("../controllers/payment.controllers");
 
 // Create payment record
 router.post("/", protect(), verifyCsrf, createPayment);
 
-// Create Moyasar payment
+// Moyasar routes
 router.post("/moyasar", protect(), verifyCsrf, createMoyasarPayment);
-
-// Moyasar return / callback redirect
 router.get("/moyasar/return", handleMoyasarReturn);
-
-// Moyasar webhook scaffold
 router.post("/moyasar/webhook", express.json(), handleMoyasarWebhook);
+
+// Stripe routes
+router.post("/stripe/create-session", protect(), verifyCsrf, createStripeCheckoutSession);
+router.post(
+  "/stripe/webhook",
+  express.raw({ type: "application/json" }),
+  handleStripeWebhook
+);
 
 // Get payment by ID
 router.get("/:id", protect(), getPaymentById);

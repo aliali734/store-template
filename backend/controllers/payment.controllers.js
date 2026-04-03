@@ -6,6 +6,7 @@ const {
   MOYASAR_API_URL,
   getMoyasarAuthHeader
 } = require("../config/moyasar");
+const stripe = require("../config/stripe");
 
 // ============================
 // GET PAYMENT BY ID
@@ -246,11 +247,6 @@ const createMoyasarPayment = async (req, res) => {
       }
     };
 
-    // NOTE:
-    // This is scaffold-level integration.
-    // In production, card details should never be sent from your backend like this.
-    // You would use Moyasar hosted fields / secure frontend collection flow.
-
     const response = await axios.post(MOYASAR_API_URL, payload, {
       headers: {
         ...getMoyasarAuthHeader(),
@@ -292,6 +288,104 @@ const createMoyasarPayment = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.response?.data?.message || "Failed to create Moyasar payment"
+    });
+  }
+};
+
+// ============================
+// CREATE STRIPE CHECKOUT SESSION
+// ============================
+const createStripeCheckoutSession = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    const { paymentId } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized"
+      });
+    }
+
+    if (!paymentId || !mongoose.Types.ObjectId.isValid(paymentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid paymentId is required"
+      });
+    }
+
+    const payment = await Payment.findById(paymentId).populate("order");
+
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message: "Payment not found"
+      });
+    }
+
+    if (payment.user.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized for this payment"
+      });
+    }
+
+    if (payment.provider !== "stripe") {
+      return res.status(400).json({
+        success: false,
+        message: "This payment is not configured for Stripe"
+      });
+    }
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://127.0.0.1:5500";
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: (payment.currency || "SAR").toLowerCase(),
+            product_data: {
+              name: `Order #${payment.order?._id || payment.order}`
+            },
+            unit_amount: Math.round(Number(payment.amount) * 100)
+          },
+          quantity: 1
+        }
+      ],
+      metadata: {
+        paymentId: payment._id.toString(),
+        orderId: payment.order?._id
+          ? payment.order._id.toString()
+          : payment.order.toString(),
+        userId: payment.user.toString()
+      },
+      success_url: `${frontendUrl}/confirmation.html?orderId=${
+        payment.order?._id || payment.order
+      }`,
+      cancel_url: `${frontendUrl}/payment-failed.html?orderId=${
+        payment.order?._id || payment.order
+      }`
+    });
+
+    payment.reference = session.id;
+    payment.providerResponse = session;
+    await payment.save();
+
+    return res.json({
+      success: true,
+      message: "Stripe checkout session created successfully",
+      sessionId: session.id,
+      url: session.url,
+      payment
+    });
+  } catch (error) {
+    console.error("Create Stripe checkout session error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to create Stripe checkout session"
     });
   }
 };
@@ -369,9 +463,9 @@ const updatePaymentStatus = async (req, res) => {
     });
   }
 };
+
 // ============================
 // HANDLE MOYASAR RETURN
-// This is a redirect/callback scaffold.
 // ============================
 const handleMoyasarReturn = async (req, res) => {
   try {
@@ -394,7 +488,6 @@ const handleMoyasarReturn = async (req, res) => {
       return res.status(404).send("Order not found");
     }
 
-    // Basic status mapping scaffold
     if (status === "paid" || status === "succeeded" || status === "success") {
       payment.status = "paid";
       payment.paidAt = new Date();
@@ -433,7 +526,6 @@ const handleMoyasarReturn = async (req, res) => {
 
 // ============================
 // HANDLE MOYASAR WEBHOOK
-// Optional scaffold for future secure provider notifications
 // ============================
 const handleMoyasarWebhook = async (req, res) => {
   try {
@@ -469,7 +561,11 @@ const handleMoyasarWebhook = async (req, res) => {
 
     payment.providerResponse = payload;
 
-    if (externalStatus === "paid" || externalStatus === "success" || externalStatus === "succeeded") {
+    if (
+      externalStatus === "paid" ||
+      externalStatus === "success" ||
+      externalStatus === "succeeded"
+    ) {
       payment.status = "paid";
       payment.paidAt = new Date();
 
@@ -507,12 +603,77 @@ const handleMoyasarWebhook = async (req, res) => {
   }
 };
 
+// ============================
+// HANDLE STRIPE WEBHOOK
+// ============================
+const handleStripeWebhook = async (req, res) => {
+  try {
+    const sig = req.headers["stripe-signature"];
+
+    if (!sig || !process.env.STRIPE_WEBHOOK_SECRET) {
+      return res.status(400).send("Missing Stripe webhook signature or secret");
+    }
+
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (err) {
+      console.error("Stripe webhook signature verification failed:", err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+
+      const paymentId = session.metadata?.paymentId;
+      const orderId = session.metadata?.orderId;
+
+      if (paymentId && mongoose.Types.ObjectId.isValid(paymentId)) {
+        const payment = await Payment.findById(paymentId);
+
+        if (payment) {
+          payment.status = "paid";
+          payment.paidAt = new Date();
+          payment.reference = session.id || payment.reference;
+          payment.providerResponse = session;
+          await payment.save();
+        }
+      }
+
+      if (orderId && mongoose.Types.ObjectId.isValid(orderId)) {
+        const order = await Order.findById(orderId);
+
+        if (order) {
+          order.paymentStatus = "paid";
+          order.paymentProvider = "stripe";
+          order.paymentReference = session.id || order.paymentReference || "";
+          order.isPaid = true;
+          order.paidAt = new Date();
+          await order.save();
+        }
+      }
+    }
+
+    return res.json({ received: true });
+  } catch (error) {
+    console.error("Stripe webhook handler error:", error.message);
+    return res.status(500).send("Webhook handling failed");
+  }
+};
+
 module.exports = {
   getPaymentById,
   getPaymentByOrderId,
   createPayment,
   createMoyasarPayment,
+  createStripeCheckoutSession,
   updatePaymentStatus,
   handleMoyasarReturn,
-  handleMoyasarWebhook
+  handleMoyasarWebhook,
+  handleStripeWebhook
 };
