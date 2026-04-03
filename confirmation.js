@@ -60,43 +60,6 @@ async function confirmationApiFetch(path, options = {}) {
 }
 
 // =====================
-// LOAD HEADER + SETTINGS
-// =====================
-fetch("header.html")
-  .then((res) => res.text())
-  .then(async (html) => {
-    const headerEl = document.getElementById("header");
-    if (headerEl) {
-      headerEl.innerHTML = html;
-      setupAuthHeader();
-
-      try {
-        const settingsData = await getStoreSettings();
-        if (settingsData.success && settingsData.settings) {
-          window.applyStoreSettingsToUI?.(settingsData.settings);
-        }
-      } catch (err) {
-        console.error("Failed to load store settings:", err);
-      }
-    }
-  })
-  .catch((err) => console.error("Failed to load header:", err));
-
-function setupAuthHeader() {
-  const loginLink = document.getElementById("login-link");
-  const registerLink = document.getElementById("register-link");
-  const logoutBtn = document.getElementById("logout-btn");
-
-  if (loginLink) loginLink.style.display = "none";
-  if (registerLink) registerLink.style.display = "none";
-
-  if (logoutBtn) {
-    logoutBtn.style.display = "inline-flex";
-    logoutBtn.onclick = () => forceLogout();
-  }
-}
-
-// =====================
 // PAGE INIT
 // =====================
 document.addEventListener("DOMContentLoaded", async () => {

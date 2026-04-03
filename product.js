@@ -122,6 +122,15 @@ addBtn?.addEventListener("click", () => {
   }
 
   localStorage.setItem("cart", JSON.stringify(cart));
+
+  if (typeof updateHeaderCartCounter === "function") {
+    updateHeaderCartCounter();
+  }
+
+  if (typeof renderHeaderCartModal === "function") {
+    renderHeaderCartModal();
+  }
+
   showToast("Added to cart");
 });
 

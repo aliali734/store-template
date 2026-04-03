@@ -1,26 +1,4 @@
 // =====================
-// LOAD HEADER + SETTINGS
-// =====================
-fetch("header.html")
-  .then((res) => res.text())
-  .then(async (html) => {
-    const headerEl = document.getElementById("header");
-    if (headerEl) {
-      headerEl.innerHTML = html;
-
-      try {
-        const settingsData = await getStoreSettings();
-        if (settingsData.success && settingsData.settings) {
-          window.applyStoreSettingsToUI?.(settingsData.settings);
-        }
-      } catch (err) {
-        console.error("Failed to load store settings:", err);
-      }
-    }
-  })
-  .catch((err) => console.error("Failed to load header:", err));
-
-// =====================
 // GET CSRF TOKEN
 // =====================
 async function getCsrfToken() {
@@ -66,7 +44,8 @@ function isStrongPassword(password) {
 if ((!token || !email) && msg && hint && btn) {
   msg.style.color = "#b91c1c";
   msg.textContent = "Invalid reset link";
-  hint.textContent = "Please request a new reset link from the Forgot Password page.";
+  hint.textContent =
+    "Please request a new reset link from the Forgot Password page.";
   btn.disabled = true;
 }
 
@@ -82,7 +61,8 @@ if (form) {
     btn.disabled = true;
 
     const newPassword = document.getElementById("newPassword")?.value || "";
-    const confirmPassword = document.getElementById("confirmPassword")?.value || "";
+    const confirmPassword =
+      document.getElementById("confirmPassword")?.value || "";
 
     if (!token || !email) {
       msg.style.color = "#b91c1c";
