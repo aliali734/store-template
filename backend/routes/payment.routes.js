@@ -26,11 +26,6 @@ router.post("/moyasar/webhook", express.json(), handleMoyasarWebhook);
 
 // Stripe routes
 router.post("/stripe/create-session", protect(), verifyCsrf, createStripeCheckoutSession);
-router.post(
-  "/stripe/webhook",
-  express.raw({ type: "application/json" }),
-  handleStripeWebhook
-);
 
 // Get payment by ID
 router.get("/:id", protect(), getPaymentById);

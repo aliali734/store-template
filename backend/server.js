@@ -59,6 +59,12 @@ app.options("*", cors({
   credentials: true
 }));
 
+app.post(
+  "/api/payments/stripe/webhook",
+  express.raw({ type: "application/json" }),
+  require("./controllers/payment.controllers").handleStripeWebhook
+);
+
 // Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
