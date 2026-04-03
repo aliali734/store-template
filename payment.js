@@ -47,8 +47,13 @@ async function paymentApiFetch(path, options = {}) {
 // =====================
 function getCartItems() {
   try {
-    return JSON.parse(localStorage.getItem("cart")) || [];
-  } catch {
+    const raw = localStorage.getItem("cart");
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    console.error("Failed to parse cart from localStorage:", err);
     return [];
   }
 }
@@ -136,7 +141,9 @@ async function createStripeCheckoutSession(paymentId) {
   const stripeData = await stripeRes.json().catch(() => ({}));
 
   if (!stripeRes.ok || !stripeData.url) {
-    throw new Error(stripeData.message || "Failed to create Stripe checkout session");
+    throw new Error(
+      stripeData.message || "Failed to create Stripe checkout session"
+    );
   }
 
   return stripeData;
@@ -157,13 +164,9 @@ function handleCashSuccess(orderId) {
 async function handleCardPayment(payment, order) {
   const stripeSession = await createStripeCheckoutSession(payment._id);
 
-  // Save order id so confirmation page can still use it after Stripe redirect
   localStorage.setItem("currentOrderId", order._id);
-
-  // Optional: clear cart before redirect
   savePaymentCart([]);
 
-  // Redirect user to Stripe Checkout
   window.location.href = stripeSession.url;
 }
 
@@ -182,7 +185,7 @@ async function handleBnplPayment(payment, order) {
 async function handleCheckout() {
   const cart = getCartItems();
 
-  if (!cart.length) {
+  if (!cart || !Array.isArray(cart) || cart.length === 0) {
     alert("Cart is empty");
     return;
   }
@@ -196,13 +199,9 @@ async function handleCheckout() {
   }));
 
   try {
-    // 1) Create order
     const order = await createCheckoutOrder(productsPayload, paymentMethod);
-
-    // 2) Create payment record
     const payment = await createPaymentRecord(order._id, paymentMethod);
 
-    // 3) Handle method-specific flow
     if (paymentMethod === "cash") {
       handleCashSuccess(order._id);
       return;
