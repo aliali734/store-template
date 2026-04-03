@@ -337,8 +337,8 @@ const createStripeCheckoutSession = async (req, res) => {
       });
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || "http://127.0.0.1:5500";
-
+const frontendUrl = process.env.FRONTEND_URL || "http://127.0.0.1:5500";
+console.log("Stripe success/cancel FRONTEND_URL:", frontendUrl);
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
