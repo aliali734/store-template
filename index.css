@@ -119,79 +119,6 @@ li {
 }
 
 /* ===========================
-   DECORATIVE SPHERE
-=========================== */
-.sphere {
-  animation: rot 16s linear infinite reverse;
-  width: min(333px, 42vw);
-  height: min(333px, 42vw);
-  border-radius: 50%;
-  transform-style: preserve-3d;
-  transform-origin: center center;
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.7;
-}
-
-.sphere i {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  line-height: 1;
-  transform-style: preserve-3d;
-  border-radius: 50%;
-  backface-visibility: visible;
-  box-shadow: 0 0 83.25px 0 rgba(0, 0, 0, 0.1),
-    inset 0 0 83.25px 0 rgba(0, 0, 0, 0.2);
-}
-
-/* First half of children: rotateY */
-i:nth-child(1) { transform: rotateY(11.25deg); }
-i:nth-child(2) { transform: rotateY(22.5deg); }
-i:nth-child(3) { transform: rotateY(33.75deg); }
-i:nth-child(4) { transform: rotateY(45deg); }
-i:nth-child(5) { transform: rotateY(56.25deg); }
-i:nth-child(6) { transform: rotateY(67.5deg); }
-i:nth-child(7) { transform: rotateY(78.75deg); }
-i:nth-child(8) { transform: rotateY(90deg); }
-i:nth-child(9) { transform: rotateY(101.25deg); }
-i:nth-child(10) { transform: rotateY(112.5deg); }
-i:nth-child(11) { transform: rotateY(123.75deg); }
-i:nth-child(12) { transform: rotateY(135deg); }
-i:nth-child(13) { transform: rotateY(146.25deg); }
-i:nth-child(14) { transform: rotateY(157.5deg); }
-i:nth-child(15) { transform: rotateY(168.75deg); }
-i:nth-child(16) { transform: rotateY(180deg); }
-
-/* Second half of children: rotateX */
-i:nth-child(17) { transform: rotateX(191.25deg); }
-i:nth-child(18) { transform: rotateX(202.5deg); }
-i:nth-child(19) { transform: rotateX(213.75deg); }
-i:nth-child(20) { transform: rotateX(225deg); }
-i:nth-child(21) { transform: rotateX(236.25deg); }
-i:nth-child(22) { transform: rotateX(247.5deg); }
-i:nth-child(23) { transform: rotateX(258.75deg); }
-i:nth-child(24) { transform: rotateX(270deg); }
-i:nth-child(25) { transform: rotateX(281.25deg); }
-i:nth-child(26) { transform: rotateX(292.5deg); }
-i:nth-child(27) { transform: rotateX(303.75deg); }
-i:nth-child(28) { transform: rotateX(315deg); }
-i:nth-child(29) { transform: rotateX(326.25deg); }
-i:nth-child(30) { transform: rotateX(337.5deg); }
-i:nth-child(31) { transform: rotateX(348.75deg); }
-i:nth-child(32) { transform: rotateX(360deg); }
-
-@keyframes rot {
-  to {
-    transform: translate(-50%, -50%) rotateY(360deg) rotateZ(360deg);
-  }
-}
-
-/* ===========================
    HERO
 =========================== */
 .hero {
@@ -320,22 +247,16 @@ i:nth-child(32) { transform: rotateX(360deg); }
     transition: none !important;
     animation: none !important;
   }
-
-  .sphere {
-    animation: none !important;
-  }
 }
 
 /* ===========================
    ABOUT
 =========================== */
 .about {
-  min-height: 110vh;
+  min-height: auto;
   position: relative;
-  inset: 0;
   z-index: 0;
-  background-size: cover;
-  background-position: center right;
+  padding: 80px 0;
 }
 
 .about .container {
@@ -346,18 +267,16 @@ i:nth-child(32) { transform: rotateX(360deg); }
 }
 
 .about .desc {
-  position: absolute;
-  max-width: 600px;
-  max-height: 600px;
-  border-radius: 50%;
+  position: relative;
+  max-width: 700px;
+  min-height: 700px;
+  margin: 0 auto;
   display: flex;
   justify-content: center;
   align-items: center;
-  top: 100px;
   z-index: 4;
   background-color: transparent;
-  width: min(70vw, 600px);
-  height: min(70vw, 600px);
+  width: min(90vw, 700px);
   padding: var(--space-md);
 }
 
@@ -547,12 +466,10 @@ i:nth-child(32) { transform: rotateX(360deg); }
    PROJECTS
 =========================== */
 .projects {
-  min-height: 110vh;
+  min-height: auto;
   position: relative;
-  inset: 0;
   z-index: 0;
-  background-size: cover;
-  background-position: center right;
+  padding: 80px 0;
 }
 
 .projects .container {
@@ -563,18 +480,16 @@ i:nth-child(32) { transform: rotateX(360deg); }
 }
 
 .projects .desc {
-  position: absolute;
-  max-width: 600px;
-  max-height: 600px;
-  border-radius: 50%;
+  position: relative;
+  max-width: 700px;
+  min-height: 700px;
+  margin: 0 auto;
   display: flex;
   justify-content: center;
   align-items: center;
-  top: 100px;
   z-index: 4;
   background-color: transparent;
-  width: min(70vw, 600px);
-  height: min(70vw, 600px);
+  width: min(90vw, 700px);
   padding: var(--space-md);
 }
 
@@ -1211,15 +1126,16 @@ i:nth-child(32) { transform: rotateX(360deg); }
     font-size: clamp(24px, 6vw, 32px);
   }
 
-  .sphere {
-    width: min(220px, 52vw);
-    height: min(220px, 52vw);
-    opacity: 0.45;
-  }
-
   .about,
   .projects {
     min-height: auto;
+    padding: 60px 0;
+  }
+
+  .about .desc,
+  .projects .desc {
+    top: 0;
+    min-height: 760px;
   }
 
   .contact .container {
