@@ -45,6 +45,24 @@ main {
   z-index: 1000;
 }
 
+/* ===========================
+   SECTION SNAP
+=========================== */
+#main-content {
+  scroll-snap-type: y proximity;
+}
+
+.hero,
+.about,
+.projects,
+.pricing,
+.testimonials,
+.contact {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  scroll-margin-top: 90px;
+}
+
 /* Titles */
 .main-title {
   display: block;
@@ -146,104 +164,40 @@ li {
 }
 
 /* First half of children: rotateY */
-i:nth-child(1) {
-  transform: rotateY(11.25deg);
-}
-i:nth-child(2) {
-  transform: rotateY(22.5deg);
-}
-i:nth-child(3) {
-  transform: rotateY(33.75deg);
-}
-i:nth-child(4) {
-  transform: rotateY(45deg);
-}
-i:nth-child(5) {
-  transform: rotateY(56.25deg);
-}
-i:nth-child(6) {
-  transform: rotateY(67.5deg);
-}
-i:nth-child(7) {
-  transform: rotateY(78.75deg);
-}
-i:nth-child(8) {
-  transform: rotateY(90deg);
-}
-i:nth-child(9) {
-  transform: rotateY(101.25deg);
-}
-i:nth-child(10) {
-  transform: rotateY(112.5deg);
-}
-i:nth-child(11) {
-  transform: rotateY(123.75deg);
-}
-i:nth-child(12) {
-  transform: rotateY(135deg);
-}
-i:nth-child(13) {
-  transform: rotateY(146.25deg);
-}
-i:nth-child(14) {
-  transform: rotateY(157.5deg);
-}
-i:nth-child(15) {
-  transform: rotateY(168.75deg);
-}
-i:nth-child(16) {
-  transform: rotateY(180deg);
-}
+i:nth-child(1) { transform: rotateY(11.25deg); }
+i:nth-child(2) { transform: rotateY(22.5deg); }
+i:nth-child(3) { transform: rotateY(33.75deg); }
+i:nth-child(4) { transform: rotateY(45deg); }
+i:nth-child(5) { transform: rotateY(56.25deg); }
+i:nth-child(6) { transform: rotateY(67.5deg); }
+i:nth-child(7) { transform: rotateY(78.75deg); }
+i:nth-child(8) { transform: rotateY(90deg); }
+i:nth-child(9) { transform: rotateY(101.25deg); }
+i:nth-child(10) { transform: rotateY(112.5deg); }
+i:nth-child(11) { transform: rotateY(123.75deg); }
+i:nth-child(12) { transform: rotateY(135deg); }
+i:nth-child(13) { transform: rotateY(146.25deg); }
+i:nth-child(14) { transform: rotateY(157.5deg); }
+i:nth-child(15) { transform: rotateY(168.75deg); }
+i:nth-child(16) { transform: rotateY(180deg); }
 
 /* Second half of children: rotateX */
-i:nth-child(17) {
-  transform: rotateX(191.25deg);
-}
-i:nth-child(18) {
-  transform: rotateX(202.5deg);
-}
-i:nth-child(19) {
-  transform: rotateX(213.75deg);
-}
-i:nth-child(20) {
-  transform: rotateX(225deg);
-}
-i:nth-child(21) {
-  transform: rotateX(236.25deg);
-}
-i:nth-child(22) {
-  transform: rotateX(247.5deg);
-}
-i:nth-child(23) {
-  transform: rotateX(258.75deg);
-}
-i:nth-child(24) {
-  transform: rotateX(270deg);
-}
-i:nth-child(25) {
-  transform: rotateX(281.25deg);
-}
-i:nth-child(26) {
-  transform: rotateX(292.5deg);
-}
-i:nth-child(27) {
-  transform: rotateX(303.75deg);
-}
-i:nth-child(28) {
-  transform: rotateX(315deg);
-}
-i:nth-child(29) {
-  transform: rotateX(326.25deg);
-}
-i:nth-child(30) {
-  transform: rotateX(337.5deg);
-}
-i:nth-child(31) {
-  transform: rotateX(348.75deg);
-}
-i:nth-child(32) {
-  transform: rotateX(360deg);
-}
+i:nth-child(17) { transform: rotateX(191.25deg); }
+i:nth-child(18) { transform: rotateX(202.5deg); }
+i:nth-child(19) { transform: rotateX(213.75deg); }
+i:nth-child(20) { transform: rotateX(225deg); }
+i:nth-child(21) { transform: rotateX(236.25deg); }
+i:nth-child(22) { transform: rotateX(247.5deg); }
+i:nth-child(23) { transform: rotateX(258.75deg); }
+i:nth-child(24) { transform: rotateX(270deg); }
+i:nth-child(25) { transform: rotateX(281.25deg); }
+i:nth-child(26) { transform: rotateX(292.5deg); }
+i:nth-child(27) { transform: rotateX(303.75deg); }
+i:nth-child(28) { transform: rotateX(315deg); }
+i:nth-child(29) { transform: rotateX(326.25deg); }
+i:nth-child(30) { transform: rotateX(337.5deg); }
+i:nth-child(31) { transform: rotateX(348.75deg); }
+i:nth-child(32) { transform: rotateX(360deg); }
 
 @keyframes rot {
   to {
@@ -573,24 +527,12 @@ i:nth-child(32) {
   align-items: center;
 }
 
-.orbit2 .circle:nth-child(1) {
-  transform: rotate(0deg) translate(250px);
-}
-.orbit2 .circle:nth-child(2) {
-  transform: rotate(60deg) translate(250px);
-}
-.orbit2 .circle:nth-child(3) {
-  transform: rotate(120deg) translate(250px);
-}
-.orbit2 .circle:nth-child(4) {
-  transform: rotate(180deg) translate(250px);
-}
-.orbit2 .circle:nth-child(5) {
-  transform: rotate(240deg) translate(250px);
-}
-.orbit2 .circle:nth-child(6) {
-  transform: rotate(300deg) translate(250px);
-}
+.orbit2 .circle:nth-child(1) { transform: rotate(0deg) translate(250px); }
+.orbit2 .circle:nth-child(2) { transform: rotate(60deg) translate(250px); }
+.orbit2 .circle:nth-child(3) { transform: rotate(120deg) translate(250px); }
+.orbit2 .circle:nth-child(4) { transform: rotate(180deg) translate(250px); }
+.orbit2 .circle:nth-child(5) { transform: rotate(240deg) translate(250px); }
+.orbit2 .circle:nth-child(6) { transform: rotate(300deg) translate(250px); }
 
 .orbit2 .visual-only {
   pointer-events: none;
@@ -677,24 +619,12 @@ i:nth-child(32) {
     transform: rotate(0deg) translate(100px, 300px);
   }
 
-  .orbit2 .circle:nth-child(1) {
-    transform: rotate(0deg) translate(-120px, 0px);
-  }
-  .orbit2 .circle:nth-child(2) {
-    transform: rotate(0deg) translate(-120px, 250px);
-  }
-  .orbit2 .circle:nth-child(3) {
-    transform: rotate(0deg) translate(-120px, 500px);
-  }
-  .orbit2 .circle:nth-child(4) {
-    transform: rotate(0deg) translate(-120px, 125px);
-  }
-  .orbit2 .circle:nth-child(5) {
-    transform: rotate(0deg) translate(-120px, 375px);
-  }
-  .orbit2 .circle:nth-child(6) {
-    transform: rotate(0deg) translate(-120px, 625px);
-  }
+  .orbit2 .circle:nth-child(1) { transform: rotate(0deg) translate(-120px, 0px); }
+  .orbit2 .circle:nth-child(2) { transform: rotate(0deg) translate(-120px, 250px); }
+  .orbit2 .circle:nth-child(3) { transform: rotate(0deg) translate(-120px, 500px); }
+  .orbit2 .circle:nth-child(4) { transform: rotate(0deg) translate(-120px, 125px); }
+  .orbit2 .circle:nth-child(5) { transform: rotate(0deg) translate(-120px, 375px); }
+  .orbit2 .circle:nth-child(6) { transform: rotate(0deg) translate(-120px, 625px); }
 }
 
 /* ===========================
@@ -868,43 +798,19 @@ i:nth-child(32) {
   align-items: center;
 }
 
-.orbit4 .circle .content77 {
-  animation: counterspin1 40s linear infinite;
-}
-.orbit4 .circle .content88 {
-  animation: counterspin2 40s linear infinite;
-}
-.orbit4 .circle .content99 {
-  animation: counterspin3 40s linear infinite;
-}
-.orbit4 .circle .content1010 {
-  animation: counterspin4 40s linear infinite;
-}
-.orbit4 .circle .content1212 {
-  animation: counterspin5 40s linear infinite;
-}
-.orbit4 .circle .content1313 {
-  animation: counterspin6 40s linear infinite;
-}
+.orbit4 .circle .content77 { animation: counterspin1 40s linear infinite; }
+.orbit4 .circle .content88 { animation: counterspin2 40s linear infinite; }
+.orbit4 .circle .content99 { animation: counterspin3 40s linear infinite; }
+.orbit4 .circle .content1010 { animation: counterspin4 40s linear infinite; }
+.orbit4 .circle .content1212 { animation: counterspin5 40s linear infinite; }
+.orbit4 .circle .content1313 { animation: counterspin6 40s linear infinite; }
 
-.orbit4 .circle:nth-child(1) {
-  transform: rotate(0deg) translate(250px);
-}
-.orbit4 .circle:nth-child(2) {
-  transform: rotate(60deg) translate(250px);
-}
-.orbit4 .circle:nth-child(3) {
-  transform: rotate(120deg) translate(250px);
-}
-.orbit4 .circle:nth-child(4) {
-  transform: rotate(180deg) translate(250px);
-}
-.orbit4 .circle:nth-child(5) {
-  transform: rotate(240deg) translate(250px);
-}
-.orbit4 .circle:nth-child(6) {
-  transform: rotate(300deg) translate(250px);
-}
+.orbit4 .circle:nth-child(1) { transform: rotate(0deg) translate(250px); }
+.orbit4 .circle:nth-child(2) { transform: rotate(60deg) translate(250px); }
+.orbit4 .circle:nth-child(3) { transform: rotate(120deg) translate(250px); }
+.orbit4 .circle:nth-child(4) { transform: rotate(180deg) translate(250px); }
+.orbit4 .circle:nth-child(5) { transform: rotate(240deg) translate(250px); }
+.orbit4 .circle:nth-child(6) { transform: rotate(300deg) translate(250px); }
 
 .orbit4 .visual-only {
   pointer-events: none;
@@ -973,85 +879,45 @@ i:nth-child(32) {
     height: 84px !important;
   }
 
-  .orbit4 .circle:nth-child(1) {
-    transform: rotate(0deg) translate(-120px, 0px);
-  }
-  .orbit4 .circle:nth-child(2) {
-    transform: rotate(0deg) translate(-120px, 250px);
-  }
-  .orbit4 .circle:nth-child(3) {
-    transform: rotate(0deg) translate(-120px, 500px);
-  }
-  .orbit4 .circle:nth-child(4) {
-    transform: rotate(0deg) translate(-120px, 125px);
-  }
-  .orbit4 .circle:nth-child(5) {
-    transform: rotate(0deg) translate(-120px, 375px);
-  }
-  .orbit4 .circle:nth-child(6) {
-    transform: rotate(0deg) translate(-120px, 625px);
-  }
+  .orbit4 .circle:nth-child(1) { transform: rotate(0deg) translate(-120px, 0px); }
+  .orbit4 .circle:nth-child(2) { transform: rotate(0deg) translate(-120px, 250px); }
+  .orbit4 .circle:nth-child(3) { transform: rotate(0deg) translate(-120px, 500px); }
+  .orbit4 .circle:nth-child(4) { transform: rotate(0deg) translate(-120px, 125px); }
+  .orbit4 .circle:nth-child(5) { transform: rotate(0deg) translate(-120px, 375px); }
+  .orbit4 .circle:nth-child(6) { transform: rotate(0deg) translate(-120px, 625px); }
 }
 
 /* ===========================
    ANIMATIONS
 =========================== */
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes counterspin1 {
-  from {
-    transform: rotate(360deg);
-  }
-  to {
-    transform: rotate(0deg);
-  }
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
 }
 @keyframes counterspin2 {
-  from {
-    transform: rotate(300deg);
-  }
-  to {
-    transform: rotate(-60deg);
-  }
+  from { transform: rotate(300deg); }
+  to { transform: rotate(-60deg); }
 }
 @keyframes counterspin3 {
-  from {
-    transform: rotate(240deg);
-  }
-  to {
-    transform: rotate(-120deg);
-  }
+  from { transform: rotate(240deg); }
+  to { transform: rotate(-120deg); }
 }
 @keyframes counterspin4 {
-  from {
-    transform: rotate(180deg);
-  }
-  to {
-    transform: rotate(-180deg);
-  }
+  from { transform: rotate(180deg); }
+  to { transform: rotate(-180deg); }
 }
 @keyframes counterspin5 {
-  from {
-    transform: rotate(120deg);
-  }
-  to {
-    transform: rotate(-240deg);
-  }
+  from { transform: rotate(120deg); }
+  to { transform: rotate(-240deg); }
 }
 @keyframes counterspin6 {
-  from {
-    transform: rotate(60deg);
-  }
-  to {
-    transform: rotate(-300deg);
-  }
+  from { transform: rotate(60deg); }
+  to { transform: rotate(-300deg); }
 }
 
 /* ===========================
