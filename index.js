@@ -498,3 +498,80 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderCards(false);
 });
+
+// =====================
+// SECTION-BY-SECTION SCROLL
+// =====================
+(function () {
+  const sectionSelectors = [
+    ".hero",
+    ".about",
+    ".projects",
+    ".pricing",
+    ".testimonials",
+    ".contact"
+  ];
+
+  let isScrolling = false;
+
+  function getSections() {
+    return sectionSelectors
+      .map((selector) => document.querySelector(selector))
+      .filter(Boolean);
+  }
+
+  function getClosestSectionIndex(sections) {
+    const scrollY = window.scrollY;
+    let closestIndex = 0;
+    let smallestDiff = Infinity;
+
+    sections.forEach((section, index) => {
+      const diff = Math.abs(section.offsetTop - scrollY);
+      if (diff < smallestDiff) {
+        smallestDiff = diff;
+        closestIndex = index;
+      }
+    });
+
+    return closestIndex;
+  }
+
+  function scrollToSection(index) {
+    const sections = getSections();
+    if (!sections[index]) return;
+
+    isScrolling = true;
+
+    sections[index].scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+    setTimeout(() => {
+      isScrolling = false;
+    }, 900);
+  }
+
+  function handleWheel(e) {
+    if (window.innerWidth <= 768) return;
+    if (isScrolling) {
+      e.preventDefault();
+      return;
+    }
+
+    const sections = getSections();
+    if (!sections.length) return;
+
+    const currentIndex = getClosestSectionIndex(sections);
+
+    if (e.deltaY > 20 && currentIndex < sections.length - 1) {
+      e.preventDefault();
+      scrollToSection(currentIndex + 1);
+    } else if (e.deltaY < -20 && currentIndex > 0) {
+      e.preventDefault();
+      scrollToSection(currentIndex - 1);
+    }
+  }
+
+  window.addEventListener("wheel", handleWheel, { passive: false });
+})();
