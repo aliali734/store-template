@@ -498,9 +498,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderCards(false);
 });
-
 // =====================
 // SECTION-BY-SECTION SCROLL
+// Desktop only
 // =====================
 (function () {
   const sectionSelectors = [
@@ -512,7 +512,9 @@ document.addEventListener("DOMContentLoaded", () => {
     ".contact"
   ];
 
-  let isScrolling = false;
+  let currentSectionIndex = 0;
+  let isAnimating = false;
+  let touchpadLock = false;
 
   function getSections() {
     return sectionSelectors
@@ -520,58 +522,84 @@ document.addEventListener("DOMContentLoaded", () => {
       .filter(Boolean);
   }
 
-  function getClosestSectionIndex(sections) {
+  function detectCurrentSection() {
+    const sections = getSections();
     const scrollY = window.scrollY;
-    let closestIndex = 0;
-    let smallestDiff = Infinity;
+    let bestIndex = 0;
+    let bestDistance = Infinity;
 
     sections.forEach((section, index) => {
-      const diff = Math.abs(section.offsetTop - scrollY);
-      if (diff < smallestDiff) {
-        smallestDiff = diff;
-        closestIndex = index;
+      const distance = Math.abs(section.offsetTop - scrollY);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestIndex = index;
       }
     });
 
-    return closestIndex;
+    currentSectionIndex = bestIndex;
   }
 
   function scrollToSection(index) {
     const sections = getSections();
     if (!sections[index]) return;
 
-    isScrolling = true;
+    isAnimating = true;
+    currentSectionIndex = index;
 
-    sections[index].scrollIntoView({
-      behavior: "smooth",
-      block: "start"
+    window.scrollTo({
+      top: sections[index].offsetTop - 70,
+      behavior: "smooth"
     });
 
     setTimeout(() => {
-      isScrolling = false;
+      isAnimating = false;
     }, 900);
   }
 
-  function handleWheel(e) {
+  function handleWheel(event) {
     if (window.innerWidth <= 768) return;
-    if (isScrolling) {
-      e.preventDefault();
+    if (isAnimating) {
+      event.preventDefault();
+      return;
+    }
+
+    if (touchpadLock) {
+      event.preventDefault();
       return;
     }
 
     const sections = getSections();
     if (!sections.length) return;
 
-    const currentIndex = getClosestSectionIndex(sections);
+    detectCurrentSection();
 
-    if (e.deltaY > 20 && currentIndex < sections.length - 1) {
-      e.preventDefault();
-      scrollToSection(currentIndex + 1);
-    } else if (e.deltaY < -20 && currentIndex > 0) {
-      e.preventDefault();
-      scrollToSection(currentIndex - 1);
+    if (event.deltaY > 30 && currentSectionIndex < sections.length - 1) {
+      event.preventDefault();
+      touchpadLock = true;
+      scrollToSection(currentSectionIndex + 1);
+      setTimeout(() => {
+        touchpadLock = false;
+      }, 950);
+    } else if (event.deltaY < -30 && currentSectionIndex > 0) {
+      event.preventDefault();
+      touchpadLock = true;
+      scrollToSection(currentSectionIndex - 1);
+      setTimeout(() => {
+        touchpadLock = false;
+      }, 950);
     }
   }
 
-  window.addEventListener("wheel", handleWheel, { passive: false });
+  function initSectionScroll() {
+    detectCurrentSection();
+    window.addEventListener("wheel", handleWheel, { passive: false });
+
+    window.addEventListener("scroll", () => {
+      if (!isAnimating) {
+        detectCurrentSection();
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", initSectionScroll);
 })();
