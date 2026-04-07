@@ -65,7 +65,63 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Failed to load homepage settings:", err);
   }
 });
+// =====================
+// LOAD DISCOUNT OFFERS
+// =====================
+async function loadDiscountOffers() {
+  const offersGrid = document.getElementById("offers-grid");
+  if (!offersGrid) return;
 
+  offersGrid.innerHTML = "<p>Loading offers...</p>";
+
+  try {
+    const data = await apiFetch("/product?promo=true&limit=4&sort=newest");
+    const offers = data.products || [];
+
+    if (!offers.length) {
+      offersGrid.innerHTML = "<p>No offers available right now.</p>";
+      return;
+    }
+
+    offersGrid.innerHTML = offers
+      .map((product) => {
+        const firstImage = Array.isArray(product.images) ? product.images[0] : "";
+        const imageSrc = firstImage
+          ? (/^https?:\/\//i.test(firstImage)
+              ? firstImage
+              : `${SERVER_BASE}${firstImage}`)
+          : "https://via.placeholder.com/400";
+
+        const oldPrice = Number(product.compareAtPrice || 0);
+        const newPrice = Number(product.price || 0);
+
+        const discount =
+          oldPrice > newPrice && oldPrice > 0
+            ? Math.round(((oldPrice - newPrice) / oldPrice) * 100)
+            : 0;
+
+        return `
+          <article class="offer-card">
+            <div class="offer-image-wrap">
+              <img src="${imageSrc}" alt="${product.name}" />
+              <div class="offer-badge"><span>${discount}%</span></div>
+            </div>
+            <h3>${product.name}</h3>
+            <div class="offer-prices">
+              <p class="offer-old">Old Price: <span>$${oldPrice.toFixed(2)}</span></p>
+              <p class="offer-new">New Price: <strong>$${newPrice.toFixed(2)}</strong></p>
+            </div>
+            <a href="product.html?id=${product._id}" class="offer-btn">Shop Now</a>
+          </article>
+        `;
+      })
+      .join("");
+  } catch (err) {
+    console.error("Failed to load discount offers:", err);
+    offersGrid.innerHTML =
+      "<p style='color:#b91c1c;'>Failed to load offers.</p>";
+  }
+}
 // =====================
 // HERO LOAD EFFECT
 // =====================
@@ -603,3 +659,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("DOMContentLoaded", initSectionScroll);
 })();
+document.addEventListener("DOMContentLoaded", () => {
+  loadDiscountOffers();
+});
