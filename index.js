@@ -116,11 +116,61 @@ async function loadDiscountOffers() {
         `;
       })
       .join("");
+      initOffersSlider();
   } catch (err) {
     console.error("Failed to load discount offers:", err);
     offersGrid.innerHTML =
       "<p style='color:#b91c1c;'>Failed to load offers.</p>";
   }
+}
+// =====================
+// OFFERS SLIDER
+// =====================
+function initOffersSlider() {
+  const grid = document.getElementById("offers-grid");
+  const prevBtn = document.querySelector(".offers-prev");
+  const nextBtn = document.querySelector(".offers-next");
+
+  if (!grid || !prevBtn || !nextBtn) return;
+
+  let currentIndex = 0;
+
+  function getVisibleCount() {
+    if (window.innerWidth <= 768) return 1;
+    if (window.innerWidth <= 1200) return 2;
+    return 4;
+  }
+
+  function updateSlider() {
+    const cards = [...grid.querySelectorAll(".offer-card")];
+    if (!cards.length) return;
+
+    const visibleCount = getVisibleCount();
+    const maxIndex = Math.max(cards.length - visibleCount, 0);
+
+    if (currentIndex > maxIndex) currentIndex = maxIndex;
+    if (currentIndex < 0) currentIndex = 0;
+
+    const cardWidth = cards[0].offsetWidth;
+    const gap = 28;
+    const offset = currentIndex * (cardWidth + gap);
+
+    grid.style.transform = `translateX(-${offset}px)`;
+  }
+
+  prevBtn.addEventListener("click", () => {
+    currentIndex -= 1;
+    updateSlider();
+  });
+
+  nextBtn.addEventListener("click", () => {
+    currentIndex += 1;
+    updateSlider();
+  });
+
+  window.addEventListener("resize", updateSlider);
+
+  updateSlider();
 }
 // =====================
 // HERO LOAD EFFECT
