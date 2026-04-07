@@ -738,6 +738,7 @@ li {
   display: block;
 }
 
+/* Red discount triangle */
 .offer-badge {
   position: absolute;
   left: 0;
@@ -765,32 +766,27 @@ li {
   color: #111;
 }
 
-.offer-old {
-  font-size: 15px;
-  color: #3f3f3f;
-  margin-bottom: 10px;
+.offer-prices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.offer-old,
+.offer-new {
+  margin: 0;
+  font-size: 16px;
+  color: #2f2f2f;
 }
 
 .offer-old span {
   text-decoration: line-through;
-  color: #555;
+  color: #666;
+  font-weight: 600;
 }
 
-.offer-prices {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
-  gap: 12px;
-}
-
-.offer-prices .old-price {
-  font-size: 22px;
-  font-weight: 800;
-  color: #111;
-}
-
-.offer-prices .new-price {
+.offer-new strong {
   font-size: 28px;
   font-weight: 900;
   color: #111;
@@ -873,15 +869,10 @@ li {
     font-size: 30px;
   }
 
-  .offer-prices .old-price {
-    font-size: 20px;
-  }
-
-  .offer-prices .new-price {
+  .offer-new strong {
     font-size: 24px;
   }
 }
-
 /* ===========================
    TESTIMONIALS
 =========================== */
