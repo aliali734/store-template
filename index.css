@@ -358,10 +358,6 @@ li {
   margin-top: 6px;
 }
 
-.orbit1 .circleh {
-  z-index: 5;
-}
-
 .orbit2 {
   position: absolute;
   max-width: 700px;
@@ -398,24 +394,12 @@ li {
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.orbit2 .circle .content11 {
-  animation: counterspin1 40s linear infinite;
-}
-.orbit2 .circle .content22 {
-  animation: counterspin2 40s linear infinite;
-}
-.orbit2 .circle .content33 {
-  animation: counterspin3 40s linear infinite;
-}
-.orbit2 .circle .content44 {
-  animation: counterspin4 40s linear infinite;
-}
-.orbit2 .circle .content55 {
-  animation: counterspin5 40s linear infinite;
-}
-.orbit2 .circle .content66 {
-  animation: counterspin6 40s linear infinite;
-}
+.orbit2 .circle .content11 { animation: counterspin1 40s linear infinite; }
+.orbit2 .circle .content22 { animation: counterspin2 40s linear infinite; }
+.orbit2 .circle .content33 { animation: counterspin3 40s linear infinite; }
+.orbit2 .circle .content44 { animation: counterspin4 40s linear infinite; }
+.orbit2 .circle .content55 { animation: counterspin5 40s linear infinite; }
+.orbit2 .circle .content66 { animation: counterspin6 40s linear infinite; }
 
 .orbit2 .circle .content11 p,
 .orbit2 .circle .content22 p,
@@ -566,10 +550,6 @@ li {
 .orbit3 .circle .content13 h3 {
   font-size: 0.8rem;
   margin-top: 6px;
-}
-
-.orbit3 .circleh {
-  z-index: 5;
 }
 
 .orbit4 {
@@ -758,7 +738,6 @@ li {
   display: block;
 }
 
-/* Red discount triangle */
 .offer-badge {
   position: absolute;
   left: 0;
@@ -767,23 +746,15 @@ li {
   height: 0;
   border-left: 180px solid #ff0f1f;
   border-top: 120px solid transparent;
+}
+
+.offer-badge span {
+  position: absolute;
+  left: -145px;
+  bottom: 18px;
   color: #fff;
-  font-weight: 800;
+  font-weight: 900;
   font-size: 18px;
-  line-height: 1;
-}
-
-.offer-badge::after {
-  content: attr(data-text);
-}
-
-.offer-badge {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-  padding-left: 16px;
-  padding-bottom: 16px;
-  box-sizing: border-box;
 }
 
 .offer-card h3 {
@@ -844,7 +815,6 @@ li {
   border-color: #111;
 }
 
-/* Arrows */
 .offers-nav {
   position: absolute;
   top: 48%;
@@ -871,9 +841,6 @@ li {
   transform: translateY(-50%) scale(1.06);
 }
 
-/* ===========================
-   RESPONSIVE OFFERS
-=========================== */
 @media (max-width: 1200px) {
   .offers-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
