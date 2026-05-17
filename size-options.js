@@ -13,9 +13,11 @@ const SIZE_OPTIONS = {
   }
 };
 
+// Used by the admin product form — needs both department AND audience
+// because the size set differs between adults and kids.
 function getSizesForProduct(department, audience = "") {
   const dept = String(department || "").toLowerCase();
-  const aud = String(audience || "").toLowerCase();
+  const aud  = String(audience   || "").toLowerCase();
 
   const config = SIZE_OPTIONS[dept];
   if (!config) return [];
@@ -27,5 +29,14 @@ function getSizesForProduct(department, audience = "") {
   return config.default || [];
 }
 
-window.SIZE_OPTIONS = SIZE_OPTIONS;
-window.getSizesForProduct = getSizesForProduct;
+// Used by the shop filter sidebar — no audience context is available
+// there, so we return the adult (default) sizes for the department.
+// This is what filters.js calls via window.getSizesForDepartment(department).
+function getSizesForDepartment(department) {
+  return getSizesForProduct(department, "");
+}
+سشسشسش
+
+window.SIZE_OPTIONS          = SIZE_OPTIONS;
+window.getSizesForProduct    = getSizesForProduct;
+window.getSizesForDepartment = getSizesForDepartment;

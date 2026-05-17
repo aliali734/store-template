@@ -4,14 +4,18 @@ let currentPage = 1;
 let totalPages = 1;
 
 // =====================
-// LOCAL SAFE DEBOUNCE
+// HTML ESCAPE
+// Sanitizes any server-supplied string before it is injected into
+// innerHTML, preventing XSS if a product name/category contains
+// malicious HTML or script tags.
 // =====================
-function safeDebounce(fn, delay = 400) {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => fn(...args), delay);
-  };
+function escapeHtml(str) {
+  return String(str == null ? "" : str)
+    .replace(/&/g,  "&amp;")
+    .replace(/</g,  "&lt;")
+    .replace(/>/g,  "&gt;")
+    .replace(/"/g,  "&quot;")
+    .replace(/'/g,  "&#39;");
 }
 
 // =====================
@@ -182,21 +186,27 @@ function updateTitle(total) {
 // =====================
 // RENDER PRODUCTS
 // =====================
+
+// Cache the card template after the first successful fetch so we don't
+// make a network request on every filter change or page turn.
+let cachedCardTemplate = null;
+
 async function renderProducts() {
   const container = document.getElementById("products");
   if (!container) return;
 
   container.innerHTML = "";
 
-  let template = "";
-
-  try {
-    const res = await fetch("product-card.html");
-    template = await res.text();
-  } catch (err) {
-    console.error("Failed to load product template:", err);
-    container.innerHTML = "<p>Template error</p>";
-    return;
+  // Load template once; reuse on subsequent renders.
+  if (!cachedCardTemplate) {
+    try {
+      const res = await fetch("product-card.html");
+      cachedCardTemplate = await res.text();
+    } catch (err) {
+      console.error("Failed to load product template:", err);
+      container.innerHTML = "<p>Template error</p>";
+      return;
+    }
   }
 
   if (!products.length) {
@@ -218,12 +228,18 @@ async function renderProducts() {
 
     const imageUrl = resolveImageUrl(firstImage);
 
-    const cardHTML = template
-      .replace(/{{_id}}/g, product._id)
-      .replace(/{{image}}/g, imageUrl)
-      .replace(/{{name}}/g, product.name || "")
-      .replace(/{{category}}/g, product.category || "")
-      .replace(/{{price}}/g, product.price ?? 0);
+    // Escape all server-supplied strings before substituting into HTML.
+    // product._id is a MongoDB ObjectId (hex only — safe without escaping,
+    // but escaped anyway for defence in depth).
+    // imageUrl is a resolved URL — kept unescaped so it works in src/href,
+    // but is constructed from a known-safe base + Cloudinary path.
+    // product.price is coerced to a number, so it is always safe.
+    const cardHTML = cachedCardTemplate
+      .replace(/{{_id}}/g,      escapeHtml(product._id))
+      .replace(/{{image}}/g,    imageUrl)
+      .replace(/{{name}}/g,     escapeHtml(product.name     || ""))
+      .replace(/{{category}}/g, escapeHtml(product.category || ""))
+      .replace(/{{price}}/g,    Number(product.price ?? 0));
 
     const wrapper = document.createElement("div");
     wrapper.innerHTML = cardHTML;

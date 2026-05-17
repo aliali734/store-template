@@ -18,9 +18,14 @@ const userSchema = new mongoose.Schema(
       lowercase: true
     },
 
+    // select: false means the hash is never included in query results
+    // unless the caller explicitly opts in with .select("+password").
+    // This prevents accidental exposure of the hash in any future query
+    // that forgets to project it out.
     password: {
       type: String,
-      required: true
+      required: true,
+      select: false
     },
 
     role: {

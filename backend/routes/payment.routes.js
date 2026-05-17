@@ -10,9 +10,7 @@ const {
   createPayment,
   createMoyasarPayment,
   handleMoyasarReturn,
-  handleMoyasarWebhook,
   createStripeCheckoutSession,
-  handleStripeWebhook,
   updatePaymentStatus
 } = require("../controllers/payment.controllers");
 
@@ -22,18 +20,21 @@ router.post("/", protect(), verifyCsrf, createPayment);
 // Moyasar routes
 router.post("/moyasar", protect(), verifyCsrf, createMoyasarPayment);
 router.get("/moyasar/return", handleMoyasarReturn);
-router.post("/moyasar/webhook", express.json(), handleMoyasarWebhook);
+// NOTE: POST /moyasar/webhook is mounted directly in server.js (before body
+// parsers) with express.raw() so the raw body is available for HMAC
+// signature verification — same pattern as the Stripe webhook.
 
 // Stripe routes
 router.post("/stripe/create-session", protect(), verifyCsrf, createStripeCheckoutSession);
 
+// Get payment by order ID — must be declared BEFORE /:id to avoid
+// Express matching "order" as the :id param.
+router.get("/order/:orderId", protect(), getPaymentByOrderId);
+
 // Get payment by ID
 router.get("/:id", protect(), getPaymentById);
 
-// Get payment by order ID
-router.get("/order/:orderId", protect(), getPaymentByOrderId);
-
-// Update payment status
+// Update payment status (admin)
 router.patch("/:id/status", protect(["admin"]), verifyCsrf, updatePaymentStatus);
 
 module.exports = router;

@@ -1,15 +1,15 @@
 require("dotenv").config();
-
+const bcrypt = require("bcrypt");
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 const cookieParser = require("cookie-parser");
-
 const connectDB = require("./config/db");
 const { setCsrfCookie } = require("./middlewares/csrf.middleware");
 
 const app = express();
+const isDev = process.env.NODE_ENV !== "production";
 
 // Ensure upload folders exist
 const uploadDirs = [
@@ -24,7 +24,7 @@ uploadDirs.forEach((dir) => {
   }
 });
 
-// CORS
+// ── CORS ───────────────────────────────────────────────────────────────────
 const allowedOrigins = [
   "https://aliali734.github.io",
   "http://127.0.0.1:5500",
@@ -59,13 +59,23 @@ app.options("*", cors({
   credentials: true
 }));
 
+// ── Webhook routes (must be before body parsers) ───────────────────────────
+// Both Stripe and Moyasar require the raw request body for HMAC signature
+// verification, so they are mounted here before express.json() runs.
+
 app.post(
   "/api/payments/stripe/webhook",
   express.raw({ type: "application/json" }),
   require("./controllers/payment.controllers").handleStripeWebhook
 );
 
-// Body parsers
+app.post(
+  "/api/payments/moyasar/webhook",
+  express.raw({ type: "application/json" }),
+  require("./controllers/payment.controllers").handleMoyasarWebhook
+);
+
+// ── Body parsers ───────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -84,23 +94,33 @@ app.get("/api/csrf", (req, res) => {
 // Static
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Routes
-app.use("/api/auth", require("./routes/auth.routes"));
-app.use("/api/product", require("./routes/product.routes"));
-app.use("/api/orders", require("./routes/order.routes"));
-app.use("/api/test", require("./routes/test.routes"));
-app.use("/api/email-test", require("./routes/email-test.routes"));
-app.use("/api/header", require("./routes/header.routes"));
-app.use("/api/settings", require("./routes/storeSettings.routes"));
-app.use("/api/setup", require("./routes/setup.routes")); 
+// ── Application routes ─────────────────────────────────────────────────────
+app.use("/api/auth",        require("./routes/auth.routes"));
+app.use("/api/product",     require("./routes/product.routes"));
+app.use("/api/orders",      require("./routes/order.routes"));
+app.use("/api/header",      require("./routes/header.routes"));
+app.use("/api/settings",    require("./routes/storeSettings.routes"));
+app.use("/api/setup",       require("./routes/setup.routes"));
 app.use("/api/setup-admin", require("./routes/setupAdmin.routes"));
-app.use("/api/payments", require("./routes/payment.routes"));
-// Health
+app.use("/api/payments",    require("./routes/payment.routes"));
+
+// ── Development-only routes ────────────────────────────────────────────────
+// These expose internal details and debug tooling. They must never run in
+// production. Set NODE_ENV=production in your deployment environment and
+// they will not be mounted at all.
+if (isDev) {
+  app.use("/api/test",       require("./routes/test.routes"));
+  app.use("/api/email-test", require("./routes/email-test.routes"));
+
+  console.log("⚠️  Development mode: /api/test and /api/email-test are active.");
+}
+
+// ── Health check ───────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
   res.send("🚀 Backend is running successfully!");
 });
 
-// Error handler
+// ── Global error handler ───────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error("Server error:", err.message);
   res.status(500).json({
@@ -109,7 +129,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server after DB connect
+// ── Start server ───────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {

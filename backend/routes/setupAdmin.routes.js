@@ -8,6 +8,8 @@ const { isValidEmail, passwordPolicy } = require("../utils/validators");
 
 // ============================
 // SETUP ADMIN STATUS
+// Used by onboarding.js to decide whether to redirect to this page
+// or skip ahead to login. Kept publicly accessible intentionally.
 // ============================
 router.get("/status", async (req, res) => {
   try {
@@ -35,16 +37,19 @@ router.post("/", verifyCsrf, async (req, res) => {
     const adminExists = await User.exists({ role: "admin" });
 
     if (adminExists) {
-      return res.status(403).json({
+      // Return 404 rather than 403 so the endpoint appears non-existent
+      // to anyone probing it after setup is complete. A 403 would confirm
+      // that the route exists and that an admin account is present.
+      return res.status(404).json({
         success: false,
-        message: "Admin setup is already complete"
+        message: "Not found"
       });
     }
 
     let { name, email, password } = req.body;
 
-    name = (name || "").trim();
-    email = (email || "").trim().toLowerCase();
+    name     = (name     || "").trim();
+    email    = (email    || "").trim().toLowerCase();
     password = (password || "").trim();
 
     if (!name || name.length < 2 || name.length > 60) {
@@ -92,6 +97,7 @@ router.post("/", verifyCsrf, async (req, res) => {
       message: "Admin account created successfully",
       adminId: admin._id
     });
+    
   } catch (error) {
     console.error("Create first admin error:", error);
 

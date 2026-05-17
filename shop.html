@@ -141,27 +141,36 @@
       </section>
     </div>
   </main>
+
   <footer class="site-footer">
-  <div class="footer-inner">
-    <p id="footer-text">© Clothing Store. All rights reserved.</p>
+    <div class="footer-inner">
+      <p id="footer-text">© Clothing Store. All rights reserved.</p>
 
-    <div class="footer-socials">
-      <a id="social-facebook" href="#" target="_blank" rel="noopener" style="display:none;">Facebook</a>
-      <a id="social-instagram" href="#" target="_blank" rel="noopener" style="display:none;">Instagram</a>
-      <a id="social-tiktok" href="#" target="_blank" rel="noopener" style="display:none;">TikTok</a>
-      <a id="social-twitter" href="#" target="_blank" rel="noopener" style="display:none;">X</a>
-      <a id="social-whatsapp" href="#" target="_blank" rel="noopener" style="display:none;">WhatsApp</a>
+      <div class="footer-socials">
+        <a id="social-facebook" href="#" target="_blank" rel="noopener" style="display:none;">Facebook</a>
+        <a id="social-instagram" href="#" target="_blank" rel="noopener" style="display:none;">Instagram</a>
+        <a id="social-tiktok" href="#" target="_blank" rel="noopener" style="display:none;">TikTok</a>
+        <a id="social-twitter" href="#" target="_blank" rel="noopener" style="display:none;">X</a>
+        <a id="social-whatsapp" href="#" target="_blank" rel="noopener" style="display:none;">WhatsApp</a>
+      </div>
     </div>
-  </div>
-</footer>
-    <script src="config.js"></script>
-    <script src="api.js"></script>
-    <script src="header.js"></script>
-    <script src="size-options.js"></script>
-    <script src="filters.js"></script>
-    <script src="onboarding.js"></script>
-    <script src="shop.js"></script>
-    <script src="payment.js"></script>
+  </footer>
 
+  <!-- Script loading order:
+       1. config.js  — API_BASE, SERVER_BASE, shared utilities
+       2. api.js     — apiFetch, getStoreSettings
+       3. header.js  — depends on config.js and api.js
+       4. size-options.js — getSizesForProduct, used by filters.js
+       5. filters.js — filter state management, depends on api.js
+       6. onboarding.js — setup gate, fires on DOMContentLoaded
+       7. shop.js    — page logic, depends on all of the above
+  -->
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script src="header.js"></script>
+  <script src="size-options.js"></script>
+  <script src="filters.js"></script>
+  <script src="onboarding.js"></script>
+  <script src="shop.js"></script>
 </body>
 </html>

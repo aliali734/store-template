@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const mongoose = require("mongoose");
 const Payment = require("../models/payment");
 const Order = require("../models/order");
@@ -187,6 +188,15 @@ const createPayment = async (req, res) => {
 
 // ============================
 // CREATE MOYASAR PAYMENT
+//
+// Correct hosted-page flow:
+// 1. Server sends amount + callback_url to Moyasar — NO card data.
+// 2. Moyasar returns a payment object whose source.transaction_url
+//    points to its secure hosted payment page.
+// 3. This URL is returned to the frontend, which redirects the user
+//    there to enter card details safely on Moyasar's own page.
+// 4. After payment, Moyasar redirects the user to callback_url and
+//    also fires a server-side webhook (handled by handleMoyasarWebhook).
 // ============================
 const createMoyasarPayment = async (req, res) => {
   try {
@@ -204,6 +214,13 @@ const createMoyasarPayment = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Valid paymentId is required"
+      });
+    }
+
+    if (!callbackUrl) {
+      return res.status(400).json({
+        success: false,
+        message: "callbackUrl is required"
       });
     }
 
@@ -230,20 +247,18 @@ const createMoyasarPayment = async (req, res) => {
       });
     }
 
+    // Convert to the smallest currency unit (halalas for SAR)
     const amountHalalas = Math.round(Number(payment.amount) * 100);
 
+    // No card details sent — Moyasar returns a hosted page URL in
+    // source.transaction_url that the frontend redirects the user to.
     const payload = {
       amount: amountHalalas,
       currency: payment.currency || "SAR",
       description: description || `Order #${payment.order?._id || payment.order}`,
       callback_url: callbackUrl,
       source: {
-        type: "creditcard",
-        name: payment.order?.user?.name || "Customer",
-        number: "4111111111111111",
-        month: 12,
-        year: 2029,
-        cvc: "123"
+        type: "creditcard"
       }
     };
 
@@ -256,31 +271,28 @@ const createMoyasarPayment = async (req, res) => {
 
     const moyasarData = response.data;
 
+    // Store Moyasar's own payment ID as our reference so the webhook
+    // handler and return handler can look up this payment record by it.
     payment.reference = moyasarData.id || payment.reference;
     payment.providerResponse = moyasarData;
-
-    if (moyasarData.status === "paid") {
-      payment.status = "paid";
-      payment.paidAt = new Date();
-
-      const order = await Order.findById(payment.order);
-      if (order) {
-        order.paymentStatus = "paid";
-        order.paymentReference = payment.reference;
-        order.paymentProvider = "moyasar";
-        order.isPaid = true;
-        order.paidAt = payment.paidAt;
-        await order.save();
-      }
-    }
-
     await payment.save();
+
+    // Extract the hosted-page redirect URL from the response.
+    const transactionUrl = moyasarData.source?.transaction_url || null;
+
+    if (!transactionUrl) {
+      console.error("Moyasar did not return a transaction_url:", moyasarData);
+      return res.status(502).json({
+        success: false,
+        message: "Moyasar did not return a payment URL. Check your API credentials and payload."
+      });
+    }
 
     return res.json({
       success: true,
-      message: "Moyasar payment created",
-      payment,
-      gatewayResponse: moyasarData
+      message: "Moyasar payment session created. Redirect the user to paymentUrl.",
+      paymentUrl: transactionUrl,
+      payment
     });
   } catch (error) {
     console.error("Create Moyasar payment error:", error.response?.data || error.message);
@@ -337,8 +349,9 @@ const createStripeCheckoutSession = async (req, res) => {
       });
     }
 
-const frontendUrl = process.env.FRONTEND_URL || "http://127.0.0.1:5500";
-console.log("Stripe success/cancel FRONTEND_URL:", frontendUrl);
+    const frontendUrl = process.env.FRONTEND_URL || "http://127.0.0.1:5500";
+    console.log("Stripe success/cancel FRONTEND_URL:", frontendUrl);
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
@@ -441,11 +454,11 @@ const updatePaymentStatus = async (req, res) => {
 
     const order = await Order.findById(payment.order);
     if (order) {
-      order.paymentStatus = payment.status;
+      order.paymentStatus    = payment.status;
       order.paymentReference = payment.reference || order.paymentReference || "";
-      order.paymentProvider = payment.provider || order.paymentProvider || "";
-      order.isPaid = payment.status === "paid";
-      order.paidAt = payment.status === "paid" ? payment.paidAt : undefined;
+      order.paymentProvider  = payment.provider  || order.paymentProvider  || "";
+      order.isPaid           = payment.status === "paid";
+      order.paidAt           = payment.status === "paid" ? payment.paidAt : undefined;
       await order.save();
     }
 
@@ -470,7 +483,7 @@ const updatePaymentStatus = async (req, res) => {
 const handleMoyasarReturn = async (req, res) => {
   try {
     const paymentId = req.query.id || req.query.payment_id || "";
-    const status = String(req.query.status || "").toLowerCase();
+    const status    = String(req.query.status || "").toLowerCase();
 
     if (!paymentId) {
       return res.status(400).send("Missing payment reference");
@@ -492,11 +505,11 @@ const handleMoyasarReturn = async (req, res) => {
       payment.status = "paid";
       payment.paidAt = new Date();
 
-      order.paymentStatus = "paid";
-      order.isPaid = true;
-      order.paidAt = payment.paidAt;
+      order.paymentStatus    = "paid";
+      order.isPaid           = true;
+      order.paidAt           = payment.paidAt;
       order.paymentReference = payment.reference;
-      order.paymentProvider = payment.provider || "moyasar";
+      order.paymentProvider  = payment.provider || "moyasar";
 
       await payment.save();
       await order.save();
@@ -506,10 +519,10 @@ const handleMoyasarReturn = async (req, res) => {
       );
     }
 
-    payment.status = "failed";
+    payment.status      = "failed";
     order.paymentStatus = "failed";
-    order.isPaid = false;
-    order.paidAt = undefined;
+    order.isPaid        = false;
+    order.paidAt        = undefined;
 
     await payment.save();
     await order.save();
@@ -526,13 +539,71 @@ const handleMoyasarReturn = async (req, res) => {
 
 // ============================
 // HANDLE MOYASAR WEBHOOK
+// Mounted in server.js with express.raw() before body parsers,
+// so req.body is a raw Buffer here — same pattern as Stripe.
 // ============================
 const handleMoyasarWebhook = async (req, res) => {
   try {
-    const payload = req.body || {};
+    // ── Signature verification ──────────────────────────────────────
+    const webhookSecret = process.env.MOYASAR_WEBHOOK_SECRET;
 
+    if (!webhookSecret) {
+      console.error("MOYASAR_WEBHOOK_SECRET is not set");
+      return res.status(500).json({
+        success: false,
+        message: "Webhook secret not configured"
+      });
+    }
+
+    const sig = req.headers["x-moyasar-signature"];
+
+    if (!sig) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing Moyasar webhook signature"
+      });
+    }
+
+    const expectedSig = crypto
+      .createHmac("sha256", webhookSecret)
+      .update(req.body) // req.body is a raw Buffer from express.raw()
+      .digest("hex");
+
+    // Constant-time comparison to prevent timing attacks
+    let signaturesMatch = false;
+    try {
+      const sigBuffer      = Buffer.from(sig,         "hex");
+      const expectedBuffer = Buffer.from(expectedSig, "hex");
+
+      signaturesMatch =
+        sigBuffer.length === expectedBuffer.length &&
+        crypto.timingSafeEqual(sigBuffer, expectedBuffer);
+    } catch {
+      signaturesMatch = false;
+    }
+
+    if (!signaturesMatch) {
+      console.warn("Moyasar webhook signature mismatch");
+      return res.status(400).json({
+        success: false,
+        message: "Invalid webhook signature"
+      });
+    }
+
+    // ── Parse body (now that signature is verified) ─────────────────
+    let payload;
+    try {
+      payload = JSON.parse(req.body.toString());
+    } catch {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid JSON payload"
+      });
+    }
+
+    // ── Process event ───────────────────────────────────────────────
     const paymentReference = payload.id || payload.payment_id || "";
-    const externalStatus = String(payload.status || "").toLowerCase();
+    const externalStatus   = String(payload.status || "").toLowerCase();
 
     if (!paymentReference) {
       return res.status(400).json({
@@ -569,11 +640,11 @@ const handleMoyasarWebhook = async (req, res) => {
       payment.status = "paid";
       payment.paidAt = new Date();
 
-      order.paymentStatus = "paid";
-      order.isPaid = true;
-      order.paidAt = payment.paidAt;
+      order.paymentStatus    = "paid";
+      order.isPaid           = true;
+      order.paidAt           = payment.paidAt;
       order.paymentReference = payment.reference;
-      order.paymentProvider = payment.provider || "moyasar";
+      order.paymentProvider  = payment.provider || "moyasar";
     } else if (
       externalStatus === "failed" ||
       externalStatus === "cancelled" ||
@@ -582,8 +653,8 @@ const handleMoyasarWebhook = async (req, res) => {
       payment.status = "failed";
 
       order.paymentStatus = "failed";
-      order.isPaid = false;
-      order.paidAt = undefined;
+      order.isPaid        = false;
+      order.paidAt        = undefined;
     }
 
     await payment.save();
@@ -631,15 +702,15 @@ const handleStripeWebhook = async (req, res) => {
       const session = event.data.object;
 
       const paymentId = session.metadata?.paymentId;
-      const orderId = session.metadata?.orderId;
+      const orderId   = session.metadata?.orderId;
 
       if (paymentId && mongoose.Types.ObjectId.isValid(paymentId)) {
         const payment = await Payment.findById(paymentId);
 
         if (payment) {
-          payment.status = "paid";
-          payment.paidAt = new Date();
-          payment.reference = session.id || payment.reference;
+          payment.status           = "paid";
+          payment.paidAt           = new Date();
+          payment.reference        = session.id || payment.reference;
           payment.providerResponse = session;
           await payment.save();
         }
@@ -649,11 +720,11 @@ const handleStripeWebhook = async (req, res) => {
         const order = await Order.findById(orderId);
 
         if (order) {
-          order.paymentStatus = "paid";
-          order.paymentProvider = "stripe";
+          order.paymentStatus    = "paid";
+          order.paymentProvider  = "stripe";
           order.paymentReference = session.id || order.paymentReference || "";
-          order.isPaid = true;
-          order.paidAt = new Date();
+          order.isPaid           = true;
+          order.paidAt           = new Date();
           await order.save();
         }
       }

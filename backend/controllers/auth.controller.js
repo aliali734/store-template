@@ -28,14 +28,14 @@ exports.register = async (req, res) => {
   try {
     let { name, email, password } = req.body;
 
-    name = (name || "").trim();
-    email = (email || "").trim().toLowerCase();
+    name     = (name     || "").trim();
+    email    = (email    || "").trim().toLowerCase();
     password = (password || "").trim();
 
-    if (!name || name.length < 2 || name.length > 40) {
+    if (!name || name.length < 2 || name.length > 60) {
       return res.status(400).json({
         success: false,
-        message: "Name must be 2-40 characters"
+        message: "Name must be 2-60 characters"
       });
     }
 
@@ -54,6 +54,7 @@ exports.register = async (req, res) => {
       });
     }
 
+    // No .select("+password") needed — we only care whether the user exists.
     const exists = await User.findOne({ email });
 
     if (exists) {
@@ -101,7 +102,7 @@ exports.login = async (req, res) => {
 
     let { email, password } = req.body;
 
-    email = (email || "").trim().toLowerCase();
+    email    = (email    || "").trim().toLowerCase();
     password = (password || "").trim();
 
     if (!email || !password) {
@@ -111,7 +112,10 @@ exports.login = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    // Explicitly opt in to selecting the password hash — it is excluded by
+    // default (select: false on the schema) and is only needed here for the
+    // bcrypt comparison.
+    const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
       return res.status(400).json({
@@ -176,9 +180,13 @@ exports.forgotPassword = async (req, res) => {
       });
     }
 
+    // No .select("+password") — we only update reset token fields, never
+    // touch the password hash here.
     const user = await User.findOne({ email });
 
     if (!user) {
+      // Return the same response whether the email exists or not to prevent
+      // user enumeration.
       return res.json({
         success: true,
         message: "If that email exists, we sent a reset link."
@@ -192,7 +200,7 @@ exports.forgotPassword = async (req, res) => {
       .update(rawToken)
       .digest("hex");
 
-    user.resetPasswordToken = hashedToken;
+    user.resetPasswordToken   = hashedToken;
     user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
 
     await user.save();
@@ -207,7 +215,7 @@ exports.forgotPassword = async (req, res) => {
         <h3>Password Reset</h3>
         <p>Click the link below to reset your password (valid for 15 minutes):</p>
         <p><a href="${resetLink}">Reset Password</a></p>
-        <p>If you didn’t request this, ignore this email.</p>
+        <p>If you didn't request this, ignore this email.</p>
       `,
       text: `Reset your password using this link: ${resetLink}`
     });
@@ -233,8 +241,8 @@ exports.resetPassword = async (req, res) => {
   try {
     let { token, email, newPassword } = req.body;
 
-    token = (token || "").trim();
-    email = (email || "").trim().toLowerCase();
+    token       = (token       || "").trim();
+    email       = (email       || "").trim().toLowerCase();
     newPassword = (newPassword || "").trim();
 
     if (!token || !email || !newPassword) {
@@ -264,11 +272,13 @@ exports.resetPassword = async (req, res) => {
       .update(token)
       .digest("hex");
 
+    // Explicitly opt in to selecting the password hash so we can overwrite
+    // it with the new bcrypt hash and call user.save() successfully.
     const user = await User.findOne({
       email,
-      resetPasswordToken: hashedToken,
+      resetPasswordToken:   hashedToken,
       resetPasswordExpires: { $gt: new Date() }
-    });
+    }).select("+password");
 
     if (!user) {
       return res.status(400).json({
@@ -277,8 +287,8 @@ exports.resetPassword = async (req, res) => {
       });
     }
 
-    user.password = await bcrypt.hash(newPassword, 10);
-    user.resetPasswordToken = undefined;
+    user.password             = await bcrypt.hash(newPassword, 10);
+    user.resetPasswordToken   = undefined;
     user.resetPasswordExpires = undefined;
 
     await user.save();
@@ -296,6 +306,7 @@ exports.resetPassword = async (req, res) => {
     });
   }
 };
+
 
 // ============================
 // LOGOUT

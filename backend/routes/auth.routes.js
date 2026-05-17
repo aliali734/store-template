@@ -10,6 +10,7 @@ const {
 } = require("../controllers/auth.controller");
 
 const {
+  registerLimiter,
   loginLimiter,
   forgotLimiter,
   resetLimiter
@@ -20,10 +21,10 @@ const { verifyCsrf } = require("../middlewares/csrf.middleware");
 // ============================
 // AUTH ROUTES
 // ============================
-router.post("/register", verifyCsrf, register);
-router.post("/login", loginLimiter, verifyCsrf, login);
-router.post("/logout", verifyCsrf, logout);
-router.post("/forgot-password", forgotLimiter, verifyCsrf, forgotPassword);
-router.post("/reset-password", resetLimiter, verifyCsrf, resetPassword);
+router.post("/register",        registerLimiter, verifyCsrf, register);
+router.post("/login",           loginLimiter,    verifyCsrf, login);
+router.post("/logout",                           verifyCsrf, logout);
+router.post("/forgot-password", forgotLimiter,   verifyCsrf, forgotPassword);
+router.post("/reset-password",  resetLimiter,    verifyCsrf, resetPassword);
 
 module.exports = router;
