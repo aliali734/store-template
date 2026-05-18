@@ -2,10 +2,18 @@ const mongoose = require("mongoose");
 
 const paymentSchema = new mongoose.Schema(
   {
+    // unique: true enforces one payment record per order at the database
+    // level. The createPayment controller already does a manual findOne
+    // check, but that check has a race-condition window where two
+    // simultaneous requests can both pass before either write completes.
+    // The unique index makes the DB the final authority and causes the
+    // second write to throw an E11000 duplicate-key error, which the
+    // controller's catch block handles gracefully.
     order: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Order",
       required: true,
+      unique: true,
       index: true
     },
 

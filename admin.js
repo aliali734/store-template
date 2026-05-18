@@ -1,52 +1,49 @@
-const productsBody = document.getElementById("productsBody");
-const loginSection = document.getElementById("login-section");
+const productsBody  = document.getElementById("productsBody");
+const loginSection  = document.getElementById("login-section");
 const dashboardSection = document.getElementById("dashboard-section");
-const loginForm = document.getElementById("login-form");
-const loginMessage = document.getElementById("login-message");
-const logoutBtn = document.getElementById("logoutBtn");
+const loginForm     = document.getElementById("login-form");
+const loginMessage  = document.getElementById("login-message");
+const logoutBtn     = document.getElementById("logoutBtn");
 
-const form = document.getElementById("product-form");
-const messageEl = document.getElementById("message");
-const modal = document.getElementById("productModal");
-const overlay = document.getElementById("overlay");
-const openBtn = document.getElementById("openAddProduct");
-const closeBtn = document.getElementById("closeModal");
-const modalTitle = document.getElementById("modalTitle");
-const submitBtn = document.getElementById("submitBtn");
+const form          = document.getElementById("product-form");
+const messageEl     = document.getElementById("message");
+const modal         = document.getElementById("productModal");
+const overlay       = document.getElementById("overlay");
+const openBtn       = document.getElementById("openAddProduct");
+const closeBtn      = document.getElementById("closeModal");
+const modalTitle    = document.getElementById("modalTitle");
+const submitBtn     = document.getElementById("submitBtn");
 const productIdInput = document.getElementById("productId");
 
-const nameInput = document.getElementById("name");
-const descriptionInput = document.getElementById("description");
-const brandInput = document.getElementById("brand");
-const departmentInput = document.getElementById("department");
-const categoryInput = document.getElementById("category");
-const audienceInput = document.getElementById("audience");
-const priceInput = document.getElementById("price");
+const nameInput         = document.getElementById("name");
+const descriptionInput  = document.getElementById("description");
+const brandInput        = document.getElementById("brand");
+const departmentInput   = document.getElementById("department");
+const categoryInput     = document.getElementById("category");
+const audienceInput     = document.getElementById("audience");
+const priceInput        = document.getElementById("price");
 const compareAtPriceInput = document.getElementById("compareAtPrice");
-const stockInput = document.getElementById("stock");
-const sizesInput = document.getElementById("sizes");
-const colorsChecklist = document.getElementById("colorsChecklist");
-const featuredInput = document.getElementById("featured");
-const isActiveInput = document.getElementById("isActive");
-const imageInput = document.getElementById("image");
+const stockInput        = document.getElementById("stock");
+const sizesInput        = document.getElementById("sizes");
+const colorsChecklist   = document.getElementById("colorsChecklist");
+const featuredInput     = document.getElementById("featured");
+const isActiveInput     = document.getElementById("isActive");
+const imageInput        = document.getElementById("image");
 
-const openHeaderBtn = document.getElementById("openHeaderModal");
-const closeHeaderBtn = document.getElementById("closeHeaderModal");
-const headerModal = document.getElementById("headerModal");
-const headerForm = document.getElementById("header-form");
-const headerLogo = document.getElementById("header-logo");
-const logoPreview = document.getElementById("logoPreview");
+const openHeaderBtn   = document.getElementById("openHeaderModal");
+const closeHeaderBtn  = document.getElementById("closeHeaderModal");
+const headerModal     = document.getElementById("headerModal");
+const headerForm      = document.getElementById("header-form");
+const headerLogo      = document.getElementById("header-logo");
+const logoPreview     = document.getElementById("logoPreview");
 const headerCategories = document.getElementById("header-categories");
-const headerMessage = document.getElementById("headerMessage");
+const headerMessage   = document.getElementById("headerMessage");
 
-let productTaxonomy = {};
+let productTaxonomy  = {};
 let productDepartments = [];
 
 // =====================
 // IMAGE URL RESOLVER
-// Supports both:
-// - Cloudinary full URLs
-// - old local /uploads/... paths
 // =====================
 function resolveImageUrl(path, fallback = "https://via.placeholder.com/50") {
   if (!path) return fallback;
@@ -54,30 +51,14 @@ function resolveImageUrl(path, fallback = "https://via.placeholder.com/50") {
   return `${SERVER_BASE}${path}`;
 }
 
-// =====================
-// CSRF TOKEN FROM BACKEND
-// =====================
-async function getCsrfToken() {
-  try {
-    const res = await fetch(`${API_BASE}/csrf`, {
-      method: "GET",
-      credentials: "include"
-    });
-
-    const data = await res.json().catch(() => ({}));
-    return data.csrfToken || null;
-  } catch (err) {
-    console.error("Failed to initialize CSRF:", err);
-    return null;
-  }
-}
+// getCsrfToken is defined in config.js and available as window.getCsrfToken.
 
 // =====================
 // API FETCH FOR ADMIN
 // =====================
 async function adminApiFetch(path, options = {}) {
   const isFormData = options.body instanceof FormData;
-  const csrfToken = await getCsrfToken();
+  const csrfToken  = await getCsrfToken();
 
   const res = await fetch(`${API_BASE}${path}`, {
     method: options.method || "GET",
@@ -152,7 +133,7 @@ async function checkAdminAuth() {
 loginForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("email")?.value.trim().toLowerCase();
+  const email    = document.getElementById("email")?.value.trim().toLowerCase();
   const password = document.getElementById("password")?.value.trim();
 
   if (!email || !password) {
@@ -234,14 +215,14 @@ function setMultiSelectValues(selectEl, values = []) {
 // =====================
 async function loadProductTaxonomy() {
   try {
-    const res = await adminApiFetch("/product/meta/taxonomy");
+    const res  = await adminApiFetch("/product/meta/taxonomy");
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok || !data.success) {
       throw new Error(data.message || "Failed to load taxonomy");
     }
 
-    productTaxonomy = data.taxonomy || {};
+    productTaxonomy   = data.taxonomy   || {};
     productDepartments = data.departments || [];
 
     populateDepartmentOptions();
@@ -257,7 +238,7 @@ function populateDepartmentOptions(selectedDepartment = "") {
 
   productDepartments.forEach((department) => {
     const option = document.createElement("option");
-    option.value = department;
+    option.value    = department;
     option.textContent = capitalizeLabel(department);
     option.selected = department === selectedDepartment;
     departmentInput.appendChild(option);
@@ -273,9 +254,9 @@ function populateCategoryOptions(department, selectedCategory = "") {
 
   categories.forEach((category) => {
     const option = document.createElement("option");
-    option.value = category;
+    option.value       = category;
     option.textContent = humanizeCategory(category);
-    option.selected = category === selectedCategory;
+    option.selected    = category === selectedCategory;
     categoryInput.appendChild(option);
   });
 }
@@ -341,14 +322,14 @@ function humanizeCategory(value) {
 
 departmentInput?.addEventListener("change", () => {
   const department = departmentInput.value;
-  const audience = audienceInput?.value || "";
+  const audience   = audienceInput?.value || "";
   populateCategoryOptions(department);
   populateSizeOptions(department, audience, []);
 });
 
 audienceInput?.addEventListener("change", () => {
   const department = departmentInput?.value || "";
-  const audience = audienceInput.value || "";
+  const audience   = audienceInput.value   || "";
   populateSizeOptions(department, audience, []);
 });
 
@@ -356,14 +337,14 @@ audienceInput?.addEventListener("change", () => {
 // MODAL
 // =====================
 openBtn?.addEventListener("click", async () => {
-  modalTitle.textContent = "Add Product";
-  submitBtn.textContent = "Add";
-  productIdInput.value = "";
+  modalTitle.textContent  = "Add Product";
+  submitBtn.textContent   = "Add";
+  productIdInput.value    = "";
   form.reset();
-  messageEl.textContent = "";
+  messageEl.textContent   = "";
 
-  if (isActiveInput) isActiveInput.checked = true;
-  if (featuredInput) featuredInput.checked = false;
+  if (isActiveInput)  isActiveInput.checked  = true;
+  if (featuredInput)  featuredInput.checked  = false;
 
   populateDepartmentOptions("");
   populateCategoryOptions("");
@@ -403,21 +384,21 @@ form?.addEventListener("submit", async (e) => {
   e.stopPropagation();
 
   const formData = new FormData();
-  formData.append("name", nameInput.value);
-  formData.append("description", descriptionInput.value);
-  formData.append("brand", brandInput.value);
-  formData.append("audience", audienceInput.value);
-  formData.append("department", departmentInput.value);
-  formData.append("category", categoryInput.value);
-  formData.append("price", priceInput.value);
-  formData.append("compareAtPrice", compareAtPriceInput.value || 0);
-  formData.append("stock", stockInput.value);
+  formData.append("name",            nameInput.value);
+  formData.append("description",     descriptionInput.value);
+  formData.append("brand",           brandInput.value);
+  formData.append("audience",        audienceInput.value);
+  formData.append("department",      departmentInput.value);
+  formData.append("category",        categoryInput.value);
+  formData.append("price",           priceInput.value);
+  formData.append("compareAtPrice",  compareAtPriceInput.value || 0);
+  formData.append("stock",           stockInput.value);
 
-  const selectedSizes = getMultiSelectValues(sizesInput);
+  const selectedSizes  = getMultiSelectValues(sizesInput);
   const selectedColors = getSelectedColors();
 
-  formData.append("sizes", selectedSizes.join(","));
-  formData.append("colors", selectedColors.join(","));
+  formData.append("sizes",    selectedSizes.join(","));
+  formData.append("colors",   selectedColors.join(","));
   formData.append("featured", featuredInput.checked);
   formData.append("isActive", isActiveInput.checked);
 
@@ -428,15 +409,11 @@ form?.addEventListener("submit", async (e) => {
   }
 
   const productId = productIdInput.value;
-  const method = productId ? "PUT" : "POST";
-  const path = productId ? `/product/${productId}` : `/product`;
+  const method    = productId ? "PUT"  : "POST";
+  const path      = productId ? `/product/${productId}` : `/product`;
 
   try {
-    const res = await adminApiFetch(path, {
-      method,
-      body: formData
-    });
-
+    const res  = await adminApiFetch(path, { method, body: formData });
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
@@ -505,7 +482,7 @@ function renderProducts(products) {
       </td>
       <td>${product.name}</td>
       <td>${product.department || "-"}</td>
-      <td>${product.category || "-"}</td>
+      <td>${product.category  || "-"}</td>
       <td>$${product.price}</td>
       <td>${product.stock}</td>
       <td class="actions">
@@ -545,23 +522,23 @@ function renderProducts(products) {
 // EDIT POPUP
 // =====================
 function openEditPopup(product) {
-  modalTitle.textContent = "Edit Product";
-  submitBtn.textContent = "Update";
+  modalTitle.textContent  = "Edit Product";
+  submitBtn.textContent   = "Update";
 
-  productIdInput.value = product._id;
-  nameInput.value = product.name || "";
-  descriptionInput.value = product.description || "";
-  brandInput.value = product.brand || "";
-  audienceInput.value = product.audience || "unisex";
-  priceInput.value = product.price ?? "";
-  compareAtPriceInput.value = product.compareAtPrice ?? 0;
-  stockInput.value = product.stock ?? "";
+  productIdInput.value        = product._id;
+  nameInput.value             = product.name        || "";
+  descriptionInput.value      = product.description || "";
+  brandInput.value            = product.brand       || "";
+  audienceInput.value         = product.audience    || "unisex";
+  priceInput.value            = product.price       ?? "";
+  compareAtPriceInput.value   = product.compareAtPrice ?? 0;
+  stockInput.value            = product.stock       ?? "";
 
   populateDepartmentOptions(product.department || "");
-  populateCategoryOptions(product.department || "", product.category || "");
+  populateCategoryOptions(product.department   || "", product.category || "");
   populateSizeOptions(
     product.department || "",
-    product.audience || "",
+    product.audience   || "",
     Array.isArray(product.sizes) ? product.sizes : []
   );
 
@@ -593,9 +570,6 @@ headerLogo?.addEventListener("change", () => {
   }
 });
 
-// =====================
-// LOAD HEADER SETTINGS
-// =====================
 async function loadHeaderSettings() {
   try {
     const data = await apiFetch("/header");
@@ -606,15 +580,12 @@ async function loadHeaderSettings() {
         : "";
 
       if (headerCategories) {
-        headerCategories.value =
-          "Mega menu structure is managed from backend defaults / database. Logo can be updated here only.";
+        headerCategories.value    = "Mega menu structure is managed from backend defaults / database. Logo can be updated here only.";
         headerCategories.readOnly = true;
         headerCategories.disabled = true;
       }
 
-      if (headerMessage) {
-        headerMessage.textContent = "";
-      }
+      if (headerMessage) headerMessage.textContent = "";
     }
   } catch (err) {
     console.error("Failed to load header settings:", err);
@@ -626,10 +597,6 @@ async function loadHeaderSettings() {
   }
 }
 
-// =====================
-// UPDATE HEADER
-// Logo only — do not overwrite mega menu
-// =====================
 headerForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -640,11 +607,7 @@ headerForm?.addEventListener("submit", async (e) => {
   }
 
   try {
-    const res = await adminApiFetch("/header", {
-      method: "PUT",
-      body: formData
-    });
-
+    const res  = await adminApiFetch("/header", { method: "PUT", body: formData });
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
@@ -673,8 +636,8 @@ const links = document.querySelectorAll("[data-section]");
 
 const sections = {
   dashboard: document.getElementById("dashboard-section"),
-  products: document.querySelector(".products-section"),
-  orders: document.getElementById("orders-section")
+  products:  document.querySelector(".products-section"),
+  orders:    document.getElementById("orders-section")
 };
 
 links.forEach((link) => {

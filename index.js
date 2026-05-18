@@ -6,13 +6,13 @@ function applyHomepageSettings(settings) {
 
   const homepage = settings.homepage;
 
-  const heroTitleEl = document.getElementById("hero-title");
-  const heroSubtitleEl = document.getElementById("hero-subtitle");
-  const supportHeadlineEl = document.getElementById("support-headline");
-  const supportTextEl = document.getElementById("support-text");
-  const supportEmailLink = document.getElementById("support-email-link");
+  const heroTitleEl         = document.getElementById("hero-title");
+  const heroSubtitleEl      = document.getElementById("hero-subtitle");
+  const supportHeadlineEl   = document.getElementById("support-headline");
+  const supportTextEl       = document.getElementById("support-text");
+  const supportEmailLink    = document.getElementById("support-email-link");
   const supportInstagramLink = document.getElementById("support-instagram-link");
-  const supportTwitterLink = document.getElementById("support-twitter-link");
+  const supportTwitterLink  = document.getElementById("support-twitter-link");
 
   if (heroTitleEl && homepage.heroTitle) {
     heroTitleEl.innerHTML = homepage.heroTitle
@@ -35,17 +35,17 @@ function applyHomepageSettings(settings) {
   }
 
   if (supportEmailLink && homepage.supportEmail) {
-    supportEmailLink.href = `mailto:${homepage.supportEmail}`;
+    supportEmailLink.href        = `mailto:${homepage.supportEmail}`;
     supportEmailLink.textContent = homepage.supportEmail;
   }
 
   if (supportInstagramLink && homepage.supportInstagram) {
-    supportInstagramLink.href = homepage.supportInstagram;
+    supportInstagramLink.href        = homepage.supportInstagram;
     supportInstagramLink.textContent = "@Instagram";
   }
 
   if (supportTwitterLink && homepage.supportTwitter) {
-    supportTwitterLink.href = homepage.supportTwitter;
+    supportTwitterLink.href        = homepage.supportTwitter;
     supportTwitterLink.textContent = "@X";
   }
 }
@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Failed to load homepage settings:", err);
   }
 });
+
 // =====================
 // LOAD DISCOUNT OFFERS
 // =====================
@@ -100,11 +101,18 @@ async function loadDiscountOffers() {
             ? Math.round(((oldPrice - newPrice) / oldPrice) * 100)
             : 0;
 
+        // Only render the discount badge when there is an actual discount.
+        // Previously the badge was always rendered, showing "0%" for
+        // products whose compareAtPrice was not higher than their price.
+        const badgeHtml = discount > 0
+          ? `<div class="offer-badge"><span>${discount}%</span></div>`
+          : "";
+
         return `
           <article class="offer-card">
             <div class="offer-image-wrap">
               <img src="${imageSrc}" alt="${product.name}" />
-              <div class="offer-badge"><span>${discount}%</span></div>
+              ${badgeHtml}
             </div>
             <h3>${product.name}</h3>
             <div class="offer-prices">
@@ -116,18 +124,20 @@ async function loadDiscountOffers() {
         `;
       })
       .join("");
-      initOffersSlider();
+
+    initOffersSlider();
   } catch (err) {
     console.error("Failed to load discount offers:", err);
     offersGrid.innerHTML =
       "<p style='color:#b91c1c;'>Failed to load offers.</p>";
   }
 }
+
 // =====================
 // OFFERS SLIDER
 // =====================
 function initOffersSlider() {
-  const grid = document.getElementById("offers-grid");
+  const grid    = document.getElementById("offers-grid");
   const prevBtn = document.querySelector(".offers-prev");
   const nextBtn = document.querySelector(".offers-next");
 
@@ -136,7 +146,7 @@ function initOffersSlider() {
   let currentIndex = 0;
 
   function getVisibleCount() {
-    if (window.innerWidth <= 768) return 1;
+    if (window.innerWidth <= 768)  return 1;
     if (window.innerWidth <= 1200) return 2;
     return 4;
   }
@@ -146,14 +156,14 @@ function initOffersSlider() {
     if (!cards.length) return;
 
     const visibleCount = getVisibleCount();
-    const maxIndex = Math.max(cards.length - visibleCount, 0);
+    const maxIndex     = Math.max(cards.length - visibleCount, 0);
 
     if (currentIndex > maxIndex) currentIndex = maxIndex;
-    if (currentIndex < 0) currentIndex = 0;
+    if (currentIndex < 0)        currentIndex = 0;
 
     const cardWidth = cards[0].offsetWidth;
-    const gap = 28;
-    const offset = currentIndex * (cardWidth + gap);
+    const gap       = 28;
+    const offset    = currentIndex * (cardWidth + gap);
 
     grid.style.transform = `translateX(-${offset}px)`;
   }
@@ -172,6 +182,7 @@ function initOffersSlider() {
 
   updateSlider();
 }
+
 // =====================
 // HERO LOAD EFFECT
 // =====================
@@ -192,8 +203,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const orbit2 = document.getElementById("orbit2");
     if (!desc || !orbit1 || !orbit2) return;
 
-    const buttons = Array.from(orbit2.querySelectorAll("button.circle"));
-    const bigById = {};
+    const buttons   = Array.from(orbit2.querySelectorAll("button.circle"));
+    const bigById   = {};
 
     Array.from(orbit1.querySelectorAll(".circle[id]")).forEach((b) => {
       bigById[b.id] = b;
@@ -375,8 +386,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     toggle.addEventListener("click", () => {
-      const isDark = document.documentElement.classList.contains("dark");
-      const newTheme = isDark ? "light" : "dark";
+      const isDark    = document.documentElement.classList.contains("dark");
+      const newTheme  = isDark ? "light" : "dark";
       applyTheme(newTheme);
       localStorage.setItem(LS_KEY, newTheme);
     });
@@ -394,38 +405,38 @@ document.addEventListener("DOMContentLoaded", () => {
 // PROJECT ORBITS
 // =====================
 document.addEventListener("DOMContentLoaded", () => {
-  const orbit4 = document.getElementById("orbit4");
-  const circle7 = document.getElementById("circle7");
-  const circle77 = document.getElementById("circle77");
-  const circle8 = document.getElementById("circle8");
-  const circle88 = document.getElementById("circle88");
-  const circle9 = document.getElementById("circle9");
-  const circle99 = document.getElementById("circle99");
-  const circle10 = document.getElementById("circle10");
+  const orbit4    = document.getElementById("orbit4");
+  const circle7   = document.getElementById("circle7");
+  const circle77  = document.getElementById("circle77");
+  const circle8   = document.getElementById("circle8");
+  const circle88  = document.getElementById("circle88");
+  const circle9   = document.getElementById("circle9");
+  const circle99  = document.getElementById("circle99");
+  const circle10  = document.getElementById("circle10");
   const circle1010 = document.getElementById("circle1010");
-  const circle12 = document.getElementById("circle12");
+  const circle12  = document.getElementById("circle12");
   const circle1212 = document.getElementById("circle1212");
-  const circle13 = document.getElementById("circle13");
+  const circle13  = document.getElementById("circle13");
   const circle1313 = document.getElementById("circle1313");
 
   if (
-    !orbit4 ||
-    !circle7 || !circle77 ||
-    !circle8 || !circle88 ||
-    !circle9 || !circle99 ||
-    !circle10 || !circle1010 ||
-    !circle12 || !circle1212 ||
-    !circle13 || !circle1313
+    !orbit4       ||
+    !circle7   || !circle77   ||
+    !circle8   || !circle88   ||
+    !circle9   || !circle99   ||
+    !circle10  || !circle1010 ||
+    !circle12  || !circle1212 ||
+    !circle13  || !circle1313
   ) {
     return;
   }
 
-  circle7.style.visibility = "hidden";
-  circle8.style.visibility = "hidden";
-  circle9.style.visibility = "hidden";
-  circle10.style.visibility = "hidden";
-  circle12.style.visibility = "hidden";
-  circle13.style.visibility = "hidden";
+  circle7.style.visibility   = "hidden";
+  circle8.style.visibility   = "hidden";
+  circle9.style.visibility   = "hidden";
+  circle10.style.visibility  = "hidden";
+  circle12.style.visibility  = "hidden";
+  circle13.style.visibility  = "hidden";
 
   if (window.innerWidth > 768) {
     orbit4.addEventListener("mouseenter", () => {
@@ -445,53 +456,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  circle77.addEventListener("mouseenter", () => {
-    circle7.style.visibility = "visible";
-  });
-  circle88.addEventListener("mouseenter", () => {
-    circle8.style.visibility = "visible";
-  });
-  circle99.addEventListener("mouseenter", () => {
-    circle9.style.visibility = "visible";
-  });
-  circle1010.addEventListener("mouseenter", () => {
-    circle10.style.visibility = "visible";
-  });
-  circle1212.addEventListener("mouseenter", () => {
-    circle12.style.visibility = "visible";
-  });
-  circle1313.addEventListener("mouseenter", () => {
-    circle13.style.visibility = "visible";
-  });
+  circle77.addEventListener("mouseenter",  () => { circle7.style.visibility  = "visible"; });
+  circle88.addEventListener("mouseenter",  () => { circle8.style.visibility  = "visible"; });
+  circle99.addEventListener("mouseenter",  () => { circle9.style.visibility  = "visible"; });
+  circle1010.addEventListener("mouseenter",() => { circle10.style.visibility = "visible"; });
+  circle1212.addEventListener("mouseenter",() => { circle12.style.visibility = "visible"; });
+  circle1313.addEventListener("mouseenter",() => { circle13.style.visibility = "visible"; });
 
-  circle77.addEventListener("mouseleave", () => {
-    circle7.style.visibility = "hidden";
-  });
-  circle88.addEventListener("mouseleave", () => {
-    circle8.style.visibility = "hidden";
-  });
-  circle99.addEventListener("mouseleave", () => {
-    circle9.style.visibility = "hidden";
-  });
-  circle1010.addEventListener("mouseleave", () => {
-    circle10.style.visibility = "hidden";
-  });
-  circle1212.addEventListener("mouseleave", () => {
-    circle12.style.visibility = "hidden";
-  });
-  circle1313.addEventListener("mouseleave", () => {
-    circle13.style.visibility = "hidden";
-  });
+  circle77.addEventListener("mouseleave",  () => { circle7.style.visibility  = "hidden"; });
+  circle88.addEventListener("mouseleave",  () => { circle8.style.visibility  = "hidden"; });
+  circle99.addEventListener("mouseleave",  () => { circle9.style.visibility  = "hidden"; });
+  circle1010.addEventListener("mouseleave",() => { circle10.style.visibility = "hidden"; });
+  circle1212.addEventListener("mouseleave",() => { circle12.style.visibility = "hidden"; });
+  circle1313.addEventListener("mouseleave",() => { circle13.style.visibility = "hidden"; });
 });
 
 // =====================
 // TESTIMONIALS
 // =====================
 document.addEventListener("DOMContentLoaded", () => {
-  const grid = document.querySelector(".testimonial-grid");
-  const wrap = document.querySelector(".testimonials .wrap");
+  const grid     = document.querySelector(".testimonial-grid");
+  const wrap     = document.querySelector(".testimonials .wrap");
   const rightBtn = document.querySelector(".change-background-r");
-  const leftBtn = document.querySelector(".change-background-l");
+  const leftBtn  = document.querySelector(".change-background-l");
 
   if (!grid || !wrap || !rightBtn || !leftBtn) return;
 
@@ -512,16 +499,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!active) return;
 
-    const wrapRect = wrap.getBoundingClientRect();
-    const activeRect = active.getBoundingClientRect();
+    const wrapRect    = wrap.getBoundingClientRect();
+    const activeRect  = active.getBoundingClientRect();
 
-    const wrapCenterX = wrapRect.left + wrapRect.width / 2;
+    const wrapCenterX   = wrapRect.left   + wrapRect.width  / 2;
     const activeCenterX = activeRect.left + activeRect.width / 2;
-    const delta = wrapCenterX - activeCenterX;
+    const delta         = wrapCenterX - activeCenterX;
 
     if (!animate) {
       grid.style.transition = "none";
-      grid.style.transform = `translateX(${delta}px)`;
+      grid.style.transform  = `translateX(${delta}px)`;
       grid.getBoundingClientRect();
       grid.style.transition = "";
       return;
@@ -550,27 +537,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     cards.forEach((card) => {
       const first = firstRects.get(card);
-      const last = lastRects.get(card);
+      const last  = lastRects.get(card);
       if (!first || !last) return;
 
       const dx = first.left - last.left;
-      const dy = first.top - last.top;
+      const dy = first.top  - last.top;
 
       if (dx === 0 && dy === 0) return;
 
       card.style.transition = "none";
-      card.style.transform = `translate(${dx}px, ${dy}px)`;
+      card.style.transform  = `translate(${dx}px, ${dy}px)`;
 
       card.getBoundingClientRect();
 
       requestAnimationFrame(() => {
         card.style.transition = "transform .45s cubic-bezier(.2,.9,.3,1)";
-        card.style.transform = "";
+        card.style.transform  = "";
       });
 
       const cleanup = () => {
         card.style.transition = "";
-        card.style.transform = "";
+        card.style.transform  = "";
         card.removeEventListener("transitionend", cleanup);
       };
 
@@ -594,7 +581,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   rightBtn.addEventListener("click", rotateRight);
-  leftBtn.addEventListener("click", rotateLeft);
+  leftBtn.addEventListener("click",  rotateLeft);
 
   let resizeTimer;
   window.addEventListener("resize", () => {
@@ -604,6 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderCards(false);
 });
+
 // =====================
 // SECTION-BY-SECTION SCROLL
 // Desktop only
@@ -619,8 +607,8 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   let currentSectionIndex = 0;
-  let isAnimating = false;
-  let touchpadLock = false;
+  let isAnimating         = false;
+  let touchpadLock        = false;
 
   function getSections() {
     return sectionSelectors
@@ -630,15 +618,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function detectCurrentSection() {
     const sections = getSections();
-    const scrollY = window.scrollY;
-    let bestIndex = 0;
+    const scrollY  = window.scrollY;
+    let bestIndex    = 0;
     let bestDistance = Infinity;
 
     sections.forEach((section, index) => {
       const distance = Math.abs(section.offsetTop - scrollY);
       if (distance < bestDistance) {
         bestDistance = distance;
-        bestIndex = index;
+        bestIndex    = index;
       }
     });
 
@@ -649,11 +637,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const sections = getSections();
     if (!sections[index]) return;
 
-    isAnimating = true;
+    isAnimating         = true;
     currentSectionIndex = index;
 
     window.scrollTo({
-      top: sections[index].offsetTop - 70,
+      top:      sections[index].offsetTop - 70,
       behavior: "smooth"
     });
 
@@ -683,16 +671,12 @@ document.addEventListener("DOMContentLoaded", () => {
       event.preventDefault();
       touchpadLock = true;
       scrollToSection(currentSectionIndex + 1);
-      setTimeout(() => {
-        touchpadLock = false;
-      }, 950);
+      setTimeout(() => { touchpadLock = false; }, 950);
     } else if (event.deltaY < -30 && currentSectionIndex > 0) {
       event.preventDefault();
       touchpadLock = true;
       scrollToSection(currentSectionIndex - 1);
-      setTimeout(() => {
-        touchpadLock = false;
-      }, 950);
+      setTimeout(() => { touchpadLock = false; }, 950);
     }
   }
 
@@ -709,6 +693,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("DOMContentLoaded", initSectionScroll);
 })();
+
 document.addEventListener("DOMContentLoaded", () => {
   loadDiscountOffers();
 });

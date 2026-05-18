@@ -114,7 +114,7 @@ const createPayment = async (req, res) => {
       provider || (normalizedMethod === "cash" ? "cod" : "")
     ).toLowerCase();
 
-    const allowedMethods = ["cash", "card", "wallet", "bnpl"];
+    const allowedMethods   = ["cash", "card", "wallet", "bnpl"];
     const allowedProviders = ["cod", "stripe", "moyasar", "paytabs", "tabby", "tamara", ""];
 
     if (!allowedMethods.includes(normalizedMethod)) {
@@ -147,6 +147,9 @@ const createPayment = async (req, res) => {
       });
     }
 
+    // Manual check as a fast first line of defence. The unique index on
+    // Payment.order is the authoritative guard against race conditions —
+    // the E11000 duplicate-key error it throws is caught below.
     const existingPayment = await Payment.findOne({ order: orderId });
 
     if (existingPayment) {
@@ -157,17 +160,17 @@ const createPayment = async (req, res) => {
     }
 
     const payment = await Payment.create({
-      order: order._id,
-      user: userId,
-      amount: order.totalPrice,
+      order:    order._id,
+      user:     userId,
+      amount:   order.totalPrice,
       currency: String(currency || "SAR").toUpperCase(),
-      method: normalizedMethod,
+      method:   normalizedMethod,
       provider: normalizedProvider,
-      status: "pending"
+      status:   "pending"
     });
 
-    order.paymentMethod = normalizedMethod;
-    order.paymentStatus = payment.status;
+    order.paymentMethod   = normalizedMethod;
+    order.paymentStatus   = payment.status;
     order.paymentProvider = normalizedProvider;
     await order.save();
 
@@ -177,6 +180,16 @@ const createPayment = async (req, res) => {
       payment
     });
   } catch (error) {
+    // E11000 is MongoDB's duplicate-key error code. It fires when two
+    // concurrent requests both pass the manual findOne check and then race
+    // to insert — the unique index on `order` catches the second write.
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment already exists for this order"
+      });
+    }
+
     console.error("Create payment error:", error);
 
     return res.status(500).json({
@@ -247,14 +260,11 @@ const createMoyasarPayment = async (req, res) => {
       });
     }
 
-    // Convert to the smallest currency unit (halalas for SAR)
     const amountHalalas = Math.round(Number(payment.amount) * 100);
 
-    // No card details sent — Moyasar returns a hosted page URL in
-    // source.transaction_url that the frontend redirects the user to.
     const payload = {
-      amount: amountHalalas,
-      currency: payment.currency || "SAR",
+      amount:      amountHalalas,
+      currency:    payment.currency || "SAR",
       description: description || `Order #${payment.order?._id || payment.order}`,
       callback_url: callbackUrl,
       source: {
@@ -271,13 +281,10 @@ const createMoyasarPayment = async (req, res) => {
 
     const moyasarData = response.data;
 
-    // Store Moyasar's own payment ID as our reference so the webhook
-    // handler and return handler can look up this payment record by it.
-    payment.reference = moyasarData.id || payment.reference;
+    payment.reference        = moyasarData.id || payment.reference;
     payment.providerResponse = moyasarData;
     await payment.save();
 
-    // Extract the hosted-page redirect URL from the response.
     const transactionUrl = moyasarData.source?.transaction_url || null;
 
     if (!transactionUrl) {
@@ -309,7 +316,7 @@ const createMoyasarPayment = async (req, res) => {
 // ============================
 const createStripeCheckoutSession = async (req, res) => {
   try {
-    const userId = req.user?.id || req.user?._id;
+    const userId    = req.user?.id || req.user?._id;
     const { paymentId } = req.body;
 
     if (!userId) {
@@ -358,7 +365,7 @@ const createStripeCheckoutSession = async (req, res) => {
       line_items: [
         {
           price_data: {
-            currency: (payment.currency || "SAR").toLowerCase(),
+            currency:     (payment.currency || "SAR").toLowerCase(),
             product_data: {
               name: `Order #${payment.order?._id || payment.order}`
             },
@@ -369,7 +376,7 @@ const createStripeCheckoutSession = async (req, res) => {
       ],
       metadata: {
         paymentId: payment._id.toString(),
-        orderId: payment.order?._id
+        orderId:   payment.order?._id
           ? payment.order._id.toString()
           : payment.order.toString(),
         userId: payment.user.toString()
@@ -382,7 +389,7 @@ const createStripeCheckoutSession = async (req, res) => {
       }`
     });
 
-    payment.reference = session.id;
+    payment.reference        = session.id;
     payment.providerResponse = session;
     await payment.save();
 
@@ -390,7 +397,7 @@ const createStripeCheckoutSession = async (req, res) => {
       success: true,
       message: "Stripe checkout session created successfully",
       sessionId: session.id,
-      url: session.url,
+      url:       session.url,
       payment
     });
   } catch (error) {
@@ -566,10 +573,9 @@ const handleMoyasarWebhook = async (req, res) => {
 
     const expectedSig = crypto
       .createHmac("sha256", webhookSecret)
-      .update(req.body) // req.body is a raw Buffer from express.raw()
+      .update(req.body)
       .digest("hex");
 
-    // Constant-time comparison to prevent timing attacks
     let signaturesMatch = false;
     try {
       const sigBuffer      = Buffer.from(sig,         "hex");
@@ -590,7 +596,7 @@ const handleMoyasarWebhook = async (req, res) => {
       });
     }
 
-    // ── Parse body (now that signature is verified) ─────────────────
+    // ── Parse body ──────────────────────────────────────────────────
     let payload;
     try {
       payload = JSON.parse(req.body.toString());
