@@ -58,10 +58,10 @@ exports.createOrder = async (req, res) => {
     }
 
     const paymentProviderMap = {
-      cash: "cod",
-      card: "",
+      cash:   "cod",
+      card:   "",
       wallet: "",
-      bnpl: ""
+      bnpl:   ""
     };
 
     const uniqueProductIds = [...new Set(products.map((i) => i.product))];
@@ -78,33 +78,81 @@ exports.createOrder = async (req, res) => {
       }
     }
 
+    // ── Stock validation ────────────────────────────────────────────
+    // Check availability upfront before touching anything, so we can
+    // return a clear error without any partial side effects.
+    for (const item of products) {
+      const product = productMap.get(item.product.toString());
+      const qty     = Number(item.quantity);
+
+      if (product.stock < qty) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for "${product.name}". Available: ${product.stock}`
+        });
+      }
+    }
+
+    // ── Build line items and total ──────────────────────────────────
     let totalPrice = 0;
     const items = [];
 
     for (const item of products) {
       const product = productMap.get(item.product.toString());
-      const qty = Number(item.quantity);
+      const qty     = Number(item.quantity);
 
-      const itemTotal = Number(product.price) * qty;
-      totalPrice += itemTotal;
+      totalPrice += Number(product.price) * qty;
 
       items.push({
-        product: product._id,
-        name: product.name,
-        price: product.price,
+        product:  product._id,
+        name:     product.name,
+        price:    product.price,
         quantity: qty
       });
     }
 
+    // ── Atomic stock decrement ──────────────────────────────────────
+    // Use findOneAndUpdate with a $gte condition so the decrement only
+    // succeeds if sufficient stock is still available at write time.
+    // This prevents overselling in concurrent order scenarios.
+    // If any decrement fails, roll back the ones that already succeeded.
+    const decremented = [];
+
+    for (const item of items) {
+      const updated = await Product.findOneAndUpdate(
+        { _id: item.product, stock: { $gte: item.quantity } },
+        { $inc: { stock: -item.quantity } }
+      );
+
+      if (!updated) {
+        // Stock was exhausted between our initial check and this write.
+        // Restore all previously decremented items before returning.
+        for (const prev of decremented) {
+          await Product.findByIdAndUpdate(
+            prev.product,
+            { $inc: { stock: prev.quantity } }
+          );
+        }
+
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for "${item.name}". Please try a smaller quantity.`
+        });
+      }
+
+      decremented.push(item);
+    }
+
+    // ── Create order ────────────────────────────────────────────────
     const order = await Order.create({
-      user: userId,
-      products: items,
+      user:            userId,
+      products:        items,
       totalPrice,
-      paymentMethod: requestedPaymentMethod,
-      paymentStatus: "pending",
+      paymentMethod:   requestedPaymentMethod,
+      paymentStatus:   "pending",
       paymentProvider: paymentProviderMap[requestedPaymentMethod] || "",
       paymentReference: "",
-      status: "pending"
+      status:          "pending"
     });
 
     return res.status(201).json({
@@ -213,7 +261,7 @@ exports.getOrderById = async (req, res) => {
 };
 
 // ============================
-// UPDATE ORDER
+// UPDATE ORDER (user cancel)
 // ============================
 exports.updateOrder = async (req, res) => {
   try {
@@ -287,6 +335,14 @@ exports.updateOrder = async (req, res) => {
 
     await order.save();
 
+    // Restore stock for each cancelled line item.
+    for (const item of order.products) {
+      await Product.findByIdAndUpdate(
+        item.product,
+        { $inc: { stock: item.quantity } }
+      );
+    }
+
     return res.json({
       success: true,
       order
@@ -349,6 +405,14 @@ exports.deleteOrder = async (req, res) => {
 
     await order.deleteOne();
 
+    // Restore stock for each deleted line item.
+    for (const item of order.products) {
+      await Product.findByIdAndUpdate(
+        item.product,
+        { $inc: { stock: item.quantity } }
+      );
+    }
+
     return res.json({
       success: true,
       message: "Order deleted"
@@ -393,7 +457,7 @@ exports.getAllOrders = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const { id } = req.params;
+    const { id }     = req.params;
 
     const allowedStatuses = [
       "pending",
@@ -433,12 +497,13 @@ exports.updateOrderStatus = async (req, res) => {
       });
     }
 
+    const previousStatus = order.status;
     order.status = status;
 
     if (status === "delivered" && order.paymentMethod === "cash") {
-      order.isPaid = true;
+      order.isPaid        = true;
       order.paymentStatus = "paid";
-      order.paidAt = new Date();
+      order.paidAt        = new Date();
     }
 
     if (status === "cancelled") {
@@ -450,6 +515,18 @@ exports.updateOrderStatus = async (req, res) => {
 
       order.isPaid = false;
       order.paidAt = undefined;
+
+      // Restore stock when admin cancels an order, but only if the
+      // previous status was not already cancelled (guard against double
+      // restore if somehow called twice).
+      if (previousStatus !== "cancelled") {
+        for (const item of order.products) {
+          await Product.findByIdAndUpdate(
+            item.product,
+            { $inc: { stock: item.quantity } }
+          );
+        }
+      }
     }
 
     await order.save();

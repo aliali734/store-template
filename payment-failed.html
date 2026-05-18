@@ -23,6 +23,28 @@
     </div>
   </main>
 
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p id="footer-text">© Clothing Store. All rights reserved.</p>
+
+      <div class="footer-socials">
+        <a id="social-facebook" href="#" target="_blank" rel="noopener" style="display:none;">Facebook</a>
+        <a id="social-instagram" href="#" target="_blank" rel="noopener" style="display:none;">Instagram</a>
+        <a id="social-tiktok" href="#" target="_blank" rel="noopener" style="display:none;">TikTok</a>
+        <a id="social-twitter" href="#" target="_blank" rel="noopener" style="display:none;">X</a>
+        <a id="social-whatsapp" href="#" target="_blank" rel="noopener" style="display:none;">WhatsApp</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script loading order:
+       1. config.js     — API_BASE, SERVER_BASE, shared utilities (must be first)
+       2. api.js        — apiFetch, getStoreSettings (depends on config.js)
+       3. header.js     — calls apiFetch + API_BASE on DOMContentLoaded
+                          (must come after config.js and api.js)
+       4. onboarding.js — setup gate, fires on DOMContentLoaded
+       Note: no page-specific JS needed — this is a static error landing page.
+  -->
   <script src="config.js"></script>
   <script src="api.js"></script>
   <script src="header.js"></script>
