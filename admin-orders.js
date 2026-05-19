@@ -1,8 +1,8 @@
 /* ================= SHOW ORDERS ================= */
 async function showOrders() {
-  const ordersSection = document.getElementById("orders-section");
+  const ordersSection    = document.getElementById("orders-section");
   const dashboardSection = document.getElementById("dashboard-section");
-  const productsSection = document.querySelector(".products-section");
+  const productsSection  = document.querySelector(".products-section");
 
   dashboardSection?.classList.add("hidden");
   productsSection?.classList.add("hidden");
@@ -11,39 +11,27 @@ async function showOrders() {
   ordersSection.innerHTML = "<h2>Orders</h2><p>Loading...</p>";
 
   try {
-    const res = await window.adminApiFetch("/orders/admin/all");
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      throw new Error(data.message || "Failed to fetch orders");
-    }
-
+    const data = await window.adminApiFetch("/orders/admin/all");
     renderOrders(data.orders || []);
   } catch (err) {
     console.error(err);
-    ordersSection.innerHTML = `<h2>Orders</h2><p style="color:red">${err.message}</p>`;
+    ordersSection.innerHTML =
+      `<h2>Orders</h2><p style="color:red">${err.message}</p>`;
   }
 }
 
 /* ================= UPDATE ORDER STATUS ================= */
 async function updateAdminOrderStatus(orderId, status) {
   try {
-    const res = await window.adminApiFetch(`/orders/admin/${orderId}/status`, {
+    await window.adminApiFetch(`/orders/admin/${orderId}/status`, {
       method: "PATCH",
-      body: JSON.stringify({ status })
+      body:   JSON.stringify({ status })
     });
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      alert(data.message || "Failed to update order status");
-      return;
-    }
 
     showOrders();
   } catch (err) {
     console.error(err);
-    alert("Server error while updating order status");
+    alert(err.message || "Failed to update order status");
   }
 }
 
@@ -110,9 +98,7 @@ function renderOrders(orders) {
 
   section.querySelectorAll(".status-btn, .danger-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const orderId = btn.dataset.id;
-      const status = btn.dataset.status;
-      updateAdminOrderStatus(orderId, status);
+      updateAdminOrderStatus(btn.dataset.id, btn.dataset.status);
     });
   });
 }

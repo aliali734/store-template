@@ -5,15 +5,15 @@ const loginForm        = document.getElementById("login-form");
 const loginMessage     = document.getElementById("login-message");
 const logoutBtn        = document.getElementById("logoutBtn");
 
-const form           = document.getElementById("product-form");
-const messageEl      = document.getElementById("message");
-const modal          = document.getElementById("productModal");
-const overlay        = document.getElementById("overlay");
-const openBtn        = document.getElementById("openAddProduct");
-const closeBtn       = document.getElementById("closeModal");
-const modalTitle     = document.getElementById("modalTitle");
-const submitBtn      = document.getElementById("submitBtn");
-const productIdInput = document.getElementById("productId");
+const form            = document.getElementById("product-form");
+const messageEl       = document.getElementById("message");
+const modal           = document.getElementById("productModal");
+const overlay         = document.getElementById("overlay");
+const openBtn         = document.getElementById("openAddProduct");
+const closeBtn        = document.getElementById("closeModal");
+const modalTitle      = document.getElementById("modalTitle");
+const submitBtn       = document.getElementById("submitBtn");
+const productIdInput  = document.getElementById("productId");
 
 const nameInput           = document.getElementById("name");
 const descriptionInput    = document.getElementById("description");
@@ -39,14 +39,17 @@ const logoPreview      = document.getElementById("logoPreview");
 const headerCategories = document.getElementById("header-categories");
 const headerMessage    = document.getElementById("headerMessage");
 
-let productTaxonomy   = {};
+let productTaxonomy    = {};
 let productDepartments = [];
 
-// resolveImageUrl and getCsrfToken are defined in config.js and available
-// globally — no local copies needed here.
+// getCsrfToken, resolveImageUrl and forceLogout are in config.js (global).
 
 // =====================
 // API FETCH FOR ADMIN
+// Consistent with apiFetch: parses JSON and throws on non-OK responses
+// so callers don't need to manually call .json() and check res.ok.
+// 401/403 triggers showLogin() rather than redirecting immediately,
+// keeping the admin inside the panel.
 // =====================
 async function adminApiFetch(path, options = {}) {
   const isFormData = options.body instanceof FormData;
@@ -63,7 +66,18 @@ async function adminApiFetch(path, options = {}) {
     body: options.body
   });
 
-  return res;
+  if (res.status === 401 || res.status === 403) {
+    showLogin("Session expired. Please login again.");
+    throw new Error("Unauthorized");
+  }
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || "Request failed");
+  }
+
+  return data;
 }
 
 window.adminApiFetch = adminApiFetch;
@@ -89,15 +103,13 @@ function showDashboard() {
 
 // =====================
 // CHECK ADMIN SESSION
+// Uses /auth/me — permanent, production-safe — instead of /test/user.
 // =====================
 async function checkAdminAuth() {
   try {
-    await getCsrfToken();
-
-    const res = await fetch(`${API_BASE}/test/user`, {
+    const res  = await fetch(`${API_BASE}/auth/me`, {
       credentials: "include"
     });
-
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
@@ -207,12 +219,7 @@ function setMultiSelectValues(selectEl, values = []) {
 // =====================
 async function loadProductTaxonomy() {
   try {
-    const res  = await adminApiFetch("/product/meta/taxonomy");
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok || !data.success) {
-      throw new Error(data.message || "Failed to load taxonomy");
-    }
+    const data = await adminApiFetch("/product/meta/taxonomy");
 
     productTaxonomy    = data.taxonomy    || {};
     productDepartments = data.departments || [];
@@ -328,7 +335,7 @@ audienceInput?.addEventListener("change", () => {
 // =====================
 // MODAL
 // =====================
-openBtn?.addEventListener("click", async () => {
+openBtn?.addEventListener("click", () => {
   modalTitle.textContent = "Add Product";
   submitBtn.textContent  = "Add";
   productIdInput.value   = "";
@@ -352,10 +359,7 @@ closeBtn?.addEventListener("click", closeModal);
 overlay?.addEventListener("click", () => {
   closeModal();
   closeHeaderModal();
-
-  if (typeof closeSettingsModal === "function") {
-    closeSettingsModal();
-  }
+  if (typeof closeSettingsModal === "function") closeSettingsModal();
 });
 
 function closeModal() {
@@ -385,14 +389,10 @@ form?.addEventListener("submit", async (e) => {
   formData.append("price",          priceInput.value);
   formData.append("compareAtPrice", compareAtPriceInput.value || 0);
   formData.append("stock",          stockInput.value);
-
-  const selectedSizes  = getMultiSelectValues(sizesInput);
-  const selectedColors = getSelectedColors();
-
-  formData.append("sizes",    selectedSizes.join(","));
-  formData.append("colors",   selectedColors.join(","));
-  formData.append("featured", featuredInput.checked);
-  formData.append("isActive", isActiveInput.checked);
+  formData.append("sizes",          getMultiSelectValues(sizesInput).join(","));
+  formData.append("colors",         getSelectedColors().join(","));
+  formData.append("featured",       featuredInput.checked);
+  formData.append("isActive",       isActiveInput.checked);
 
   if (imageInput?.files?.length) {
     [...imageInput.files].slice(0, 5).forEach((file) => {
@@ -405,14 +405,7 @@ form?.addEventListener("submit", async (e) => {
   const path      = productId ? `/product/${productId}` : `/product`;
 
   try {
-    const res  = await adminApiFetch(path, { method, body: formData });
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      messageEl.textContent = data.message || "Error";
-      messageEl.style.color = "#b91c1c";
-      return;
-    }
+    await adminApiFetch(path, { method, body: formData });
 
     messageEl.textContent = "Saved successfully";
     messageEl.style.color = "#166534";
@@ -428,7 +421,7 @@ form?.addEventListener("submit", async (e) => {
     }, 600);
   } catch (err) {
     console.error(err);
-    messageEl.textContent = "Server error";
+    messageEl.textContent = err.message || "Server error";
     messageEl.style.color = "#b91c1c";
   }
 });
@@ -466,13 +459,10 @@ function renderProducts(products) {
       ? product.images[0]
       : product.images || "";
 
-    // Uses the shared resolveImageUrl from config.js
     const imgSrc = resolveImageUrl(firstImage, "https://via.placeholder.com/50");
 
     tr.innerHTML = `
-      <td>
-        <img src="${imgSrc}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;">
-      </td>
+      <td><img src="${imgSrc}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;"></td>
       <td>${product.name}</td>
       <td>${product.department || "-"}</td>
       <td>${product.category  || "-"}</td>
@@ -492,20 +482,11 @@ function renderProducts(products) {
       if (!confirm("Delete this product?")) return;
 
       try {
-        const res = await adminApiFetch(`/product/${product._id}`, {
-          method: "DELETE"
-        });
-
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          alert(data.message || "Delete failed");
-          return;
-        }
-
+        await adminApiFetch(`/product/${product._id}`, { method: "DELETE" });
         loadProducts();
       } catch (err) {
         console.error(err);
-        alert("Server error");
+        alert(err.message || "Delete failed");
       }
     });
 
@@ -517,17 +498,17 @@ function renderProducts(products) {
 // EDIT POPUP
 // =====================
 function openEditPopup(product) {
-  modalTitle.textContent      = "Edit Product";
-  submitBtn.textContent       = "Update";
+  modalTitle.textContent    = "Edit Product";
+  submitBtn.textContent     = "Update";
 
-  productIdInput.value        = product._id;
-  nameInput.value             = product.name           || "";
-  descriptionInput.value      = product.description    || "";
-  brandInput.value            = product.brand          || "";
-  audienceInput.value         = product.audience       || "unisex";
-  priceInput.value            = product.price          ?? "";
-  compareAtPriceInput.value   = product.compareAtPrice ?? 0;
-  stockInput.value            = product.stock          ?? "";
+  productIdInput.value      = product._id;
+  nameInput.value           = product.name           || "";
+  descriptionInput.value    = product.description    || "";
+  brandInput.value          = product.brand          || "";
+  audienceInput.value       = product.audience       || "unisex";
+  priceInput.value          = product.price          ?? "";
+  compareAtPriceInput.value = product.compareAtPrice ?? 0;
+  stockInput.value          = product.stock          ?? "";
 
   populateDepartmentOptions(product.department || "");
   populateCategoryOptions(product.department   || "", product.category || "");
@@ -584,7 +565,6 @@ async function loadHeaderSettings() {
     }
   } catch (err) {
     console.error("Failed to load header settings:", err);
-
     if (headerMessage) {
       headerMessage.textContent = "Failed to load header settings";
       headerMessage.style.color = "#b91c1c";
@@ -596,20 +576,10 @@ headerForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const formData = new FormData();
-
-  if (headerLogo?.files?.[0]) {
-    formData.append("logo", headerLogo.files[0]);
-  }
+  if (headerLogo?.files?.[0]) formData.append("logo", headerLogo.files[0]);
 
   try {
-    const res  = await adminApiFetch("/header", { method: "PUT", body: formData });
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      headerMessage.textContent = data.message || "Error";
-      headerMessage.style.color = "#b91c1c";
-      return;
-    }
+    const data = await adminApiFetch("/header", { method: "PUT", body: formData });
 
     if (data.header?.logo) {
       logoPreview.src = resolveImageUrl(data.header.logo, "");
@@ -619,7 +589,7 @@ headerForm?.addEventListener("submit", async (e) => {
     headerMessage.style.color = "#166534";
   } catch (err) {
     console.error(err);
-    headerMessage.textContent = "Server error";
+    headerMessage.textContent = err.message || "Server error";
     headerMessage.style.color = "#b91c1c";
   }
 });
@@ -640,7 +610,6 @@ links.forEach((link) => {
     e.preventDefault();
 
     const sectionName = link.dataset.section;
-
     Object.values(sections).forEach((s) => s?.classList.add("hidden"));
 
     if (sectionName === "orders") {
