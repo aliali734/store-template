@@ -111,28 +111,86 @@
 
     <a class="skip-link" href="#main-content">Skip to content</a>
 
-    <main id="main-content" tabindex="-1">
-      <!-- Hero -->
-      <section id="home" class="hero" aria-labelledby="hero-title">
-        <div class="panels" aria-hidden="true">
-          <div class="panel left"></div>
-          <div class="panel right"></div>
-        </div>
-
+    <section class="hero">
         <div class="hero-content">
-          <div class="hero-left">
-            <h1 id="hero-title">Discover Your<br />Next Favorite<br />Style</h1>
-          </div>
-
-          <div class="hero-right">
-            <p id="hero-subtitle">
-              Shop fashion for men, women, and kids in one place. Explore modern
-              clothing, stylish shoes, and everyday accessories designed for
-              comfort, confidence, and style.
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                New Collection Available
+            </div>
+            <h1 class="hero-title">
+                Wear Your <span class="highlight">Unique</span><br>
+                Style in 3D
+            </h1>
+            <p class="hero-description">
+                Design and customize your perfect t-shirt with our interactive
+                3D preview. See every angle, every detail — before you buy.
             </p>
-          </div>
+            <div class="hero-actions">
+                <a href="#" class="btn-primary">Start Designing</a>
+                <a href="#" class="btn-secondary">View Collection</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">Designs</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">4.9★</div>
+                    <div class="stat-label">Rating</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">120+</div>
+                    <div class="stat-label">Countries</div>
+                </div>
+            </div>
         </div>
-      </section>
+
+        <div class="hero-3d">
+            <div id="canvas-container">
+                <canvas id="three-canvas"></canvas>
+
+                <!-- Loading Overlay -->
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="loading-spinner"></div>
+                    <p class="loading-text">Loading 3D Model...</p>
+                </div>
+
+                <!-- File Upload Fallback (shown when file:// protocol detected) -->
+                <div class="upload-fallback" id="upload-fallback">
+                    <label class="upload-label" for="glb-upload">
+                        <span class="upload-icon">👕</span>
+                        <span class="upload-text">
+                            Click to select your<br>
+                            <strong style="color:#fff">t-shirt.glb</strong> file
+                        </span>
+                        <span class="upload-btn">Browse File</span>
+                    </label>
+                    <input type="file" id="glb-upload" accept=".glb,.gltf">
+                    <p style="color:#555; font-size:0.8rem; text-align:center;">
+                        ⚠️ Serving via file:// — select your GLB file manually<br>
+                        Or use a local server for automatic loading
+                    </p>
+                </div>
+            </div>
+
+            <div class="color-swatches" id="color-swatches">
+                <div class="swatch active" style="background:#ffffff" data-color="#ffffff"></div>
+                <div class="swatch" style="background:#1a1a2e" data-color="#1a1a2e"></div>
+                <div class="swatch" style="background:#7850ff" data-color="#7850ff"></div>
+                <div class="swatch" style="background:#ff6496" data-color="#ff6496"></div>
+                <div class="swatch" style="background:#00c896" data-color="#00c896"></div>
+            </div>
+        </div>
+    </section>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
 
             <!-- Why Us -->
       <section id="about" class="about" aria-labelledby="about-title">

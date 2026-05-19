@@ -697,3 +697,206 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("DOMContentLoaded", () => {
   loadDiscountOffers();
 });
+// =====================
+// HERO
+// =====================
+        import * as THREE from 'three';
+        import { GLTFLoader }    from 'three/addons/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { DRACOLoader }   from 'three/addons/loaders/DRACOLoader.js';
+
+        // ── Elements ────────────────────────────────────────────────────────
+        const container      = document.getElementById('canvas-container');
+        const canvas         = document.getElementById('three-canvas');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const uploadFallback = document.getElementById('upload-fallback');
+        const fileInput      = document.getElementById('glb-upload');
+
+        // ── Renderer ─────────────────────────────────────────────────────────
+        const renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: true,
+            alpha: true,
+        });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.outputColorSpace    = THREE.SRGBColorSpace;
+        renderer.toneMapping         = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        renderer.shadowMap.enabled   = true;
+        renderer.shadowMap.type      = THREE.PCFSoftShadowMap;
+
+        // ── Scene & Camera ───────────────────────────────────────────────────
+        const scene  = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(
+            35,
+            container.clientWidth / container.clientHeight,
+            0.1,
+            100
+        );
+        camera.position.set(0, 0, 4);
+
+        // ── Lighting ─────────────────────────────────────────────────────────
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+        const keyLight = new THREE.DirectionalLight(0xffffff, 2);
+        keyLight.position.set(3, 5, 3);
+        keyLight.castShadow = true;
+        scene.add(keyLight);
+
+        const fillLight = new THREE.DirectionalLight(0x7850ff, 0.8);
+        fillLight.position.set(-3, 2, -2);
+        scene.add(fillLight);
+
+        const rimLight = new THREE.DirectionalLight(0xff6496, 0.5);
+        rimLight.position.set(0, -2, -3);
+        scene.add(rimLight);
+
+        // ── Controls ─────────────────────────────────────────────────────────
+        const controls = new OrbitControls(camera, canvas);
+        controls.enableDamping    = true;
+        controls.dampingFactor    = 0.05;
+        controls.enableZoom       = true;
+        controls.minDistance      = 2;
+        controls.maxDistance      = 8;
+        controls.enablePan        = false;
+        controls.autoRotate       = true;
+        controls.autoRotateSpeed  = 1.5;
+
+        let autoRotateTimeout;
+        controls.addEventListener('start', () => { controls.autoRotate = false; });
+        controls.addEventListener('end',   () => {
+            clearTimeout(autoRotateTimeout);
+            autoRotateTimeout = setTimeout(() => { controls.autoRotate = true; }, 3000);
+        });
+
+        // ── Loaders ──────────────────────────────────────────────────────────
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath(
+            'https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/'
+        );
+
+        const gltfLoader = new GLTFLoader();
+        gltfLoader.setDRACOLoader(dracoLoader);
+
+        // ── Model State ──────────────────────────────────────────────────────
+        let model          = null;
+        let modelMaterials = [];
+
+        // ── Load Model from URL or ArrayBuffer ───────────────────────────────
+        function loadModel(source) {
+            loadingOverlay.classList.remove('hidden');
+            uploadFallback.classList.remove('visible');
+
+            const onLoad = (gltf) => {
+                // Remove previous model
+                if (model) scene.remove(model);
+                modelMaterials = [];
+
+                model = gltf.scene;
+
+                // Auto-center and scale
+                const box    = new THREE.Box3().setFromObject(model);
+                const center = box.getCenter(new THREE.Vector3());
+                const size   = box.getSize(new THREE.Vector3());
+                const scale  = 2.5 / Math.max(size.x, size.y, size.z);
+
+                model.scale.setScalar(scale);
+                model.position.sub(center.multiplyScalar(scale));
+
+                // Gather materials
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow    = true;
+                        child.receiveShadow = true;
+                        const mats = Array.isArray(child.material)
+                            ? child.material : [child.material];
+                        mats.forEach((m) => {
+                            if (!modelMaterials.includes(m)) modelMaterials.push(m);
+                        });
+                    }
+                });
+
+                scene.add(model);
+                loadingOverlay.classList.add('hidden');
+            };
+
+            const onProgress = (xhr) => {
+                if (xhr.total) {
+                    const pct = Math.round((xhr.loaded / xhr.total) * 100);
+                    document.querySelector('.loading-text').textContent =
+                        `Loading... ${pct}%`;
+                }
+            };
+
+            const onError = (err) => {
+                console.error('Model load error:', err);
+                loadingOverlay.classList.add('hidden');
+
+                // Show file picker as fallback
+                uploadFallback.classList.add('visible');
+            };
+
+            if (typeof source === 'string') {
+                // Load from URL
+                gltfLoader.load(source, onLoad, onProgress, onError);
+            } else {
+                // Load from ArrayBuffer (file input)
+                gltfLoader.parse(source, '', onLoad, onError);
+            }
+        }
+
+        // ── Detect Protocol & Attempt Auto-Load ──────────────────────────────
+        const isFileProtocol = window.location.protocol === 'file:';
+
+        if (isFileProtocol) {
+            // Can't fetch files — show picker immediately
+            loadingOverlay.classList.add('hidden');
+            uploadFallback.classList.add('visible');
+        } else {
+            // Normal server — try loading automatically
+            loadModel('t-shirt.glb');
+        }
+
+        // ── File Input Handler ────────────────────────────────────────────────
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (ev) => loadModel(ev.target.result);
+            reader.readAsArrayBuffer(file);
+        });
+
+        // ── Color Swatches ────────────────────────────────────────────────────
+        document.querySelectorAll('.swatch').forEach((swatch) => {
+            swatch.addEventListener('click', () => {
+                document.querySelectorAll('.swatch')
+                    .forEach((s) => s.classList.remove('active'));
+                swatch.classList.add('active');
+
+                const color = new THREE.Color(swatch.dataset.color);
+                modelMaterials.forEach((mat) => {
+                    if (mat.color) mat.color.set(color);
+                });
+            });
+        });
+
+        // ── Resize ────────────────────────────────────────────────────────────
+        window.addEventListener('resize', () => {
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        });
+
+        // ── Animation Loop ────────────────────────────────────────────────────
+        const clock = new THREE.Clock();
+
+        (function animate() {
+            requestAnimationFrame(animate);
+            if (model) model.position.y = Math.sin(clock.getElapsedTime() * 0.8) * 0.08;
+            controls.update();
+            renderer.render(scene, camera);
+        })();
