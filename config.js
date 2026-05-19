@@ -54,10 +54,9 @@ async function ensureCsrf() {
 
 // =====================
 // GET CSRF TOKEN
-// Single shared implementation used by every page script.
-// Fetches a fresh token from the server on every call so the token
-// is always current — important after login rotates the cookie.
-// Previously each file had its own identical copy of this function.
+// Single shared implementation — previously duplicated across 9 files.
+// Fetches a fresh token from the server on every call so the value is
+// always current (important after login rotates the cookie).
 // =====================
 async function getCsrfToken() {
   try {
@@ -72,6 +71,18 @@ async function getCsrfToken() {
     console.error("Failed to initialize CSRF:", err);
     return null;
   }
+}
+
+// =====================
+// RESOLVE IMAGE URL
+// Single shared implementation — previously duplicated across 4 files
+// with slightly different fallback values.
+// Supports both Cloudinary full URLs and legacy local /uploads/... paths.
+// =====================
+function resolveImageUrl(path, fallback = "https://via.placeholder.com/300") {
+  if (!path) return fallback;
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${SERVER_BASE}${path}`;
 }
 
 // =====================
@@ -167,8 +178,10 @@ function hasSavedConnectionConfig() {
   return Boolean(savedConfig.API_BASE && savedConfig.SERVER_BASE);
 }
 
-// Expose everything needed by page scripts globally.
+// Expose shared utilities globally so every page script can use them
+// without redefining them locally.
 window.getCsrfToken            = getCsrfToken;
+window.resolveImageUrl         = resolveImageUrl;
 window.getStoreSettings        = getStoreSettings;
 window.applyStoreSettingsToUI  = applyStoreSettingsToUI;
 window.hasSavedConnectionConfig = hasSavedConnectionConfig;
