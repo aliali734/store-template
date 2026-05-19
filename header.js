@@ -1,11 +1,4 @@
-// =====================
-// IMAGE URL RESOLVER
-// =====================
-function resolveHeaderImageUrl(path, fallback = "") {
-  if (!path) return fallback;
-  if (/^https?:\/\//i.test(path)) return path;
-  return `${SERVER_BASE}${path}`;
-}
+// resolveImageUrl is defined in config.js and available globally.
 
 // =====================
 // LOAD HEADER TEMPLATE
@@ -14,7 +7,7 @@ async function loadHeaderTemplate() {
   const headerEl = document.getElementById("header");
   if (!headerEl) return null;
 
-  const res = await fetch("header.html");
+  const res  = await fetch("header.html");
   const html = await res.text();
   headerEl.innerHTML = html;
 
@@ -29,9 +22,7 @@ function renderHeaderLogo(logoPath, settings = null) {
   if (!logoText) return;
 
   if (logoPath) {
-    logoText.innerHTML = `<img src="${resolveHeaderImageUrl(
-      logoPath
-    )}" alt="Logo" style="height:40px;object-fit:contain;">`;
+    logoText.innerHTML = `<img src="${resolveImageUrl(logoPath, "")}" alt="Logo" style="height:40px;object-fit:contain;">`;
     return;
   }
 
@@ -42,8 +33,8 @@ function renderHeaderLogo(logoPath, settings = null) {
 // BUILD MENU LINK HTML
 // =====================
 function buildHeaderLinkHTML(link) {
-  const url = link.url || "#";
-  const label = link.label || "";
+  const url     = link.url   || "#";
+  const label   = link.label || "";
   const isPromo = url.includes("promo=true");
 
   let labelHtml = label;
@@ -82,13 +73,12 @@ function renderDesktopMenu(menu) {
       .map((section) => {
         const linksHtml = (section.links || [])
           .map((link, i, arr) => {
-            const html = buildHeaderLinkHTML(link);
+            const html    = buildHeaderLinkHTML(link);
             const isPromo = (link.url || "").includes("promo=true");
 
-            const nextLink = arr[i + 1];
-            const nextIsPromo =
-              nextLink && (nextLink.url || "").includes("promo=true");
-            const addDivider = isPromo && !nextIsPromo;
+            const nextLink   = arr[i + 1];
+            const nextIsPromo = nextLink && (nextLink.url || "").includes("promo=true");
+            const addDivider  = isPromo && !nextIsPromo;
 
             return addDivider
               ? html + '<div class="mega-link-divider"></div>'
@@ -145,13 +135,12 @@ function renderMobileMenu(menu) {
       .map((section) => {
         const linksHtml = (section.links || [])
           .map((link, i, arr) => {
-            const html = buildHeaderLinkHTML(link);
-            const isPromo = (link.url || "").includes("promo=true");
+            const html     = buildHeaderLinkHTML(link);
+            const isPromo  = (link.url || "").includes("promo=true");
 
-            const nextLink = arr[i + 1];
-            const nextIsPromo =
-              nextLink && (nextLink.url || "").includes("promo=true");
-            const addDivider = isPromo && !nextIsPromo;
+            const nextLink    = arr[i + 1];
+            const nextIsPromo = nextLink && (nextLink.url || "").includes("promo=true");
+            const addDivider  = isPromo && !nextIsPromo;
 
             return addDivider
               ? html + '<div class="mega-link-divider"></div>'
@@ -184,9 +173,9 @@ function renderMobileMenu(menu) {
 // AUTH-AWARE BUTTONS
 // =====================
 async function setupHeaderAuth() {
-  const loginLink = document.getElementById("login-link");
+  const loginLink    = document.getElementById("login-link");
   const registerLink = document.getElementById("register-link");
-  const logoutBtn = document.getElementById("logout-btn");
+  const logoutBtn    = document.getElementById("logout-btn");
 
   if (!loginLink || !registerLink || !logoutBtn) return;
 
@@ -196,17 +185,13 @@ async function setupHeaderAuth() {
     });
 
     if (res.ok) {
-      loginLink.style.display = "none";
+      loginLink.style.display    = "none";
       registerLink.style.display = "none";
-      logoutBtn.style.display = "inline-flex";
+      logoutBtn.style.display    = "inline-flex";
+
       logoutBtn.onclick = async () => {
         try {
-          const res = await fetch(`${API_BASE}/csrf`, {
-            method: "GET",
-            credentials: "include"
-          });
-          const data = await res.json().catch(() => ({}));
-          const csrfToken = data.csrfToken || null;
+          const csrfToken = await getCsrfToken();
 
           await fetch(`${API_BASE}/auth/logout`, {
             method: "POST",
@@ -222,15 +207,15 @@ async function setupHeaderAuth() {
         }
       };
     } else {
-      loginLink.style.display = "inline-flex";
+      loginLink.style.display    = "inline-flex";
       registerLink.style.display = "inline-flex";
-      logoutBtn.style.display = "none";
+      logoutBtn.style.display    = "none";
     }
   } catch (err) {
     console.error("Header auth check failed:", err);
-    loginLink.style.display = "inline-flex";
+    loginLink.style.display    = "inline-flex";
     registerLink.style.display = "inline-flex";
-    logoutBtn.style.display = "none";
+    logoutBtn.style.display    = "none";
   }
 }
 
@@ -238,12 +223,12 @@ async function setupHeaderAuth() {
 // HEADER INTERACTIONS
 // =====================
 function setupHeaderInteractions() {
-  const mobileToggle = document.getElementById("mobile-toggle");
-  const mobileClose = document.getElementById("mobile-close");
-  const mobilePanel = document.getElementById("mobile-panel");
+  const mobileToggle  = document.getElementById("mobile-toggle");
+  const mobileClose   = document.getElementById("mobile-close");
+  const mobilePanel   = document.getElementById("mobile-panel");
   const mobileOverlay = document.getElementById("mobile-overlay");
-  const searchToggle = document.getElementById("search-toggle");
-  const headerSearch = document.getElementById("search-input-header");
+  const searchToggle  = document.getElementById("search-toggle");
+  const headerSearch  = document.getElementById("search-input-header");
 
   mobileToggle?.addEventListener("click", () => {
     if (!mobilePanel) return;
@@ -311,13 +296,13 @@ function updateHeaderCartCounter() {
   const cartCountEl = document.getElementById("cart-count");
   if (!cartCountEl) return;
 
-  const cart = getHeaderCart();
+  const cart  = getHeaderCart();
   const count = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
   cartCountEl.textContent = count;
 }
 
 function renderHeaderCartModal() {
-  const list = document.getElementById("cart-items-list");
+  const list    = document.getElementById("cart-items-list");
   const totalEl = document.getElementById("cart-total");
 
   if (!list || !totalEl) return;
@@ -378,8 +363,8 @@ function renderHeaderCartModal() {
 }
 
 function setupHeaderCartModal() {
-  const cartBtn = document.querySelector(".cart-wrapper .icon-btn");
-  const modal = document.getElementById("cart-modal");
+  const cartBtn  = document.querySelector(".cart-wrapper .icon-btn");
+  const modal    = document.getElementById("cart-modal");
   const closeBtn = document.getElementById("cart-close");
 
   if (!cartBtn || !modal) return;
@@ -418,7 +403,7 @@ async function initSharedHeader() {
     if (headerData.success && headerData.header) {
       renderHeaderLogo(headerData.header.logo, settings);
       renderDesktopMenu(headerData.header.menu || []);
-      renderMobileMenu(headerData.header.menu || []);
+      renderMobileMenu(headerData.header.menu  || []);
     } else {
       renderHeaderLogo("", settings);
     }

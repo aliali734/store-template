@@ -1,9 +1,10 @@
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
+// resolveImageUrl is defined in config.js and available globally.
+
 // =====================
 // HTML ESCAPE
-// Sanitizes any server-supplied string before it is injected into
-// innerHTML, preventing XSS if a product field contains malicious HTML.
+// Sanitizes server-supplied strings before injection into innerHTML.
 // =====================
 function escapeHtml(str) {
   return String(str == null ? "" : str)
@@ -15,23 +16,11 @@ function escapeHtml(str) {
 }
 
 // =====================
-// IMAGE URL RESOLVER
-// Supports both:
-// - Cloudinary full URLs
-// - old local /uploads/... paths
-// =====================
-function resolveImageUrl(path, fallback = "https://via.placeholder.com/400") {
-  if (!path) return fallback;
-  if (/^https?:\/\//i.test(path)) return path;
-  return `${SERVER_BASE}${path}`;
-}
-
-// =====================
 // TOAST
 // =====================
 function showToast(message, type = "success") {
   const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
+  toast.className   = `toast ${type}`;
   toast.textContent = message;
 
   document.body.appendChild(toast);
@@ -47,7 +36,7 @@ function showToast(message, type = "success") {
 // =====================
 // URL PARAMS
 // =====================
-const params = new URLSearchParams(window.location.search);
+const params    = new URLSearchParams(window.location.search);
 const productId = params.get("id");
 
 // =====================
@@ -73,7 +62,7 @@ async function loadProduct() {
   }
 
   try {
-    const data = await apiFetch(`/product/${productId}`);
+    const data    = await apiFetch(`/product/${productId}`);
     const product = data.product;
 
     if (!product) {
@@ -107,8 +96,8 @@ async function loadProduct() {
     priceEl.textContent    = `$${Number(product.price || 0).toFixed(2)}`;
     descEl.textContent     = product.description || "No description available.";
 
-    // Store the product price on the element as a data attribute so
-    // the add-to-cart handler can read it safely without parsing DOM text.
+    // Store price as a data attribute so the cart handler reads it safely
+    // without parsing DOM text (fixes the fragile replace("$","") pattern).
     priceEl.dataset.price = Number(product.price || 0);
 
     if (product.category) {
@@ -132,8 +121,6 @@ addBtn?.addEventListener("click", () => {
   if (existing) {
     existing.quantity += quantity;
   } else {
-    // Read price from the data attribute set during loadProduct()
-    // instead of parsing the formatted DOM text, which is fragile.
     const price = parseFloat(priceEl.dataset.price) || 0;
 
     cart.push({
@@ -173,42 +160,37 @@ async function loadRelatedProducts(category) {
       return;
     }
 
-    // Build each card using DOM methods so user-supplied text is always
-    // set via textContent, never injected raw into innerHTML.
+    // Build cards with DOM methods so text is always set via textContent,
+    // never injected raw into innerHTML (XSS prevention).
     const fragment = document.createDocumentFragment();
 
     related.forEach((p) => {
       const firstImage = Array.isArray(p.images) ? p.images[0] : "";
       const imageSrc   = resolveImageUrl(firstImage, "https://via.placeholder.com/300");
 
-      // Outer wrapper — navigates to product page on click
       const card = document.createElement("div");
       card.className = "related-card";
       card.addEventListener("click", () => {
         window.location.href = `product.html?id=${encodeURIComponent(p._id)}`;
       });
 
-      // Image
       const img = document.createElement("img");
       img.src = imageSrc;
-      img.alt = p.name || "";  // alt is set via property, not innerHTML
+      img.alt = p.name || "";
 
-      // Info container
-      const info = document.createElement("div");
+      const info  = document.createElement("div");
       info.className = "related-info";
 
       const title = document.createElement("h4");
-      title.textContent = p.name || "";  // textContent — never innerHTML
+      title.textContent = p.name || "";
 
       const priceP = document.createElement("p");
       priceP.textContent = `$${Number(p.price || 0).toFixed(2)}`;
 
       info.appendChild(title);
       info.appendChild(priceP);
-
       card.appendChild(img);
       card.appendChild(info);
-
       fragment.appendChild(card);
     });
 

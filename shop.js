@@ -1,13 +1,14 @@
-let products = [];
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let products    = [];
+let cart        = JSON.parse(localStorage.getItem("cart")) || [];
 let currentPage = 1;
-let totalPages = 1;
+let totalPages  = 1;
+
+// resolveImageUrl and getCsrfToken are defined in config.js and available
+// globally — no local copies needed here.
 
 // =====================
 // HTML ESCAPE
-// Sanitizes any server-supplied string before it is injected into
-// innerHTML, preventing XSS if a product name/category contains
-// malicious HTML or script tags.
+// Sanitizes server-supplied strings before injection into innerHTML.
 // =====================
 function escapeHtml(str) {
   return String(str == null ? "" : str)
@@ -16,36 +17,6 @@ function escapeHtml(str) {
     .replace(/>/g,  "&gt;")
     .replace(/"/g,  "&quot;")
     .replace(/'/g,  "&#39;");
-}
-
-// =====================
-// IMAGE URL RESOLVER
-// Supports both:
-// - full Cloudinary URLs
-// - old local /uploads/... paths
-// =====================
-function resolveImageUrl(path, fallback = "https://via.placeholder.com/300") {
-  if (!path) return fallback;
-  if (/^https?:\/\//i.test(path)) return path;
-  return `${SERVER_BASE}${path}`;
-}
-
-// =====================
-// GET CSRF TOKEN
-// =====================
-async function getCsrfToken() {
-  try {
-    const res = await fetch(`${API_BASE}/csrf`, {
-      method: "GET",
-      credentials: "include"
-    });
-
-    const data = await res.json().catch(() => ({}));
-    return data.csrfToken || null;
-  } catch (err) {
-    console.error("Failed to initialize CSRF:", err);
-    return null;
-  }
 }
 
 // =====================
@@ -74,7 +45,7 @@ async function forceLogout() {
 // =====================
 async function shopApiFetch(path, options = {}) {
   const isFormData = options.body instanceof FormData;
-  const csrfToken = await getCsrfToken();
+  const csrfToken  = await getCsrfToken();
 
   const res = await fetch(`${API_BASE}${path}`, {
     method: options.method || "GET",
@@ -121,7 +92,7 @@ async function shopApiFetch(path, options = {}) {
 // =====================
 function showToast(message, type = "success") {
   const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
+  toast.className   = `toast ${type}`;
   toast.textContent = message;
 
   document.body.appendChild(toast);
@@ -135,7 +106,7 @@ function showToast(message, type = "success") {
 }
 
 // =====================
-// PRODUCTS
+// SKELETON LOADING
 // =====================
 function showProductsSkeleton() {
   const container = document.getElementById("products");
@@ -152,16 +123,19 @@ function showProductsSkeleton() {
     .join("");
 }
 
+// =====================
+// LOAD PRODUCTS
+// =====================
 async function loadProducts(page = 1) {
   showProductsSkeleton();
 
   try {
     const query = buildFilterQuery(page, 9);
-    const data = await apiFetch(`/product?${query}`);
+    const data  = await apiFetch(`/product?${query}`);
 
-    products = data.products || [];
-    currentPage = data.page || 1;
-    totalPages = data.totalPages || 1;
+    products    = data.products  || [];
+    currentPage = data.page      || 1;
+    totalPages  = data.totalPages || 1;
 
     updateTitle(data.totalProducts || 0);
     await renderProducts();
@@ -179,7 +153,6 @@ async function loadProducts(page = 1) {
 function updateTitle(total) {
   const title = document.querySelector(".title");
   if (!title) return;
-
   title.textContent = `Products (${total})`;
 }
 
@@ -187,8 +160,8 @@ function updateTitle(total) {
 // RENDER PRODUCTS
 // =====================
 
-// Cache the card template after the first successful fetch so we don't
-// make a network request on every filter change or page turn.
+// Cache the card template after the first fetch so we don't make a
+// network request on every filter change or page turn.
 let cachedCardTemplate = null;
 
 async function renderProducts() {
@@ -197,10 +170,9 @@ async function renderProducts() {
 
   container.innerHTML = "";
 
-  // Load template once; reuse on subsequent renders.
   if (!cachedCardTemplate) {
     try {
-      const res = await fetch("product-card.html");
+      const res        = await fetch("product-card.html");
       cachedCardTemplate = await res.text();
     } catch (err) {
       console.error("Failed to load product template:", err);
@@ -228,12 +200,7 @@ async function renderProducts() {
 
     const imageUrl = resolveImageUrl(firstImage);
 
-    // Escape all server-supplied strings before substituting into HTML.
-    // product._id is a MongoDB ObjectId (hex only — safe without escaping,
-    // but escaped anyway for defence in depth).
-    // imageUrl is a resolved URL — kept unescaped so it works in src/href,
-    // but is constructed from a known-safe base + Cloudinary path.
-    // product.price is coerced to a number, so it is always safe.
+    // Escape all server-supplied text before substituting into HTML.
     const cardHTML = cachedCardTemplate
       .replace(/{{_id}}/g,      escapeHtml(product._id))
       .replace(/{{image}}/g,    imageUrl)
@@ -265,7 +232,7 @@ function initAddToCart() {
       const card = btn.closest(".product-card");
       if (!card) return;
 
-      const id = card.dataset.id;
+      const id      = card.dataset.id;
       const product = products.find((p) => p._id === id);
       if (!product) return;
 
@@ -275,9 +242,9 @@ function initAddToCart() {
         existing.quantity += 1;
       } else {
         cart.push({
-          id: product._id,
-          name: product.name || "Product",
-          price: Number(product.price) || 0,
+          id:       product._id,
+          name:     product.name  || "Product",
+          price:    Number(product.price) || 0,
           quantity: 1
         });
       }
@@ -314,7 +281,7 @@ function renderPagination() {
     const btn = document.createElement("button");
 
     btn.textContent = i;
-    btn.disabled = i === currentPage;
+    btn.disabled    = i === currentPage;
 
     btn.onclick = () => {
       loadProducts(i);
@@ -332,7 +299,7 @@ function renderPagination() {
 // =====================
 document.addEventListener("DOMContentLoaded", () => {
   const toggleFilters = document.getElementById("toggle-filters");
-  const aside = document.getElementById("filters");
+  const aside         = document.getElementById("filters");
 
   toggleFilters?.addEventListener("click", () => {
     if (!aside) return;

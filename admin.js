@@ -1,57 +1,49 @@
-const productsBody  = document.getElementById("productsBody");
-const loginSection  = document.getElementById("login-section");
+const productsBody     = document.getElementById("productsBody");
+const loginSection     = document.getElementById("login-section");
 const dashboardSection = document.getElementById("dashboard-section");
-const loginForm     = document.getElementById("login-form");
-const loginMessage  = document.getElementById("login-message");
-const logoutBtn     = document.getElementById("logoutBtn");
+const loginForm        = document.getElementById("login-form");
+const loginMessage     = document.getElementById("login-message");
+const logoutBtn        = document.getElementById("logoutBtn");
 
-const form          = document.getElementById("product-form");
-const messageEl     = document.getElementById("message");
-const modal         = document.getElementById("productModal");
-const overlay       = document.getElementById("overlay");
-const openBtn       = document.getElementById("openAddProduct");
-const closeBtn      = document.getElementById("closeModal");
-const modalTitle    = document.getElementById("modalTitle");
-const submitBtn     = document.getElementById("submitBtn");
+const form           = document.getElementById("product-form");
+const messageEl      = document.getElementById("message");
+const modal          = document.getElementById("productModal");
+const overlay        = document.getElementById("overlay");
+const openBtn        = document.getElementById("openAddProduct");
+const closeBtn       = document.getElementById("closeModal");
+const modalTitle     = document.getElementById("modalTitle");
+const submitBtn      = document.getElementById("submitBtn");
 const productIdInput = document.getElementById("productId");
 
-const nameInput         = document.getElementById("name");
-const descriptionInput  = document.getElementById("description");
-const brandInput        = document.getElementById("brand");
-const departmentInput   = document.getElementById("department");
-const categoryInput     = document.getElementById("category");
-const audienceInput     = document.getElementById("audience");
-const priceInput        = document.getElementById("price");
+const nameInput           = document.getElementById("name");
+const descriptionInput    = document.getElementById("description");
+const brandInput          = document.getElementById("brand");
+const departmentInput     = document.getElementById("department");
+const categoryInput       = document.getElementById("category");
+const audienceInput       = document.getElementById("audience");
+const priceInput          = document.getElementById("price");
 const compareAtPriceInput = document.getElementById("compareAtPrice");
-const stockInput        = document.getElementById("stock");
-const sizesInput        = document.getElementById("sizes");
-const colorsChecklist   = document.getElementById("colorsChecklist");
-const featuredInput     = document.getElementById("featured");
-const isActiveInput     = document.getElementById("isActive");
-const imageInput        = document.getElementById("image");
+const stockInput          = document.getElementById("stock");
+const sizesInput          = document.getElementById("sizes");
+const colorsChecklist     = document.getElementById("colorsChecklist");
+const featuredInput       = document.getElementById("featured");
+const isActiveInput       = document.getElementById("isActive");
+const imageInput          = document.getElementById("image");
 
-const openHeaderBtn   = document.getElementById("openHeaderModal");
-const closeHeaderBtn  = document.getElementById("closeHeaderModal");
-const headerModal     = document.getElementById("headerModal");
-const headerForm      = document.getElementById("header-form");
-const headerLogo      = document.getElementById("header-logo");
-const logoPreview     = document.getElementById("logoPreview");
+const openHeaderBtn    = document.getElementById("openHeaderModal");
+const closeHeaderBtn   = document.getElementById("closeHeaderModal");
+const headerModal      = document.getElementById("headerModal");
+const headerForm       = document.getElementById("header-form");
+const headerLogo       = document.getElementById("header-logo");
+const logoPreview      = document.getElementById("logoPreview");
 const headerCategories = document.getElementById("header-categories");
-const headerMessage   = document.getElementById("headerMessage");
+const headerMessage    = document.getElementById("headerMessage");
 
-let productTaxonomy  = {};
+let productTaxonomy   = {};
 let productDepartments = [];
 
-// =====================
-// IMAGE URL RESOLVER
-// =====================
-function resolveImageUrl(path, fallback = "https://via.placeholder.com/50") {
-  if (!path) return fallback;
-  if (/^https?:\/\//i.test(path)) return path;
-  return `${SERVER_BASE}${path}`;
-}
-
-// getCsrfToken is defined in config.js and available as window.getCsrfToken.
+// resolveImageUrl and getCsrfToken are defined in config.js and available
+// globally — no local copies needed here.
 
 // =====================
 // API FETCH FOR ADMIN
@@ -222,7 +214,7 @@ async function loadProductTaxonomy() {
       throw new Error(data.message || "Failed to load taxonomy");
     }
 
-    productTaxonomy   = data.taxonomy   || {};
+    productTaxonomy    = data.taxonomy    || {};
     productDepartments = data.departments || [];
 
     populateDepartmentOptions();
@@ -238,9 +230,9 @@ function populateDepartmentOptions(selectedDepartment = "") {
 
   productDepartments.forEach((department) => {
     const option = document.createElement("option");
-    option.value    = department;
+    option.value       = department;
     option.textContent = capitalizeLabel(department);
-    option.selected = department === selectedDepartment;
+    option.selected    = department === selectedDepartment;
     departmentInput.appendChild(option);
   });
 }
@@ -300,9 +292,9 @@ function populateColorChecklist(selectedColors = []) {
 
 function getSelectedColors() {
   if (!colorsChecklist) return [];
-  return [...colorsChecklist.querySelectorAll('input[type="checkbox"]:checked')].map(
-    (input) => input.value
-  );
+  return [
+    ...colorsChecklist.querySelectorAll('input[type="checkbox"]:checked')
+  ].map((input) => input.value);
 }
 
 function clearColorChecklist() {
@@ -329,7 +321,7 @@ departmentInput?.addEventListener("change", () => {
 
 audienceInput?.addEventListener("change", () => {
   const department = departmentInput?.value || "";
-  const audience   = audienceInput.value   || "";
+  const audience   = audienceInput.value    || "";
   populateSizeOptions(department, audience, []);
 });
 
@@ -337,14 +329,14 @@ audienceInput?.addEventListener("change", () => {
 // MODAL
 // =====================
 openBtn?.addEventListener("click", async () => {
-  modalTitle.textContent  = "Add Product";
-  submitBtn.textContent   = "Add";
-  productIdInput.value    = "";
+  modalTitle.textContent = "Add Product";
+  submitBtn.textContent  = "Add";
+  productIdInput.value   = "";
   form.reset();
-  messageEl.textContent   = "";
+  messageEl.textContent  = "";
 
-  if (isActiveInput)  isActiveInput.checked  = true;
-  if (featuredInput)  featuredInput.checked  = false;
+  if (isActiveInput) isActiveInput.checked = true;
+  if (featuredInput) featuredInput.checked = false;
 
   populateDepartmentOptions("");
   populateCategoryOptions("");
@@ -384,15 +376,15 @@ form?.addEventListener("submit", async (e) => {
   e.stopPropagation();
 
   const formData = new FormData();
-  formData.append("name",            nameInput.value);
-  formData.append("description",     descriptionInput.value);
-  formData.append("brand",           brandInput.value);
-  formData.append("audience",        audienceInput.value);
-  formData.append("department",      departmentInput.value);
-  formData.append("category",        categoryInput.value);
-  formData.append("price",           priceInput.value);
-  formData.append("compareAtPrice",  compareAtPriceInput.value || 0);
-  formData.append("stock",           stockInput.value);
+  formData.append("name",           nameInput.value);
+  formData.append("description",    descriptionInput.value);
+  formData.append("brand",          brandInput.value);
+  formData.append("audience",       audienceInput.value);
+  formData.append("department",     departmentInput.value);
+  formData.append("category",       categoryInput.value);
+  formData.append("price",          priceInput.value);
+  formData.append("compareAtPrice", compareAtPriceInput.value || 0);
+  formData.append("stock",          stockInput.value);
 
   const selectedSizes  = getMultiSelectValues(sizesInput);
   const selectedColors = getSelectedColors();
@@ -409,7 +401,7 @@ form?.addEventListener("submit", async (e) => {
   }
 
   const productId = productIdInput.value;
-  const method    = productId ? "PUT"  : "POST";
+  const method    = productId ? "PUT"              : "POST";
   const path      = productId ? `/product/${productId}` : `/product`;
 
   try {
@@ -474,7 +466,8 @@ function renderProducts(products) {
       ? product.images[0]
       : product.images || "";
 
-    const imgSrc = resolveImageUrl(firstImage);
+    // Uses the shared resolveImageUrl from config.js
+    const imgSrc = resolveImageUrl(firstImage, "https://via.placeholder.com/50");
 
     tr.innerHTML = `
       <td>
@@ -491,7 +484,9 @@ function renderProducts(products) {
       </td>
     `;
 
-    tr.querySelector(".edit")?.addEventListener("click", () => openEditPopup(product));
+    tr.querySelector(".edit")?.addEventListener("click", () =>
+      openEditPopup(product)
+    );
 
     tr.querySelector(".delete")?.addEventListener("click", async () => {
       if (!confirm("Delete this product?")) return;
@@ -522,17 +517,17 @@ function renderProducts(products) {
 // EDIT POPUP
 // =====================
 function openEditPopup(product) {
-  modalTitle.textContent  = "Edit Product";
-  submitBtn.textContent   = "Update";
+  modalTitle.textContent      = "Edit Product";
+  submitBtn.textContent       = "Update";
 
   productIdInput.value        = product._id;
-  nameInput.value             = product.name        || "";
-  descriptionInput.value      = product.description || "";
-  brandInput.value            = product.brand       || "";
-  audienceInput.value         = product.audience    || "unisex";
-  priceInput.value            = product.price       ?? "";
+  nameInput.value             = product.name           || "";
+  descriptionInput.value      = product.description    || "";
+  brandInput.value            = product.brand          || "";
+  audienceInput.value         = product.audience       || "unisex";
+  priceInput.value            = product.price          ?? "";
   compareAtPriceInput.value   = product.compareAtPrice ?? 0;
-  stockInput.value            = product.stock       ?? "";
+  stockInput.value            = product.stock          ?? "";
 
   populateDepartmentOptions(product.department || "");
   populateCategoryOptions(product.department   || "", product.category || "");
@@ -541,7 +536,6 @@ function openEditPopup(product) {
     product.audience   || "",
     Array.isArray(product.sizes) ? product.sizes : []
   );
-
   populateColorChecklist(
     Array.isArray(product.colors) ? product.colors : []
   );
@@ -580,7 +574,8 @@ async function loadHeaderSettings() {
         : "";
 
       if (headerCategories) {
-        headerCategories.value    = "Mega menu structure is managed from backend defaults / database. Logo can be updated here only.";
+        headerCategories.value    =
+          "Mega menu structure is managed from backend defaults / database. Logo can be updated here only.";
         headerCategories.readOnly = true;
         headerCategories.disabled = true;
       }
