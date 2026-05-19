@@ -55,8 +55,6 @@ async function ensureCsrf() {
 // =====================
 // GET CSRF TOKEN
 // Single shared implementation — previously duplicated across 9 files.
-// Fetches a fresh token from the server on every call so the value is
-// always current (important after login rotates the cookie).
 // =====================
 async function getCsrfToken() {
   try {
@@ -74,10 +72,34 @@ async function getCsrfToken() {
 }
 
 // =====================
+// FORCE LOGOUT
+// Single shared implementation — previously duplicated across 3 files
+// (confirmation.js, orders.js, shop.js).
+// Logs the user out server-side and always redirects to login,
+// even if the server call fails.
+// =====================
+async function forceLogout() {
+  try {
+    const csrfToken = await getCsrfToken();
+
+    await fetch(`${API_BASE}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
+      }
+    });
+  } catch (e) {
+    console.error("Logout request failed:", e);
+  } finally {
+    window.location.href = "login.html";
+  }
+}
+
+// =====================
 // RESOLVE IMAGE URL
-// Single shared implementation — previously duplicated across 4 files
-// with slightly different fallback values.
-// Supports both Cloudinary full URLs and legacy local /uploads/... paths.
+// Single shared implementation — previously duplicated across 4 files.
+// Supports Cloudinary full URLs and legacy local /uploads/... paths.
 // =====================
 function resolveImageUrl(path, fallback = "https://via.placeholder.com/300") {
   if (!path) return fallback;
@@ -180,8 +202,9 @@ function hasSavedConnectionConfig() {
 
 // Expose shared utilities globally so every page script can use them
 // without redefining them locally.
-window.getCsrfToken            = getCsrfToken;
-window.resolveImageUrl         = resolveImageUrl;
-window.getStoreSettings        = getStoreSettings;
-window.applyStoreSettingsToUI  = applyStoreSettingsToUI;
+window.getCsrfToken             = getCsrfToken;
+window.forceLogout              = forceLogout;
+window.resolveImageUrl          = resolveImageUrl;
+window.getStoreSettings         = getStoreSettings;
+window.applyStoreSettingsToUI   = applyStoreSettingsToUI;
 window.hasSavedConnectionConfig = hasSavedConnectionConfig;

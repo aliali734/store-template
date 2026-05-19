@@ -1,43 +1,6 @@
 const ORDER_ID = localStorage.getItem("currentOrderId");
 
-// =====================
-// GET CSRF TOKEN
-// =====================
-async function getCsrfToken() {
-  try {
-    const res = await fetch(`${API_BASE}/csrf`, {
-      method: "GET",
-      credentials: "include"
-    });
-
-    const data = await res.json().catch(() => ({}));
-    return data.csrfToken || null;
-  } catch (err) {
-    console.error("Failed to initialize CSRF:", err);
-    return null;
-  }
-}
-
-// =====================
-// FORCE LOGOUT
-// =====================
-async function forceLogout() {
-  try {
-    const csrfToken = await getCsrfToken();
-
-    await fetch(`${API_BASE}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
-      }
-    });
-  } catch (e) {
-    console.error("Logout request failed:", e);
-  } finally {
-    window.location.href = "login.html";
-  }
-}
+// forceLogout is defined in config.js and available globally.
 
 // =====================
 // API FETCH WRAPPER
@@ -87,7 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // LOAD ORDER
 // =====================
 async function loadOrder() {
-  const res = await confirmationApiFetch(`/orders/${ORDER_ID}`);
+  const res  = await confirmationApiFetch(`/orders/${ORDER_ID}`);
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
@@ -120,7 +83,8 @@ function renderOrder(order) {
   (order.products || []).forEach((item) => {
     const li = document.createElement("li");
     li.textContent = `${item.name} × ${item.quantity} — $${(
-      Number(item.price || 0) * Number(item.quantity || 0)
+      Number(item.price    || 0) *
+      Number(item.quantity || 0)
     ).toFixed(2)}`;
     itemsList.appendChild(li);
   });
@@ -139,5 +103,5 @@ function updateStatus(text, type) {
   if (!statusEl) return;
 
   statusEl.textContent = text;
-  statusEl.className = `status ${type}`;
+  statusEl.className   = `status ${type}`;
 }

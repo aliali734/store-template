@@ -1,50 +1,13 @@
 const ordersContainer = document.getElementById("orders-container");
 
-// =====================
-// GET CSRF TOKEN
-// =====================
-async function getCsrfToken() {
-  try {
-    const res = await fetch(`${API_BASE}/csrf`, {
-      method: "GET",
-      credentials: "include"
-    });
-
-    const data = await res.json().catch(() => ({}));
-    return data.csrfToken || null;
-  } catch (err) {
-    console.error("Failed to initialize CSRF:", err);
-    return null;
-  }
-}
-
-// =====================
-// FORCE LOGOUT
-// =====================
-async function forceLogout() {
-  try {
-    const csrfToken = await getCsrfToken();
-
-    await fetch(`${API_BASE}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
-      }
-    });
-  } catch (e) {
-    console.error("Logout request failed:", e);
-  } finally {
-    window.location.href = "login.html";
-  }
-}
+// forceLogout and getCsrfToken are defined in config.js and available globally.
 
 // =====================
 // API FETCH
 // =====================
 async function ordersApiFetch(path, options = {}) {
   const isFormData = options.body instanceof FormData;
-  const csrfToken = await getCsrfToken();
+  const csrfToken  = await getCsrfToken();
 
   const res = await fetch(`${API_BASE}${path}`, {
     method: options.method || "GET",
@@ -74,7 +37,7 @@ async function loadMyOrders() {
   ordersContainer.innerHTML = "<p>Loading orders...</p>";
 
   try {
-    const res = await ordersApiFetch("/orders/my");
+    const res  = await ordersApiFetch("/orders/my");
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
@@ -107,9 +70,9 @@ async function cancelOrder(orderId) {
   if (!confirmed) return;
 
   try {
-    const res = await ordersApiFetch(`/orders/${orderId}`, {
+    const res  = await ordersApiFetch(`/orders/${orderId}`, {
       method: "PUT",
-      body: JSON.stringify({ status: "cancelled" })
+      body:   JSON.stringify({ status: "cancelled" })
     });
 
     const data = await res.json().catch(() => ({}));
@@ -130,20 +93,18 @@ async function cancelOrder(orderId) {
 // ORDER STATUS LABELS
 // =====================
 function getStatusLabel(order) {
-  switch (order.status) {
-    case "pending":
-      return `<span class="paid-label">Pending</span>`;
-    case "confirmed":
-      return `<span class="paid-label">Confirmed</span>`;
-    case "shipped":
-      return `<span class="paid-label">Shipped</span>`;
-    case "delivered":
-      return `<span class="paid-label">Delivered</span>`;
-    case "cancelled":
-      return `<span class="paid-label">Cancelled</span>`;
-    default:
-      return `<span class="paid-label">${order.status}</span>`;
-  }
+  const labels = {
+    pending:   "Pending",
+    confirmed: "Confirmed",
+    shipped:   "Shipped",
+    delivered: "Delivered",
+    cancelled: "Cancelled"
+  };
+
+  const text = labels[order.status] || order.status;
+
+  // Use status-specific class so CSS can colour each state differently.
+  return `<span class="status-label status-${order.status}">${text}</span>`;
 }
 
 // =====================
@@ -164,7 +125,8 @@ function renderOrders(orders) {
           <li>
             ${item.name} × ${item.quantity}
             <span class="item-total">$${(
-              Number(item.price || 0) * Number(item.quantity || 0)
+              Number(item.price    || 0) *
+              Number(item.quantity || 0)
             ).toFixed(2)}</span>
           </li>
         `

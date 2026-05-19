@@ -3,12 +3,11 @@ let cart        = JSON.parse(localStorage.getItem("cart")) || [];
 let currentPage = 1;
 let totalPages  = 1;
 
-// resolveImageUrl and getCsrfToken are defined in config.js and available
-// globally — no local copies needed here.
+// getCsrfToken, forceLogout, and resolveImageUrl are defined in config.js
+// and available globally — no local copies needed here.
 
 // =====================
 // HTML ESCAPE
-// Sanitizes server-supplied strings before injection into innerHTML.
 // =====================
 function escapeHtml(str) {
   return String(str == null ? "" : str)
@@ -17,27 +16,6 @@ function escapeHtml(str) {
     .replace(/>/g,  "&gt;")
     .replace(/"/g,  "&quot;")
     .replace(/'/g,  "&#39;");
-}
-
-// =====================
-// FORCE LOGOUT
-// =====================
-async function forceLogout() {
-  try {
-    const csrfToken = await getCsrfToken();
-
-    await fetch(`${API_BASE}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
-      }
-    });
-  } catch (e) {
-    console.error("Logout request failed:", e);
-  } finally {
-    window.location.href = "login.html";
-  }
 }
 
 // =====================
@@ -68,18 +46,18 @@ async function shopApiFetch(path, options = {}) {
 
 // =====================
 // PROTECT PAGE
+// Uses /auth/me — a permanent, production-safe endpoint — instead of
+// /test/user which is only mounted in development (fix #4).
 // =====================
 (async function protectPage() {
   try {
-    const res = await fetch(`${API_BASE}/test/user`, {
+    const res = await fetch(`${API_BASE}/auth/me`, {
       credentials: "include"
     });
 
     if (!res.ok) {
       throw new Error("Session invalid");
     }
-
-    console.log("User session verified");
   } catch (err) {
     console.error("Session verification failed:", err);
     alert("Your session has expired. Please login again.");
@@ -133,8 +111,8 @@ async function loadProducts(page = 1) {
     const query = buildFilterQuery(page, 9);
     const data  = await apiFetch(`/product?${query}`);
 
-    products    = data.products  || [];
-    currentPage = data.page      || 1;
+    products    = data.products   || [];
+    currentPage = data.page       || 1;
     totalPages  = data.totalPages || 1;
 
     updateTitle(data.totalProducts || 0);
@@ -159,9 +137,6 @@ function updateTitle(total) {
 // =====================
 // RENDER PRODUCTS
 // =====================
-
-// Cache the card template after the first fetch so we don't make a
-// network request on every filter change or page turn.
 let cachedCardTemplate = null;
 
 async function renderProducts() {
@@ -172,7 +147,7 @@ async function renderProducts() {
 
   if (!cachedCardTemplate) {
     try {
-      const res        = await fetch("product-card.html");
+      const res          = await fetch("product-card.html");
       cachedCardTemplate = await res.text();
     } catch (err) {
       console.error("Failed to load product template:", err);
@@ -200,7 +175,6 @@ async function renderProducts() {
 
     const imageUrl = resolveImageUrl(firstImage);
 
-    // Escape all server-supplied text before substituting into HTML.
     const cardHTML = cachedCardTemplate
       .replace(/{{_id}}/g,      escapeHtml(product._id))
       .replace(/{{image}}/g,    imageUrl)
