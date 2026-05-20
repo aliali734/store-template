@@ -3,7 +3,16 @@ const router      = express.Router();
 const path        = require("path");
 const fs          = require("fs");
 const uploadModel = require("../middlewares/upload.model.middleware");
-const protect     = require("../middlewares/auth.middleware");
+
+// ── IMPORTANT ──────────────────────────────────────────────────────────────
+// Replace the two lines below with your actual auth middleware require path
+// and exported function names once you share your auth middleware file.
+// Examples:
+//   const { protect }      = require("../middlewares/auth.middleware");
+//   const { requireAdmin } = require("../middlewares/admin.middleware");
+// ──────────────────────────────────────────────────────────────────────────
+const { protect }      = require("../middlewares/auth.middleware");
+const { requireAdmin } = require("../middlewares/admin.middleware");
 
 // ── Paths ──────────────────────────────────────────────────────────────────
 const MODEL_DIR  = path.join(__dirname, "../public/models");
@@ -15,22 +24,8 @@ if (!fs.existsSync(MODEL_DIR)) {
   fs.mkdirSync(MODEL_DIR, { recursive: true });
 }
 
-// ── Admin guard middleware ─────────────────────────────────────────────────
-// Runs after protect() has verified the JWT and attached req.user.
-// Rejects anyone whose role is not "admin" with a clean JSON 403.
-function requireAdmin(req, res, next) {
-  if (req.user && req.user.role === "admin") {
-    return next();
-  }
-  return res.status(403).json({
-    success: false,
-    message: "Access denied. Admins only."
-  });
-}
-
 // ── GET /api/model ─────────────────────────────────────────────────────────
-// Public — the homepage calls this to check if a model exists.
-// No auth required so the 3D hero loads for all visitors.
+// Public — the homepage calls this to check if a model exists
 router.get("/", (req, res) => {
   if (!fs.existsSync(MODEL_PATH)) {
     return res.status(404).json({
@@ -46,14 +41,14 @@ router.get("/", (req, res) => {
 });
 
 // ── PUT /api/model ─────────────────────────────────────────────────────────
-// Admin only — upload or replace the hero GLB file.
+// Admin only — upload or replace the hero GLB file
 router.put(
   "/",
-  protect(),
+  protect,
   requireAdmin,
   (req, res, next) => {
-    // Run multer manually so we can catch its errors (wrong file type /
-    // file too large) and return them as clean JSON instead of crashing.
+    // Run multer manually so we can catch its errors (wrong type / too large)
+    // and return them as clean JSON instead of crashing the request
     uploadModel.single("model")(req, res, (err) => {
       if (err) {
         return res.status(400).json({
@@ -91,34 +86,29 @@ router.put(
 );
 
 // ── DELETE /api/model ──────────────────────────────────────────────────────
-// Admin only — remove the current hero model.
-router.delete(
-  "/",
-  protect(),
-  requireAdmin,
-  (req, res) => {
-    try {
-      if (!fs.existsSync(MODEL_PATH)) {
-        return res.status(404).json({
-          success: false,
-          message: "No model file found to delete."
-        });
-      }
-
-      fs.unlinkSync(MODEL_PATH);
-
-      res.json({
-        success: true,
-        message: "Model removed successfully."
-      });
-    } catch (err) {
-      console.error("Model delete error:", err);
-      res.status(500).json({
+// Admin only — remove the current hero model
+router.delete("/", protect, requireAdmin, (req, res) => {
+  try {
+    if (!fs.existsSync(MODEL_PATH)) {
+      return res.status(404).json({
         success: false,
-        message: "Failed to delete model file."
+        message: "No model file found to delete."
       });
     }
+
+    fs.unlinkSync(MODEL_PATH);
+
+    res.json({
+      success: true,
+      message: "Model removed successfully."
+    });
+  } catch (err) {
+    console.error("Model delete error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete model file."
+    });
   }
-);
+});
 
 module.exports = router;
