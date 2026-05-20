@@ -1,39 +1,33 @@
 const multer = require("multer");
-const path = require("path");
+const path   = require("path");
 
 // =====================
 // MEMORY STORAGE
 // =====================
 const storage = multer.memoryStorage();
-
 // =====================
 // FILE FILTER
 // =====================
+
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|webp/;
+  const ext      = path.extname(file.originalname).toLowerCase();
+  const allowed  = [".glb", ".gltf"];
 
-  const ext = allowedTypes.test(
-    path.extname(file.originalname).toLowerCase()
-  );
-
-  const mime = allowedTypes.test(file.mimetype);
-
-  if (ext && mime) {
+  if (allowed.includes(ext)) {
     return cb(null, true);
   }
 
-  return cb(new Error("Only image files are allowed (jpeg, jpg, png, webp)."));
+  cb(new Error("Only .glb and .gltf files are allowed."));
 };
-
 // =====================
 // MULTER CONFIG
 // =====================
-const upload = multer({
+const uploadRaw = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 2 * 1024 * 1024
+    fileSize: 50 * 1024 * 1024 // 50 MB — 3D models can be large
   }
 });
 
-module.exports = upload;
+module.exports = uploadRaw;
