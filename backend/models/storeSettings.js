@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 
 const socialLinksSchema = new mongoose.Schema(
   {
-    facebook: { type: String, default: "", trim: true },
+    facebook:  { type: String, default: "", trim: true },
     instagram: { type: String, default: "", trim: true },
-    tiktok: { type: String, default: "", trim: true },
-    twitter: { type: String, default: "", trim: true },
-    whatsapp: { type: String, default: "", trim: true }
+    tiktok:    { type: String, default: "", trim: true },
+    twitter:   { type: String, default: "", trim: true },
+    whatsapp:  { type: String, default: "", trim: true }
   },
   { _id: false }
 );
@@ -26,7 +26,7 @@ const homepageSchema = new mongoose.Schema(
     },
     supportHeadline: {
       type: String,
-      default: "We’re Here to Help",
+      default: "We're Here to Help",
       trim: true
     },
     supportText: {
@@ -35,65 +35,21 @@ const homepageSchema = new mongoose.Schema(
         "If you have questions about products, orders, or your shopping experience, feel free to contact our support team.",
       trim: true
     },
-    supportEmail: {
-      type: String,
-      default: "",
-      trim: true,
-      lowercase: true
-    },
-    supportInstagram: {
-      type: String,
-      default: "",
-      trim: true
-    },
-    supportTwitter: {
-      type: String,
-      default: "",
-      trim: true
-    }
+    supportEmail:    { type: String, default: "", trim: true, lowercase: true },
+    supportInstagram:{ type: String, default: "", trim: true },
+    supportTwitter:  { type: String, default: "", trim: true }
   },
   { _id: false }
 );
 
 const storeSettingsSchema = new mongoose.Schema(
   {
-    storeName: {
-      type: String,
-      default: "Clothing Store",
-      trim: true
-    },
-
-    supportEmail: {
-      type: String,
-      default: "",
-      trim: true,
-      lowercase: true
-    },
-
-    phone: {
-      type: String,
-      default: "",
-      trim: true
-    },
-
-    address: {
-      type: String,
-      default: "",
-      trim: true
-    },
-
-    currency: {
-      type: String,
-      default: "USD",
-      trim: true,
-      uppercase: true
-    },
-
-    footerText: {
-      type: String,
-      default: "",
-      trim: true
-    },
+    storeName:    { type: String, default: "Clothing Store", trim: true },
+    supportEmail: { type: String, default: "", trim: true, lowercase: true },
+    phone:        { type: String, default: "", trim: true },
+    address:      { type: String, default: "", trim: true },
+    currency:     { type: String, default: "USD", trim: true, uppercase: true },
+    footerText:   { type: String, default: "", trim: true },
 
     socialLinks: {
       type: socialLinksSchema,
@@ -103,6 +59,14 @@ const storeSettingsSchema = new mongoose.Schema(
     homepage: {
       type: homepageSchema,
       default: () => ({})
+    },
+
+    // Cloudinary URL for the 3D GLB model shown in the homepage hero.
+    // Stored here so it survives server restarts (Render ephemeral fs).
+    heroModelUrl: {
+      type: String,
+      default: "",
+      trim: true
     }
   },
   { timestamps: true }
