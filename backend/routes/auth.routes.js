@@ -1,124 +1,45 @@
-const express     = require("express");
-const router      = express.Router();
-const path        = require("path");
-const fs          = require("fs");
-const uploadModel = require("../middlewares/upload.model.middleware");
-const protect     = require("../middlewares/auth.middleware");
+const express = require("express");
+const router  = express.Router();
 
-// ── Paths ──────────────────────────────────────────────────────────────────
-const MODEL_DIR  = path.join(__dirname, "../public/models");
-const MODEL_PATH = path.join(MODEL_DIR, "hero.glb");
-const MODEL_URL  = "/models/hero.glb";
+const {
+  register,
+  login,
+  logout,
+  forgotPassword,
+  resetPassword
+} = require("../controllers/auth.controller");
 
-// Safety net — ensure folder exists when route file is first loaded
-if (!fs.existsSync(MODEL_DIR)) {
-  fs.mkdirSync(MODEL_DIR, { recursive: true });
-}
+const {
+  registerLimiter,
+  loginLimiter,
+  forgotLimiter,
+  resetLimiter
+} = require("../middlewares/rateLimit.middleware");
 
-// ── Admin guard middleware ─────────────────────────────────────────────────
-// Runs after protect() has verified the JWT and attached req.user.
-// Rejects anyone whose role is not "admin" with a clean JSON 403.
-function requireAdmin(req, res, next) {
-  if (req.user && req.user.role === "admin") {
-    return next();
-  }
-  return res.status(403).json({
-    success: false,
-    message: "Access denied. Admins only."
-  });
-}
+const { verifyCsrf } = require("../middlewares/csrf.middleware");
+const protect         = require("../middlewares/auth.middleware");
 
-// ── GET /api/model ─────────────────────────────────────────────────────────
-// Public — the homepage calls this to check if a model exists.
-// No auth required so the 3D hero loads for all visitors.
-router.get("/", (req, res) => {
-  if (!fs.existsSync(MODEL_PATH)) {
-    return res.status(404).json({
-      success: false,
-      message: "No model uploaded yet."
-    });
-  }
-
-  res.json({
-    success:  true,
-    modelUrl: MODEL_URL
+// ============================
+// SESSION CHECK
+// Lightweight endpoint used by frontend pages to verify that the JWT
+// cookie is valid and read the user's role. Always mounted — not gated
+// behind NODE_ENV — so it works in production unlike /api/test/user.
+// ============================
+router.get("/me", protect(), (req, res) => {
+  return res.json({
+    success: true,
+    userId:  req.user.id,
+    role:    req.user.role
   });
 });
 
-// ── PUT /api/model ─────────────────────────────────────────────────────────
-// Admin only — upload or replace the hero GLB file.
-router.put(
-  "/",
-  protect(),
-  requireAdmin,
-  (req, res, next) => {
-    // Run multer manually so we can catch its errors (wrong file type /
-    // file too large) and return them as clean JSON instead of crashing.
-    uploadModel.single("model")(req, res, (err) => {
-      if (err) {
-        return res.status(400).json({
-          success: false,
-          message: err.message || "File upload error."
-        });
-      }
-      next();
-    });
-  },
-  (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({
-          success: false,
-          message: "No file received. Please select a .glb or .gltf file."
-        });
-      }
-
-      // Write the in-memory buffer to disk, replacing any existing model
-      fs.writeFileSync(MODEL_PATH, req.file.buffer);
-
-      res.json({
-        success:  true,
-        modelUrl: MODEL_URL
-      });
-    } catch (err) {
-      console.error("Model save error:", err);
-      res.status(500).json({
-        success: false,
-        message: "Failed to save model file."
-      });
-    }
-  }
-);
-
-// ── DELETE /api/model ──────────────────────────────────────────────────────
-// Admin only — remove the current hero model.
-router.delete(
-  "/",
-  protect(),
-  requireAdmin,
-  (req, res) => {
-    try {
-      if (!fs.existsSync(MODEL_PATH)) {
-        return res.status(404).json({
-          success: false,
-          message: "No model file found to delete."
-        });
-      }
-
-      fs.unlinkSync(MODEL_PATH);
-
-      res.json({
-        success: true,
-        message: "Model removed successfully."
-      });
-    } catch (err) {
-      console.error("Model delete error:", err);
-      res.status(500).json({
-        success: false,
-        message: "Failed to delete model file."
-      });
-    }
-  }
-);
+// ============================
+// AUTH ROUTES
+// ============================
+router.post("/register",        registerLimiter, verifyCsrf, register);
+router.post("/login",           loginLimiter,    verifyCsrf, login);
+router.post("/logout",                           verifyCsrf, logout);
+router.post("/forgot-password", forgotLimiter,   verifyCsrf, forgotPassword);
+router.post("/reset-password",  resetLimiter,    verifyCsrf, resetPassword);
 
 module.exports = router;
