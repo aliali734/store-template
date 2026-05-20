@@ -14,38 +14,17 @@
     <meta name="theme-color" content="#111216" />
 
     <!-- Open Graph -->
-    <meta
-      property="og:title"
-      content="Clothing Store — Fashion for Men, Women & Kids"
-    />
-    <meta
-      property="og:description"
-      content="Discover shoes, clothing, accessories, and featured collections in our modern online store."
-    />
-    <meta
-      property="og:image"
-      content="https://aliali734.github.io/Main-file/1.jpg"
-    />
-    <meta
-      property="og:url"
-      content="https://aliali734.github.io/store-template/"
-    />
+    <meta property="og:title" content="Clothing Store — Fashion for Men, Women & Kids" />
+    <meta property="og:description" content="Discover shoes, clothing, accessories, and featured collections in our modern online store." />
+    <meta property="og:image" content="https://aliali734.github.io/Main-file/1.jpg" />
+    <meta property="og:url" content="https://aliali734.github.io/store-template/" />
     <meta property="og:type" content="website" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="Clothing Store — Fashion for Men, Women & Kids"
-    />
-    <meta
-      name="twitter:description"
-      content="Discover shoes, clothing, accessories, and featured collections in our modern online store."
-    />
-    <meta
-      name="twitter:image"
-      content="https://aliali734.github.io/Main-file/1.jpg"
-    />
+    <meta name="twitter:title" content="Clothing Store — Fashion for Men, Women & Kids" />
+    <meta name="twitter:description" content="Discover shoes, clothing, accessories, and featured collections in our modern online store." />
+    <meta name="twitter:image" content="https://aliali734.github.io/Main-file/1.jpg" />
 
     <link rel="canonical" href="https://yourdomain.com/" />
 
@@ -59,16 +38,20 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
 
     <!-- Font Awesome -->
-    <script
-      src="https://kit.fontawesome.com/d55f670ce3.js"
-      crossorigin="anonymous"
-    ></script>
+    <script src="https://kit.fontawesome.com/d55f670ce3.js" crossorigin="anonymous"></script>
+
+    <!-- Three.js import map (required for the 3D hero) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
 
     <!-- Global CSS variables -->
     <style>
@@ -111,481 +94,245 @@
 
     <a class="skip-link" href="#main-content">Skip to content</a>
 
-    <section class="hero">
+    <main id="main-content" tabindex="-1">
+
+      <!-- ============================================================
+           HERO — 3D T-Shirt
+      ============================================================ -->
+      <section id="home" class="hero" aria-labelledby="hero-title">
+
+        <!-- Left: copy -->
         <div class="hero-content">
-            <div class="hero-badge">
-                <span class="badge-dot"></span>
-                New Collection Available
+          <div class="hero-badge">
+            <span class="badge-dot"></span>
+            New Collection Available
+          </div>
+
+          <h1 id="hero-title" class="hero-title">
+            Discover Your<br />
+            <span class="highlight">Next Favorite</span><br />
+            Style
+          </h1>
+
+          <p id="hero-subtitle" class="hero-description">
+            Shop fashion for men, women, and kids in one place. Explore modern
+            clothing, stylish shoes, and everyday accessories designed for
+            comfort, confidence, and style.
+          </p>
+
+          <div class="hero-actions">
+            <a href="shop.html" class="btn-primary">Shop Now</a>
+            <a href="#projects" class="btn-secondary">View Collections</a>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat">
+              <div class="stat-number">50K+</div>
+              <div class="stat-label">Designs</div>
             </div>
-            <h1 class="hero-title">
-                Wear Your <span class="highlight">Unique</span><br>
-                Style in 3D
-            </h1>
-            <p class="hero-description">
-                Design and customize your perfect t-shirt with our interactive
-                3D preview. See every angle, every detail — before you buy.
-            </p>
-            <div class="hero-actions">
-                <a href="#" class="btn-primary">Start Designing</a>
-                <a href="#" class="btn-secondary">View Collection</a>
+            <div class="stat">
+              <div class="stat-number">4.9★</div>
+              <div class="stat-label">Rating</div>
             </div>
-            <div class="hero-stats">
-                <div class="stat">
-                    <div class="stat-number">50K+</div>
-                    <div class="stat-label">Designs</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number">4.9★</div>
-                    <div class="stat-label">Rating</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number">120+</div>
-                    <div class="stat-label">Countries</div>
-                </div>
+            <div class="stat">
+              <div class="stat-number">120+</div>
+              <div class="stat-label">Countries</div>
             </div>
+          </div>
         </div>
 
+        <!-- Right: Three.js canvas -->
         <div class="hero-3d">
-            <div id="canvas-container">
-                <canvas id="three-canvas"></canvas>
+          <div id="canvas-container">
+            <canvas id="three-canvas"></canvas>
 
-                <!-- Loading Overlay -->
-                <div class="loading-overlay" id="loading-overlay">
-                    <div class="loading-spinner"></div>
-                    <p class="loading-text">Loading 3D Model...</p>
-                </div>
-
-                <!-- File Upload Fallback (shown when file:// protocol detected) -->
-                <div class="upload-fallback" id="upload-fallback">
-                    <label class="upload-label" for="glb-upload">
-                        <span class="upload-icon">👕</span>
-                        <span class="upload-text">
-                            Click to select your<br>
-                            <strong style="color:#fff">t-shirt.glb</strong> file
-                        </span>
-                        <span class="upload-btn">Browse File</span>
-                    </label>
-                    <input type="file" id="glb-upload" accept=".glb,.gltf">
-                    <p style="color:#555; font-size:0.8rem; text-align:center;">
-                        ⚠️ Serving via file:// — select your GLB file manually<br>
-                        Or use a local server for automatic loading
-                    </p>
-                </div>
+            <!-- Loading overlay -->
+            <div class="loading-overlay" id="loading-overlay">
+              <div class="loading-spinner"></div>
+              <p class="loading-text">Loading 3D Model...</p>
             </div>
 
-            <div class="color-swatches" id="color-swatches">
-                <div class="swatch active" style="background:#ffffff" data-color="#ffffff"></div>
-                <div class="swatch" style="background:#1a1a2e" data-color="#1a1a2e"></div>
-                <div class="swatch" style="background:#7850ff" data-color="#7850ff"></div>
-                <div class="swatch" style="background:#ff6496" data-color="#ff6496"></div>
-                <div class="swatch" style="background:#00c896" data-color="#00c896"></div>
+            <!-- File-upload fallback (file:// protocol) -->
+            <div class="upload-fallback" id="upload-fallback">
+              <label class="upload-label" for="glb-upload">
+                <span class="upload-icon">👕</span>
+                <span class="upload-text">
+                  Click to select your<br />
+                  <strong style="color:#fff">t-shirt.glb</strong> file
+                </span>
+                <span class="upload-btn">Browse File</span>
+              </label>
+              <input type="file" id="glb-upload" accept=".glb,.gltf" />
+              <p style="color:#555; font-size:0.8rem; text-align:center;">
+                ⚠️ Serving via file:// — select your GLB file manually<br />
+                Or use a local server for automatic loading
+              </p>
             </div>
+          </div>
+
+          <!-- Colour swatches -->
+          <div class="color-swatches" id="color-swatches">
+            <div class="swatch active" style="background:#ffffff" data-color="#ffffff"></div>
+            <div class="swatch" style="background:#1a1a2e" data-color="#1a1a2e"></div>
+            <div class="swatch" style="background:#7850ff" data-color="#7850ff"></div>
+            <div class="swatch" style="background:#ff6496" data-color="#ff6496"></div>
+            <div class="swatch" style="background:#00c896" data-color="#00c896"></div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
-
-            <!-- Why Us -->
+      <!-- ============================================================
+           WHY US
+      ============================================================ -->
       <section id="about" class="about" aria-labelledby="about-title">
         <div class="container">
           <div class="desc">
             <div class="orbit1" id="orbit1">
-              <div
-                class="circle"
-                id="circle1"
-                role="region"
-                aria-labelledby="circle1-label"
-              >
+              <div class="circle" id="circle1" role="region" aria-labelledby="circle1-label">
                 <div class="content1">
                   <h3 id="circle1-label">Quality Products</h3>
-                  <p>
-                    We carefully select products that combine style, comfort,
-                    and reliability. From everyday essentials to standout pieces,
-                    our goal is to offer items customers can trust and enjoy.
-                  </p>
+                  <p>We carefully select products that combine style, comfort, and reliability. From everyday essentials to standout pieces, our goal is to offer items customers can trust and enjoy.</p>
                 </div>
               </div>
-
-              <div
-                class="circle"
-                id="circle2"
-                role="region"
-                aria-labelledby="circle2-label"
-              >
+              <div class="circle" id="circle2" role="region" aria-labelledby="circle2-label">
                 <div class="content2">
                   <h3 id="circle2-label">Modern Style</h3>
-                  <p>
-                    Our collections are chosen with today’s trends and timeless
-                    fashion in mind. Whether you want a clean casual look or
-                    something bold, we make it easy to shop your style.
-                  </p>
+                  <p>Our collections are chosen with today's trends and timeless fashion in mind. Whether you want a clean casual look or something bold, we make it easy to shop your style.</p>
                 </div>
               </div>
-
-              <div
-                class="circle"
-                id="circle3"
-                role="region"
-                aria-labelledby="circle3-label"
-              >
+              <div class="circle" id="circle3" role="region" aria-labelledby="circle3-label">
                 <div class="content3">
                   <h3 id="circle3-label">Easy Shopping</h3>
-                  <p>
-                    We focus on making online shopping simple and smooth. Browse
-                    categories, explore product details, and place orders easily
-                    with a clean and user-friendly store experience.
-                  </p>
+                  <p>We focus on making online shopping simple and smooth. Browse categories, explore product details, and place orders easily with a clean and user-friendly store experience.</p>
                 </div>
               </div>
-
-              <div
-                class="circle"
-                id="circle4"
-                role="region"
-                aria-labelledby="circle4-label"
-              >
+              <div class="circle" id="circle4" role="region" aria-labelledby="circle4-label">
                 <div class="content4">
                   <h3 id="circle4-label">Fast Ordering</h3>
-                  <p>
-                    Our store is built to help customers order quickly and
-                    confidently. Clear product information and a simple cart and
-                    checkout flow make the process smooth from start to finish.
-                  </p>
+                  <p>Our store is built to help customers order quickly and confidently. Clear product information and a simple cart and checkout flow make the process smooth from start to finish.</p>
                 </div>
               </div>
-
-              <div
-                class="circle"
-                id="circle5"
-                role="region"
-                aria-labelledby="circle5-label"
-              >
+              <div class="circle" id="circle5" role="region" aria-labelledby="circle5-label">
                 <div class="content5">
                   <h3 id="circle5-label">Quick Delivery</h3>
-                  <p>
-                    We value your time. That’s why we aim to process orders
-                    efficiently and keep the path from checkout to delivery as
-                    fast and reliable as possible.
-                  </p>
+                  <p>We value your time. That's why we aim to process orders efficiently and keep the path from checkout to delivery as fast and reliable as possible.</p>
                 </div>
               </div>
-
-              <div
-                class="circle"
-                id="circle6"
-                role="region"
-                aria-labelledby="circle6-label"
-              >
+              <div class="circle" id="circle6" role="region" aria-labelledby="circle6-label">
                 <div class="content6">
                   <h3 id="circle6-label">Customer Support</h3>
-                  <p>
-                    Good service continues after checkout. If you need help with
-                    an order, product question, or store information, our support
-                    experience is designed to be responsive and helpful.
-                  </p>
+                  <p>Good service continues after checkout. If you need help with an order, product question, or store information, our support experience is designed to be responsive and helpful.</p>
                 </div>
               </div>
-
               <div class="circleh">
-                <h2 class="po">
-                  Why Shop With Us
-                </h2>
+                <h2 class="po">Why Shop With Us</h2>
               </div>
             </div>
 
             <div class="orbit2" id="orbit2" aria-hidden="false">
-              <button
-                class="circle"
-                id="circle11"
-                type="button"
-                aria-controls="circle1"
-              >
-                <div class="content11">
-                  <i class="fa-solid fa-shirt" aria-hidden="true"></i>
-                  <p>Quality</p>
-                </div>
+              <button class="circle" id="circle11" type="button" aria-controls="circle1">
+                <div class="content11"><i class="fa-solid fa-shirt" aria-hidden="true"></i><p>Quality</p></div>
               </button>
-
-              <button
-                class="circle"
-                id="circle22"
-                type="button"
-                aria-controls="circle2"
-              >
-                <div class="content22">
-                  <i class="fa-solid fa-star" aria-hidden="true"></i>
-                  <p>Style</p>
-                </div>
+              <button class="circle" id="circle22" type="button" aria-controls="circle2">
+                <div class="content22"><i class="fa-solid fa-star" aria-hidden="true"></i><p>Style</p></div>
               </button>
-
-              <button
-                class="circle"
-                id="circle33"
-                type="button"
-                aria-controls="circle3"
-              >
-                <div class="content33">
-                  <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
-                  <p>Shopping</p>
-                </div>
+              <button class="circle" id="circle33" type="button" aria-controls="circle3">
+                <div class="content33"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i><p>Shopping</p></div>
               </button>
-
-              <button
-                class="circle"
-                id="circle44"
-                type="button"
-                aria-controls="circle4"
-              >
-                <div class="content44">
-                  <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
-                  <p>Ordering</p>
-                </div>
+              <button class="circle" id="circle44" type="button" aria-controls="circle4">
+                <div class="content44"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i><p>Ordering</p></div>
               </button>
-
-              <button
-                class="circle"
-                id="circle55"
-                type="button"
-                aria-controls="circle5"
-              >
-                <div class="content55">
-                  <i class="fa-solid fa-truck-fast" aria-hidden="true"></i>
-                  <p>Delivery</p>
-                </div>
+              <button class="circle" id="circle55" type="button" aria-controls="circle5">
+                <div class="content55"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i><p>Delivery</p></div>
               </button>
-
-              <button
-                class="circle"
-                id="circle66"
-                type="button"
-                aria-controls="circle6"
-              >
-                <div class="content66">
-                  <i class="fa-solid fa-headset" aria-hidden="true"></i>
-                  <p>Support</p>
-                </div>
+              <button class="circle" id="circle66" type="button" aria-controls="circle6">
+                <div class="content66"><i class="fa-solid fa-headset" aria-hidden="true"></i><p>Support</p></div>
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Collections -->
-      <section
-        id="projects"
-        class="projects"
-        aria-labelledby="projects-title"
-      >
+      <!-- ============================================================
+           COLLECTIONS
+      ============================================================ -->
+      <section id="projects" class="projects" aria-labelledby="projects-title">
         <div class="container">
           <div class="desc">
             <div class="orbit3" id="orbit3">
-              <div class="circle" id="circle7">
-                <div class="content7">
-                  <h3>Men</h3>
-                  <p>
-                    Explore clothing, shoes, and accessories designed for
-                    everyday comfort and modern style.
-                  </p>
-                </div>
-              </div>
-
-              <div class="circle" id="circle8">
-                <div class="content8">
-                  <h3>Women</h3>
-                  <p>
-                    Discover stylish pieces for every season, from casual looks
-                    to standout wardrobe essentials.
-                  </p>
-                </div>
-              </div>
-
-              <div class="circle" id="circle9">
-                <div class="content9">
-                  <h3>Kids</h3>
-                  <p>
-                    Shop practical and comfortable fashion for kids, including
-                    shoes, clothing, and accessories.
-                  </p>
-                </div>
-              </div>
-
-              <div class="circle" id="circle10">
-                <div class="content10">
-                  <h3>Shoes</h3>
-                  <p>
-                    Browse sneakers, boots, sandals, and more to complete every
-                    outfit with the right pair.
-                  </p>
-                </div>
-              </div>
-
-              <div class="circle" id="circle12">
-                <div class="content12">
-                  <h3>Clothing</h3>
-                  <p>
-                    Find everyday basics, seasonal favorites, and stylish pieces
-                    for all audiences.
-                  </p>
-                </div>
-              </div>
-
-              <div class="circle" id="circle13">
-                <div class="content13">
-                  <h3>Accessories</h3>
-                  <p>
-                    Complete your look with bags, hats, watches, socks, and
-                    other essential accessories.
-                  </p>
-                </div>
-              </div>
-
-              <div class="circleh">
-                <h2 class="po2">Featured Collections</h2>
-              </div>
+              <div class="circle" id="circle7"><div class="content7"><h3>Men</h3><p>Explore clothing, shoes, and accessories designed for everyday comfort and modern style.</p></div></div>
+              <div class="circle" id="circle8"><div class="content8"><h3>Women</h3><p>Discover stylish pieces for every season, from casual looks to standout wardrobe essentials.</p></div></div>
+              <div class="circle" id="circle9"><div class="content9"><h3>Kids</h3><p>Shop practical and comfortable fashion for kids, including shoes, clothing, and accessories.</p></div></div>
+              <div class="circle" id="circle10"><div class="content10"><h3>Shoes</h3><p>Browse sneakers, boots, sandals, and more to complete every outfit with the right pair.</p></div></div>
+              <div class="circle" id="circle12"><div class="content12"><h3>Clothing</h3><p>Find everyday basics, seasonal favorites, and stylish pieces for all audiences.</p></div></div>
+              <div class="circle" id="circle13"><div class="content13"><h3>Accessories</h3><p>Complete your look with bags, hats, watches, socks, and other essential accessories.</p></div></div>
+              <div class="circleh"><h2 class="po2">Featured Collections</h2></div>
             </div>
 
             <div class="orbit4" id="orbit4" aria-hidden="false">
-              <div class="circle" id="circle77">
-                <a href="shop.html?audience=men">
-                  <div class="content77"><h3>Men</h3></div>
-                </a>
-              </div>
-
-              <div class="circle" id="circle88">
-                <a href="shop.html?audience=women">
-                  <div class="content88"><h3>Women</h3></div>
-                </a>
-              </div>
-
-              <div class="circle" id="circle99">
-                <a href="shop.html?audience=kids">
-                  <div class="content99"><h3>Kids</h3></div>
-                </a>
-              </div>
-
-              <div class="circle" id="circle1010">
-                <a href="shop.html?department=shoes">
-                  <div class="content1010"><h3>Shoes</h3></div>
-                </a>
-              </div>
-
-              <div class="circle" id="circle1212">
-                <a href="shop.html?department=clothing">
-                  <div class="content1212"><h3>Clothing</h3></div>
-                </a>
-              </div>
-
-              <div class="circle" id="circle1313">
-                <a href="shop.html?department=accessories">
-                  <div class="content1313"><h3>Accessories</h3></div>
-                </a>
-              </div>
+              <div class="circle" id="circle77"><a href="shop.html?audience=men"><div class="content77"><h3>Men</h3></div></a></div>
+              <div class="circle" id="circle88"><a href="shop.html?audience=women"><div class="content88"><h3>Women</h3></div></a></div>
+              <div class="circle" id="circle99"><a href="shop.html?audience=kids"><div class="content99"><h3>Kids</h3></div></a></div>
+              <div class="circle" id="circle1010"><a href="shop.html?department=shoes"><div class="content1010"><h3>Shoes</h3></div></a></div>
+              <div class="circle" id="circle1212"><a href="shop.html?department=clothing"><div class="content1212"><h3>Clothing</h3></div></a></div>
+              <div class="circle" id="circle1313"><a href="shop.html?department=accessories"><div class="content1313"><h3>Accessories</h3></div></a></div>
             </div>
           </div>
         </div>
       </section>
-      <!-- OFFERS SECTION -->
+
+      <!-- ============================================================
+           OFFERS
+      ============================================================ -->
       <section class="offers-section" id="pricing" aria-labelledby="offers-title">
         <div class="offers-wrap">
           <div class="offers-topbar">
             <h2 id="offers-title" class="offers-title-box">offers</h2>
             <a href="shop.html?promo=true" class="offers-view-all">View All</a>
           </div>
-
-          <button class="offers-nav offers-prev" type="button" aria-label="Previous offers">
-            ◀
-          </button>
-
+          <button class="offers-nav offers-prev" type="button" aria-label="Previous offers">◀</button>
           <div class="offers-slider">
             <div id="offers-grid" class="offers-grid"></div>
           </div>
-
-          <button class="offers-nav offers-next" type="button" aria-label="Next offers">
-            ▶
-          </button>
+          <button class="offers-nav offers-next" type="button" aria-label="Next offers">▶</button>
         </div>
       </section>
-      <!-- Testimonials -->
-      <section
-        class="testimonials"
-        aria-labelledby="testimonials-title"
-      >
+
+      <!-- ============================================================
+           TESTIMONIALS
+      ============================================================ -->
+      <section class="testimonials" aria-labelledby="testimonials-title">
         <i class="fas fa-angle-left change-background-l"></i>
         <i class="fas fa-angle-right change-background-r"></i>
         <div class="wrap">
           <h2 id="testimonials-title" class="main-title">Customer Reviews</h2>
           <div class="testimonial-grid" role="list">
             <article class="card" role="listitem">
-              <div class="card-media">
-                <img
-                  class="avatar"
-                  src="https://i.pravatar.cc/120?img=32"
-                  alt="Photo of Amina"
-                />
-              </div>
+              <div class="card-media"><img class="avatar" src="https://i.pravatar.cc/120?img=32" alt="Photo of Amina" /></div>
               <div class="card-body">
-                <p class="quote">
-                  “Great shopping experience, clean design, and the products
-                  arrived exactly as expected. I’ll definitely order again.”
-                </p>
+                <p class="quote">"Great shopping experience, clean design, and the products arrived exactly as expected. I'll definitely order again."</p>
                 <div class="meta">
-                  <div class="meta-text">
-                    <div class="name">Amina S.</div>
-                    <div class="position">Verified Customer</div>
-                  </div>
+                  <div class="meta-text"><div class="name">Amina S.</div><div class="position">Verified Customer</div></div>
                   <div class="rating" aria-hidden="true">★ ★ ★ ★ ★</div>
                 </div>
               </div>
             </article>
-
             <article class="card" role="listitem">
-              <div class="card-media">
-                <img
-                  class="avatar"
-                  src="https://i.pravatar.cc/120?img=47"
-                  alt="Photo of Jonas"
-                />
-              </div>
+              <div class="card-media"><img class="avatar" src="https://i.pravatar.cc/120?img=47" alt="Photo of Jonas" /></div>
               <div class="card-body">
-                <p class="quote">
-                  “Easy to browse, easy to order, and the product quality was
-                  excellent. The whole experience felt smooth and professional.”
-                </p>
+                <p class="quote">"Easy to browse, easy to order, and the product quality was excellent. The whole experience felt smooth and professional."</p>
                 <div class="meta">
-                  <div class="meta-text">
-                    <div class="name">Jonas K.</div>
-                    <div class="position">Verified Customer</div>
-                  </div>
+                  <div class="meta-text"><div class="name">Jonas K.</div><div class="position">Verified Customer</div></div>
                   <div class="rating" aria-hidden="true">★ ★ ★ ★ ☆</div>
                 </div>
               </div>
             </article>
-
             <article class="card active" role="listitem">
-              <div class="card-media">
-                <img
-                  class="avatar"
-                  src="https://i.pravatar.cc/120?img=66"
-                  alt="Photo of Leyla"
-                />
-              </div>
+              <div class="card-media"><img class="avatar" src="https://i.pravatar.cc/120?img=66" alt="Photo of Leyla" /></div>
               <div class="card-body">
-                <p class="quote">
-                  “I loved how quickly I found what I needed. The store layout
-                  is simple, modern, and very easy to use.”
-                </p>
+                <p class="quote">"I loved how quickly I found what I needed. The store layout is simple, modern, and very easy to use."</p>
                 <div class="meta">
-                  <div class="meta-text">
-                    <div class="name">Leyla M.</div>
-                    <div class="position">Verified Customer</div>
-                  </div>
+                  <div class="meta-text"><div class="name">Leyla M.</div><div class="position">Verified Customer</div></div>
                   <div class="rating" aria-hidden="true">★ ★ ★ ★ ★</div>
                 </div>
               </div>
@@ -594,89 +341,31 @@
         </div>
       </section>
 
-      <!-- Support -->
+      <!-- ============================================================
+           SUPPORT / CONTACT
+      ============================================================ -->
       <section id="contact" class="contact" aria-labelledby="contact-title">
         <h2 id="contact-title" class="main-title">Customer Support</h2>
         <div class="container">
           <div class="contact-info">
-            <h3 id="support-headline">We’re Here to Help</h3>
-            <p id="support-text">
-              If you have questions about products, orders, or your shopping
-              experience, feel free to contact our support team.
-            </p>
+            <h3 id="support-headline">We're Here to Help</h3>
+            <p id="support-text">If you have questions about products, orders, or your shopping experience, feel free to contact our support team.</p>
             <ul>
-              <li>
-                📧 Email:
-                <a id="support-email-link" href="mailto:support@yourstore.com"
-                  >support@yourstore.com</a
-                >
-              </li>
-              <li>
-                <i class="fa-brands fa-instagram" aria-hidden="true"></i>
-                Instagram:
-                <a
-                  id="support-instagram-link"
-                  href="https://www.instagram.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >@yourstore</a
-                >
-              </li>
-              <li>
-                <i class="fa-brands fa-x-twitter" aria-hidden="true"></i>
-                X:
-                <a
-                  id="support-twitter-link"
-                  href="https://x.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >@yourstore</a
-                >
-              </li>
+              <li>📧 Email: <a id="support-email-link" href="mailto:support@yourstore.com">support@yourstore.com</a></li>
+              <li><i class="fa-brands fa-instagram" aria-hidden="true"></i> Instagram: <a id="support-instagram-link" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">@yourstore</a></li>
+              <li><i class="fa-brands fa-x-twitter" aria-hidden="true"></i> X: <a id="support-twitter-link" href="https://x.com/" target="_blank" rel="noopener noreferrer">@yourstore</a></li>
             </ul>
           </div>
-
-          <form
-            class="contact-form"
-            action="https://formspree.io/f/xblaepgv"
-            method="POST"
-            aria-labelledby="contact-form-title"
-          >
+          <form class="contact-form" action="https://formspree.io/f/xblaepgv" method="POST" aria-labelledby="contact-form-title">
             <h3 id="contact-form-title" class="sr-only">Contact form</h3>
-
             <label for="contact-name" class="sr-only">Your name</label>
-            <input
-              id="contact-name"
-              type="text"
-              name="name"
-              placeholder="Your Name"
-              required
-            />
-
+            <input id="contact-name" type="text" name="name" placeholder="Your Name" required />
             <label for="contact-email" class="sr-only">Your email</label>
-            <input
-              id="contact-email"
-              type="email"
-              name="email"
-              placeholder="Your Email"
-              required
-            />
-
+            <input id="contact-email" type="email" name="email" placeholder="Your Email" required />
             <label for="contact-message" class="sr-only">Your message</label>
-            <textarea
-              id="contact-message"
-              name="message"
-              placeholder="Your Message"
-              required
-            ></textarea>
-
+            <textarea id="contact-message" name="message" placeholder="Your Message" required></textarea>
             <button type="submit" class="btn">Send Message</button>
-
-            <input
-              type="hidden"
-              name="_subject"
-              value="New Customer Support Message"
-            />
+            <input type="hidden" name="_subject" value="New Customer Support Message" />
             <input type="hidden" name="_next" value="thanks.html" />
           </form>
         </div>
@@ -686,7 +375,6 @@
     <footer class="footer" role="contentinfo">
       <div class="container">
         <p id="footer-text">© Clothing Store. All rights reserved.</p>
-
         <ul class="footer-links">
           <li><a href="#home">Home</a></li>
           <li><a href="#about">Why Us</a></li>
@@ -694,57 +382,196 @@
           <li><a href="#pricing">Offers</a></li>
           <li><a href="#contact">Support</a></li>
         </ul>
-
         <div class="socials" aria-label="Social links">
           <a href="shop.html">Shop</a>
-          <a
-            id="social-facebook"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            style="display: none"
-            >Facebook</a
-          >
-          <a
-            id="social-twitter"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            style="display: none"
-            >X</a
-          >
-          <a
-            id="social-instagram"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            style="display: none"
-            >Instagram</a
-          >
-          <a
-            id="social-tiktok"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            style="display: none"
-            >TikTok</a
-          >
-          <a
-            id="social-whatsapp"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            style="display: none"
-            >WhatsApp</a
-          >
+          <a id="social-facebook"  href="#" target="_blank" rel="noopener noreferrer" style="display:none">Facebook</a>
+          <a id="social-twitter"   href="#" target="_blank" rel="noopener noreferrer" style="display:none">X</a>
+          <a id="social-instagram" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Instagram</a>
+          <a id="social-tiktok"    href="#" target="_blank" rel="noopener noreferrer" style="display:none">TikTok</a>
+          <a id="social-whatsapp"  href="#" target="_blank" rel="noopener noreferrer" style="display:none">WhatsApp</a>
         </div>
       </div>
     </footer>
 
+    <!-- Existing scripts -->
     <script src="config.js"></script>
     <script src="api.js"></script>
     <script src="header.js"></script>
     <script src="onboarding.js"></script>
     <script src="index.js"></script>
+
+    <!-- 3D Hero — must be type="module" and placed after the import map -->
+    <script type="module">
+      import * as THREE from 'three';
+      import { GLTFLoader }    from 'three/addons/loaders/GLTFLoader.js';
+      import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+      import { DRACOLoader }   from 'three/addons/loaders/DRACOLoader.js';
+
+      // ── Elements ────────────────────────────────────────────────────
+      const container      = document.getElementById('canvas-container');
+      const canvas         = document.getElementById('three-canvas');
+      const loadingOverlay = document.getElementById('loading-overlay');
+      const uploadFallback = document.getElementById('upload-fallback');
+      const fileInput      = document.getElementById('glb-upload');
+
+      if (!container || !canvas) return; // guard: hero may not be on this page
+
+      // ── Renderer ─────────────────────────────────────────────────────
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.outputColorSpace    = THREE.SRGBColorSpace;
+      renderer.toneMapping         = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.2;
+      renderer.shadowMap.enabled   = true;
+      renderer.shadowMap.type      = THREE.PCFSoftShadowMap;
+
+      // ── Scene & Camera ────────────────────────────────────────────────
+      const scene  = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(35, container.clientWidth / container.clientHeight, 0.1, 100);
+      camera.position.set(0, 0, 4);
+
+      // ── Lighting ──────────────────────────────────────────────────────
+      scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+      const keyLight = new THREE.DirectionalLight(0xffffff, 2);
+      keyLight.position.set(3, 5, 3);
+      keyLight.castShadow = true;
+      scene.add(keyLight);
+
+      const fillLight = new THREE.DirectionalLight(0x7850ff, 0.8);
+      fillLight.position.set(-3, 2, -2);
+      scene.add(fillLight);
+
+      const rimLight = new THREE.DirectionalLight(0xff6496, 0.5);
+      rimLight.position.set(0, -2, -3);
+      scene.add(rimLight);
+
+      // ── Controls ──────────────────────────────────────────────────────
+      const controls = new OrbitControls(camera, canvas);
+      controls.enableDamping   = true;
+      controls.dampingFactor   = 0.05;
+      controls.enableZoom      = true;
+      controls.minDistance     = 2;
+      controls.maxDistance     = 8;
+      controls.enablePan       = false;
+      controls.autoRotate      = true;
+      controls.autoRotateSpeed = 1.5;
+
+      let autoRotateTimeout;
+      controls.addEventListener('start', () => { controls.autoRotate = false; });
+      controls.addEventListener('end',   () => {
+        clearTimeout(autoRotateTimeout);
+        autoRotateTimeout = setTimeout(() => { controls.autoRotate = true; }, 3000);
+      });
+
+      // ── Loaders ───────────────────────────────────────────────────────
+      const dracoLoader = new DRACOLoader();
+      dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
+
+      const gltfLoader = new GLTFLoader();
+      gltfLoader.setDRACOLoader(dracoLoader);
+
+      // ── Model State ───────────────────────────────────────────────────
+      let model          = null;
+      let modelMaterials = [];
+
+      // ── Load Model ────────────────────────────────────────────────────
+      function loadModel(source) {
+        loadingOverlay.classList.remove('hidden');
+        uploadFallback.classList.remove('visible');
+
+        const onLoad = (gltf) => {
+          if (model) scene.remove(model);
+          modelMaterials = [];
+          model = gltf.scene;
+
+          const box    = new THREE.Box3().setFromObject(model);
+          const center = box.getCenter(new THREE.Vector3());
+          const size   = box.getSize(new THREE.Vector3());
+          const scale  = 2.5 / Math.max(size.x, size.y, size.z);
+
+          model.scale.setScalar(scale);
+          model.position.sub(center.multiplyScalar(scale));
+
+          model.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow    = true;
+              child.receiveShadow = true;
+              const mats = Array.isArray(child.material) ? child.material : [child.material];
+              mats.forEach((m) => { if (!modelMaterials.includes(m)) modelMaterials.push(m); });
+            }
+          });
+
+          scene.add(model);
+          loadingOverlay.classList.add('hidden');
+        };
+
+        const onProgress = (xhr) => {
+          if (xhr.total) {
+            document.querySelector('.loading-text').textContent =
+              `Loading... ${Math.round((xhr.loaded / xhr.total) * 100)}%`;
+          }
+        };
+
+        const onError = (err) => {
+          console.error('Model load error:', err);
+          loadingOverlay.classList.add('hidden');
+          uploadFallback.classList.add('visible');
+        };
+
+        if (typeof source === 'string') {
+          gltfLoader.load(source, onLoad, onProgress, onError);
+        } else {
+          gltfLoader.parse(source, '', onLoad, onError);
+        }
+      }
+
+      // ── Auto-load or show picker ───────────────────────────────────────
+      if (window.location.protocol === 'file:') {
+        loadingOverlay.classList.add('hidden');
+        uploadFallback.classList.add('visible');
+      } else {
+        loadModel('t-shirt.glb');
+      }
+
+      // ── File input ────────────────────────────────────────────────────
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => loadModel(ev.target.result);
+        reader.readAsArrayBuffer(file);
+      });
+
+      // ── Colour swatches ───────────────────────────────────────────────
+      document.querySelectorAll('.swatch').forEach((swatch) => {
+        swatch.addEventListener('click', () => {
+          document.querySelectorAll('.swatch').forEach((s) => s.classList.remove('active'));
+          swatch.classList.add('active');
+          const color = new THREE.Color(swatch.dataset.color);
+          modelMaterials.forEach((mat) => { if (mat.color) mat.color.set(color); });
+        });
+      });
+
+      // ── Resize ────────────────────────────────────────────────────────
+      window.addEventListener('resize', () => {
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      });
+
+      // ── Animation loop ────────────────────────────────────────────────
+      const clock = new THREE.Clock();
+      (function animate() {
+        requestAnimationFrame(animate);
+        if (model) model.position.y = Math.sin(clock.getElapsedTime() * 0.8) * 0.08;
+        controls.update();
+        renderer.render(scene, camera);
+      })();
+    </script>
+
   </body>
 </html>

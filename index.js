@@ -6,13 +6,13 @@ function applyHomepageSettings(settings) {
 
   const homepage = settings.homepage;
 
-  const heroTitleEl         = document.getElementById("hero-title");
-  const heroSubtitleEl      = document.getElementById("hero-subtitle");
-  const supportHeadlineEl   = document.getElementById("support-headline");
-  const supportTextEl       = document.getElementById("support-text");
-  const supportEmailLink    = document.getElementById("support-email-link");
+  const heroTitleEl          = document.getElementById("hero-title");
+  const heroSubtitleEl       = document.getElementById("hero-subtitle");
+  const supportHeadlineEl    = document.getElementById("support-headline");
+  const supportTextEl        = document.getElementById("support-text");
+  const supportEmailLink     = document.getElementById("support-email-link");
   const supportInstagramLink = document.getElementById("support-instagram-link");
-  const supportTwitterLink  = document.getElementById("support-twitter-link");
+  const supportTwitterLink   = document.getElementById("support-twitter-link");
 
   if (heroTitleEl && homepage.heroTitle) {
     heroTitleEl.innerHTML = homepage.heroTitle
@@ -76,7 +76,7 @@ async function loadDiscountOffers() {
   offersGrid.innerHTML = "<p>Loading offers...</p>";
 
   try {
-    const data = await apiFetch("/product?promo=true&limit=4&sort=newest");
+    const data   = await apiFetch("/product?promo=true&limit=4&sort=newest");
     const offers = data.products || [];
 
     if (!offers.length) {
@@ -87,10 +87,8 @@ async function loadDiscountOffers() {
     offersGrid.innerHTML = offers
       .map((product) => {
         const firstImage = Array.isArray(product.images) ? product.images[0] : "";
-        const imageSrc = firstImage
-          ? (/^https?:\/\//i.test(firstImage)
-              ? firstImage
-              : `${SERVER_BASE}${firstImage}`)
+        const imageSrc   = firstImage
+          ? (/^https?:\/\//i.test(firstImage) ? firstImage : `${SERVER_BASE}${firstImage}`)
           : "https://via.placeholder.com/400";
 
         const oldPrice = Number(product.compareAtPrice || 0);
@@ -101,9 +99,6 @@ async function loadDiscountOffers() {
             ? Math.round(((oldPrice - newPrice) / oldPrice) * 100)
             : 0;
 
-        // Only render the discount badge when there is an actual discount.
-        // Previously the badge was always rendered, showing "0%" for
-        // products whose compareAtPrice was not higher than their price.
         const badgeHtml = discount > 0
           ? `<div class="offer-badge"><span>${discount}%</span></div>`
           : "";
@@ -128,8 +123,7 @@ async function loadDiscountOffers() {
     initOffersSlider();
   } catch (err) {
     console.error("Failed to load discount offers:", err);
-    offersGrid.innerHTML =
-      "<p style='color:#b91c1c;'>Failed to load offers.</p>";
+    offersGrid.innerHTML = "<p style='color:#b91c1c;'>Failed to load offers.</p>";
   }
 }
 
@@ -168,43 +162,25 @@ function initOffersSlider() {
     grid.style.transform = `translateX(-${offset}px)`;
   }
 
-  prevBtn.addEventListener("click", () => {
-    currentIndex -= 1;
-    updateSlider();
-  });
-
-  nextBtn.addEventListener("click", () => {
-    currentIndex += 1;
-    updateSlider();
-  });
-
+  prevBtn.addEventListener("click", () => { currentIndex -= 1; updateSlider(); });
+  nextBtn.addEventListener("click", () => { currentIndex += 1; updateSlider(); });
   window.addEventListener("resize", updateSlider);
 
   updateSlider();
 }
 
 // =====================
-// HERO LOAD EFFECT
-// =====================
-document.addEventListener("DOMContentLoaded", () => {
-  requestAnimationFrame(() => {
-    document.querySelector(".hero")?.classList.add("loaded");
-  });
-});
-
-// =====================
 // ABOUT ORBITS - CLICK ONLY
 // =====================
 (function () {
   function init() {
-    const desc =
-      document.querySelector(".about .desc") || document.querySelector(".desc");
+    const desc   = document.querySelector(".about .desc") || document.querySelector(".desc");
     const orbit1 = document.getElementById("orbit1");
     const orbit2 = document.getElementById("orbit2");
     if (!desc || !orbit1 || !orbit2) return;
 
-    const buttons   = Array.from(orbit2.querySelectorAll("button.circle"));
-    const bigById   = {};
+    const buttons = Array.from(orbit2.querySelectorAll("button.circle"));
+    const bigById = {};
 
     Array.from(orbit1.querySelectorAll(".circle[id]")).forEach((b) => {
       bigById[b.id] = b;
@@ -287,12 +263,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.addEventListener("click", (e) => {
-      const clickedButton = buttons.find(
-        (b) => b.contains(e.target) || b === e.target
-      );
-      const clickedBig = Object.values(bigById).find(
-        (b) => b.contains(e.target) || b === e.target
-      );
+      const clickedButton = buttons.find((b) => b.contains(e.target) || b === e.target);
+      const clickedBig    = Object.values(bigById).find((b) => b.contains(e.target) || b === e.target);
       if (!clickedButton && !clickedBig) hideAll();
     });
 
@@ -302,25 +274,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let wheelTimer = null;
 
-    orbit2.addEventListener(
-      "wheel",
-      () => {
-        pauseOrbit();
-        clearTimeout(wheelTimer);
-        wheelTimer = setTimeout(resumeOrbit, 220);
-      },
-      { passive: true }
-    );
+    orbit2.addEventListener("wheel", () => {
+      pauseOrbit();
+      clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(resumeOrbit, 220);
+    }, { passive: true });
 
-    orbit1.addEventListener(
-      "wheel",
-      () => {
-        pauseOrbit();
-        clearTimeout(wheelTimer);
-        wheelTimer = setTimeout(resumeOrbit, 220);
-      },
-      { passive: true }
-    );
+    orbit1.addEventListener("wheel", () => {
+      pauseOrbit();
+      clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(resumeOrbit, 220);
+    }, { passive: true });
 
     function handleResponsive() {
       if (window.innerWidth <= 768) hideAll();
@@ -352,42 +316,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const toggle = document.getElementById("theme-toggle");
     if (!toggle) return;
 
-    const saved = localStorage.getItem(LS_KEY);
+    const saved         = localStorage.getItem(LS_KEY);
     const systemPrefDark =
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
+      window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
 
     function applyTheme(theme) {
       if (theme === "dark") document.documentElement.classList.add("dark");
-      else document.documentElement.classList.remove("dark");
+      else                  document.documentElement.classList.remove("dark");
 
       toggle.setAttribute("aria-pressed", String(theme === "dark"));
 
       const icon = toggle.querySelector(".theme-icon");
-      if (icon) {
-        icon.textContent = theme === "dark" ? "☀️" : "🌙";
-      }
+      if (icon) icon.textContent = theme === "dark" ? "☀️" : "🌙";
     }
 
     const initial =
-      saved === "dark" || (saved === null && systemPrefDark)
-        ? "dark"
-        : "light";
+      saved === "dark" || (saved === null && systemPrefDark) ? "dark" : "light";
 
     applyTheme(initial);
 
     if (window.matchMedia) {
       const mq = window.matchMedia("(prefers-color-scheme: dark)");
       mq.addEventListener?.("change", (e) => {
-        if (!localStorage.getItem(LS_KEY)) {
-          applyTheme(e.matches ? "dark" : "light");
-        }
+        if (!localStorage.getItem(LS_KEY)) applyTheme(e.matches ? "dark" : "light");
       });
     }
 
     toggle.addEventListener("click", () => {
-      const isDark    = document.documentElement.classList.contains("dark");
-      const newTheme  = isDark ? "light" : "dark";
+      const isDark   = document.documentElement.classList.contains("dark");
+      const newTheme = isDark ? "light" : "dark";
       applyTheme(newTheme);
       localStorage.setItem(LS_KEY, newTheme);
     });
@@ -405,31 +362,29 @@ document.addEventListener("DOMContentLoaded", () => {
 // PROJECT ORBITS
 // =====================
 document.addEventListener("DOMContentLoaded", () => {
-  const orbit4    = document.getElementById("orbit4");
-  const circle7   = document.getElementById("circle7");
-  const circle77  = document.getElementById("circle77");
-  const circle8   = document.getElementById("circle8");
-  const circle88  = document.getElementById("circle88");
-  const circle9   = document.getElementById("circle9");
-  const circle99  = document.getElementById("circle99");
-  const circle10  = document.getElementById("circle10");
+  const orbit4     = document.getElementById("orbit4");
+  const circle7    = document.getElementById("circle7");
+  const circle77   = document.getElementById("circle77");
+  const circle8    = document.getElementById("circle8");
+  const circle88   = document.getElementById("circle88");
+  const circle9    = document.getElementById("circle9");
+  const circle99   = document.getElementById("circle99");
+  const circle10   = document.getElementById("circle10");
   const circle1010 = document.getElementById("circle1010");
-  const circle12  = document.getElementById("circle12");
+  const circle12   = document.getElementById("circle12");
   const circle1212 = document.getElementById("circle1212");
-  const circle13  = document.getElementById("circle13");
+  const circle13   = document.getElementById("circle13");
   const circle1313 = document.getElementById("circle1313");
 
   if (
-    !orbit4       ||
-    !circle7   || !circle77   ||
-    !circle8   || !circle88   ||
-    !circle9   || !circle99   ||
-    !circle10  || !circle1010 ||
-    !circle12  || !circle1212 ||
-    !circle13  || !circle1313
-  ) {
-    return;
-  }
+    !orbit4      ||
+    !circle7  || !circle77   ||
+    !circle8  || !circle88   ||
+    !circle9  || !circle99   ||
+    !circle10 || !circle1010 ||
+    !circle12 || !circle1212 ||
+    !circle13 || !circle1313
+  ) return;
 
   circle7.style.visibility   = "hidden";
   circle8.style.visibility   = "hidden";
@@ -456,19 +411,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  circle77.addEventListener("mouseenter",  () => { circle7.style.visibility  = "visible"; });
-  circle88.addEventListener("mouseenter",  () => { circle8.style.visibility  = "visible"; });
-  circle99.addEventListener("mouseenter",  () => { circle9.style.visibility  = "visible"; });
-  circle1010.addEventListener("mouseenter",() => { circle10.style.visibility = "visible"; });
-  circle1212.addEventListener("mouseenter",() => { circle12.style.visibility = "visible"; });
-  circle1313.addEventListener("mouseenter",() => { circle13.style.visibility = "visible"; });
+  circle77.addEventListener("mouseenter",   () => { circle7.style.visibility   = "visible"; });
+  circle88.addEventListener("mouseenter",   () => { circle8.style.visibility   = "visible"; });
+  circle99.addEventListener("mouseenter",   () => { circle9.style.visibility   = "visible"; });
+  circle1010.addEventListener("mouseenter", () => { circle10.style.visibility  = "visible"; });
+  circle1212.addEventListener("mouseenter", () => { circle12.style.visibility  = "visible"; });
+  circle1313.addEventListener("mouseenter", () => { circle13.style.visibility  = "visible"; });
 
-  circle77.addEventListener("mouseleave",  () => { circle7.style.visibility  = "hidden"; });
-  circle88.addEventListener("mouseleave",  () => { circle8.style.visibility  = "hidden"; });
-  circle99.addEventListener("mouseleave",  () => { circle9.style.visibility  = "hidden"; });
-  circle1010.addEventListener("mouseleave",() => { circle10.style.visibility = "hidden"; });
-  circle1212.addEventListener("mouseleave",() => { circle12.style.visibility = "hidden"; });
-  circle1313.addEventListener("mouseleave",() => { circle13.style.visibility = "hidden"; });
+  circle77.addEventListener("mouseleave",   () => { circle7.style.visibility   = "hidden"; });
+  circle88.addEventListener("mouseleave",   () => { circle8.style.visibility   = "hidden"; });
+  circle99.addEventListener("mouseleave",   () => { circle9.style.visibility   = "hidden"; });
+  circle1010.addEventListener("mouseleave", () => { circle10.style.visibility  = "hidden"; });
+  circle1212.addEventListener("mouseleave", () => { circle12.style.visibility  = "hidden"; });
+  circle1313.addEventListener("mouseleave", () => { circle13.style.visibility  = "hidden"; });
 });
 
 // =====================
@@ -499,9 +454,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!active) return;
 
-    const wrapRect    = wrap.getBoundingClientRect();
-    const activeRect  = active.getBoundingClientRect();
-
+    const wrapRect      = wrap.getBoundingClientRect();
+    const activeRect    = active.getBoundingClientRect();
     const wrapCenterX   = wrapRect.left   + wrapRect.width  / 2;
     const activeCenterX = activeRect.left + activeRect.width / 2;
     const delta         = wrapCenterX - activeCenterX;
@@ -547,7 +501,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       card.style.transition = "none";
       card.style.transform  = `translate(${dx}px, ${dy}px)`;
-
       card.getBoundingClientRect();
 
       requestAnimationFrame(() => {
@@ -568,17 +521,8 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => centerActive(true), FLIP_DURATION - 40);
   }
 
-  function rotateRight() {
-    const last = cards.pop();
-    cards.unshift(last);
-    renderCards(true);
-  }
-
-  function rotateLeft() {
-    const first = cards.shift();
-    cards.push(first);
-    renderCards(true);
-  }
+  function rotateRight() { const last  = cards.pop();   cards.unshift(last);  renderCards(true); }
+  function rotateLeft()  { const first = cards.shift(); cards.push(first);    renderCards(true); }
 
   rightBtn.addEventListener("click", rotateRight);
   leftBtn.addEventListener("click",  rotateLeft);
@@ -640,27 +584,15 @@ document.addEventListener("DOMContentLoaded", () => {
     isAnimating         = true;
     currentSectionIndex = index;
 
-    window.scrollTo({
-      top:      sections[index].offsetTop - 70,
-      behavior: "smooth"
-    });
+    window.scrollTo({ top: sections[index].offsetTop - 70, behavior: "smooth" });
 
-    setTimeout(() => {
-      isAnimating = false;
-    }, 900);
+    setTimeout(() => { isAnimating = false; }, 900);
   }
 
   function handleWheel(event) {
     if (window.innerWidth <= 768) return;
-    if (isAnimating) {
-      event.preventDefault();
-      return;
-    }
-
-    if (touchpadLock) {
-      event.preventDefault();
-      return;
-    }
+    if (isAnimating)   { event.preventDefault(); return; }
+    if (touchpadLock)  { event.preventDefault(); return; }
 
     const sections = getSections();
     if (!sections.length) return;
@@ -683,220 +615,17 @@ document.addEventListener("DOMContentLoaded", () => {
   function initSectionScroll() {
     detectCurrentSection();
     window.addEventListener("wheel", handleWheel, { passive: false });
-
     window.addEventListener("scroll", () => {
-      if (!isAnimating) {
-        detectCurrentSection();
-      }
+      if (!isAnimating) detectCurrentSection();
     });
   }
 
   document.addEventListener("DOMContentLoaded", initSectionScroll);
 })();
 
+// =====================
+// BOOT
+// =====================
 document.addEventListener("DOMContentLoaded", () => {
   loadDiscountOffers();
 });
-// =====================
-// HERO
-// =====================
-        import * as THREE from 'three';
-        import { GLTFLoader }    from 'three/addons/loaders/GLTFLoader.js';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { DRACOLoader }   from 'three/addons/loaders/DRACOLoader.js';
-
-        // ── Elements ────────────────────────────────────────────────────────
-        const container      = document.getElementById('canvas-container');
-        const canvas         = document.getElementById('three-canvas');
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const uploadFallback = document.getElementById('upload-fallback');
-        const fileInput      = document.getElementById('glb-upload');
-
-        // ── Renderer ─────────────────────────────────────────────────────────
-        const renderer = new THREE.WebGLRenderer({
-            canvas,
-            antialias: true,
-            alpha: true,
-        });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.outputColorSpace    = THREE.SRGBColorSpace;
-        renderer.toneMapping         = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.2;
-        renderer.shadowMap.enabled   = true;
-        renderer.shadowMap.type      = THREE.PCFSoftShadowMap;
-
-        // ── Scene & Camera ───────────────────────────────────────────────────
-        const scene  = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(
-            35,
-            container.clientWidth / container.clientHeight,
-            0.1,
-            100
-        );
-        camera.position.set(0, 0, 4);
-
-        // ── Lighting ─────────────────────────────────────────────────────────
-        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-
-        const keyLight = new THREE.DirectionalLight(0xffffff, 2);
-        keyLight.position.set(3, 5, 3);
-        keyLight.castShadow = true;
-        scene.add(keyLight);
-
-        const fillLight = new THREE.DirectionalLight(0x7850ff, 0.8);
-        fillLight.position.set(-3, 2, -2);
-        scene.add(fillLight);
-
-        const rimLight = new THREE.DirectionalLight(0xff6496, 0.5);
-        rimLight.position.set(0, -2, -3);
-        scene.add(rimLight);
-
-        // ── Controls ─────────────────────────────────────────────────────────
-        const controls = new OrbitControls(camera, canvas);
-        controls.enableDamping    = true;
-        controls.dampingFactor    = 0.05;
-        controls.enableZoom       = true;
-        controls.minDistance      = 2;
-        controls.maxDistance      = 8;
-        controls.enablePan        = false;
-        controls.autoRotate       = true;
-        controls.autoRotateSpeed  = 1.5;
-
-        let autoRotateTimeout;
-        controls.addEventListener('start', () => { controls.autoRotate = false; });
-        controls.addEventListener('end',   () => {
-            clearTimeout(autoRotateTimeout);
-            autoRotateTimeout = setTimeout(() => { controls.autoRotate = true; }, 3000);
-        });
-
-        // ── Loaders ──────────────────────────────────────────────────────────
-        const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath(
-            'https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/'
-        );
-
-        const gltfLoader = new GLTFLoader();
-        gltfLoader.setDRACOLoader(dracoLoader);
-
-        // ── Model State ──────────────────────────────────────────────────────
-        let model          = null;
-        let modelMaterials = [];
-
-        // ── Load Model from URL or ArrayBuffer ───────────────────────────────
-        function loadModel(source) {
-            loadingOverlay.classList.remove('hidden');
-            uploadFallback.classList.remove('visible');
-
-            const onLoad = (gltf) => {
-                // Remove previous model
-                if (model) scene.remove(model);
-                modelMaterials = [];
-
-                model = gltf.scene;
-
-                // Auto-center and scale
-                const box    = new THREE.Box3().setFromObject(model);
-                const center = box.getCenter(new THREE.Vector3());
-                const size   = box.getSize(new THREE.Vector3());
-                const scale  = 2.5 / Math.max(size.x, size.y, size.z);
-
-                model.scale.setScalar(scale);
-                model.position.sub(center.multiplyScalar(scale));
-
-                // Gather materials
-                model.traverse((child) => {
-                    if (child.isMesh) {
-                        child.castShadow    = true;
-                        child.receiveShadow = true;
-                        const mats = Array.isArray(child.material)
-                            ? child.material : [child.material];
-                        mats.forEach((m) => {
-                            if (!modelMaterials.includes(m)) modelMaterials.push(m);
-                        });
-                    }
-                });
-
-                scene.add(model);
-                loadingOverlay.classList.add('hidden');
-            };
-
-            const onProgress = (xhr) => {
-                if (xhr.total) {
-                    const pct = Math.round((xhr.loaded / xhr.total) * 100);
-                    document.querySelector('.loading-text').textContent =
-                        `Loading... ${pct}%`;
-                }
-            };
-
-            const onError = (err) => {
-                console.error('Model load error:', err);
-                loadingOverlay.classList.add('hidden');
-
-                // Show file picker as fallback
-                uploadFallback.classList.add('visible');
-            };
-
-            if (typeof source === 'string') {
-                // Load from URL
-                gltfLoader.load(source, onLoad, onProgress, onError);
-            } else {
-                // Load from ArrayBuffer (file input)
-                gltfLoader.parse(source, '', onLoad, onError);
-            }
-        }
-
-        // ── Detect Protocol & Attempt Auto-Load ──────────────────────────────
-        const isFileProtocol = window.location.protocol === 'file:';
-
-        if (isFileProtocol) {
-            // Can't fetch files — show picker immediately
-            loadingOverlay.classList.add('hidden');
-            uploadFallback.classList.add('visible');
-        } else {
-            // Normal server — try loading automatically
-            loadModel('t-shirt.glb');
-        }
-
-        // ── File Input Handler ────────────────────────────────────────────────
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (ev) => loadModel(ev.target.result);
-            reader.readAsArrayBuffer(file);
-        });
-
-        // ── Color Swatches ────────────────────────────────────────────────────
-        document.querySelectorAll('.swatch').forEach((swatch) => {
-            swatch.addEventListener('click', () => {
-                document.querySelectorAll('.swatch')
-                    .forEach((s) => s.classList.remove('active'));
-                swatch.classList.add('active');
-
-                const color = new THREE.Color(swatch.dataset.color);
-                modelMaterials.forEach((mat) => {
-                    if (mat.color) mat.color.set(color);
-                });
-            });
-        });
-
-        // ── Resize ────────────────────────────────────────────────────────────
-        window.addEventListener('resize', () => {
-            const w = container.clientWidth;
-            const h = container.clientHeight;
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
-            renderer.setSize(w, h);
-        });
-
-        // ── Animation Loop ────────────────────────────────────────────────────
-        const clock = new THREE.Clock();
-
-        (function animate() {
-            requestAnimationFrame(animate);
-            if (model) model.position.y = Math.sin(clock.getElapsedTime() * 0.8) * 0.08;
-            controls.update();
-            renderer.render(scene, camera);
-        })();
