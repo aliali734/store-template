@@ -15,9 +15,9 @@ if (!fs.existsSync(MODEL_DIR)) {
   fs.mkdirSync(MODEL_DIR, { recursive: true });
 }
 
-// ── Admin guard middleware ─────────────────────────────────────────────────
+// ── Admin guard ────────────────────────────────────────────────────────────
+// Defined inline — no separate admin.middleware file needed.
 // Runs after protect() has verified the JWT and attached req.user.
-// Rejects anyone whose role is not "admin" with a clean JSON 403.
 function requireAdmin(req, res, next) {
   if (req.user && req.user.role === "admin") {
     return next();
@@ -29,8 +29,7 @@ function requireAdmin(req, res, next) {
 }
 
 // ── GET /api/model ─────────────────────────────────────────────────────────
-// Public — the homepage calls this to check if a model exists.
-// No auth required so the 3D hero loads for all visitors.
+// Public — no auth required so the homepage hero loads for all visitors.
 router.get("/", (req, res) => {
   if (!fs.existsSync(MODEL_PATH)) {
     return res.status(404).json({
