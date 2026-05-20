@@ -15,11 +15,13 @@
       <li><a href="#" data-section="orders">Orders</a></li>
       <li><button type="button" id="openSettingsModal">Store Settings</button></li>
       <li><button type="button" id="openHeaderModal">Header Settings</button></li>
+      <li><button type="button" id="openModelModal">3D Hero Model</button></li>
       <li><button type="button" id="logoutBtn">Logout</button></li>
     </ul>
   </aside>
 
   <main class="main">
+
     <!-- LOGIN SECTION -->
     <section id="login-section">
       <h1>Admin Login</h1>
@@ -34,7 +36,6 @@
     <!-- DASHBOARD SECTION -->
     <section id="dashboard-section" class="hidden">
       <h1>Dashboard</h1>
-
       <div class="stats-cards">
         <div class="card">
           <h3>Products</h3>
@@ -47,6 +48,10 @@
         <div class="card">
           <h3>Store Settings</h3>
           <p>Update business information without touching code</p>
+        </div>
+        <div class="card">
+          <h3>3D Hero Model</h3>
+          <p>Upload or replace the 3D model shown on the homepage hero section</p>
         </div>
       </div>
     </section>
@@ -76,12 +81,15 @@
 
     <!-- ORDERS SECTION -->
     <section id="orders-section" class="hidden"></section>
+
   </main>
 
   <!-- OVERLAY -->
   <div id="overlay" class="overlay hidden"></div>
 
-  <!-- PRODUCT MODAL -->
+  <!-- ============================================================
+       PRODUCT MODAL
+  ============================================================ -->
   <div id="productModal" class="modal hidden">
     <div class="modal-header">
       <h2 id="modalTitle">Add Product</h2>
@@ -151,7 +159,9 @@
     </form>
   </div>
 
-  <!-- STORE SETTINGS MODAL -->
+  <!-- ============================================================
+       STORE SETTINGS MODAL
+  ============================================================ -->
   <div id="settingsModal" class="modal hidden">
     <div class="modal-header">
       <h2>Store Settings</h2>
@@ -218,7 +228,9 @@
     </form>
   </div>
 
-  <!-- HEADER MODAL -->
+  <!-- ============================================================
+       HEADER SETTINGS MODAL
+  ============================================================ -->
   <div id="headerModal" class="modal hidden">
     <div class="modal-header">
       <h2>Header Settings</h2>
@@ -232,7 +244,7 @@
         id="logoPreview"
         src=""
         alt="Logo Preview"
-        style="max-width: 140px; max-height: 80px;"
+        style="max-width:140px; max-height:80px;"
       />
 
       <label for="header-categories">Mega Menu</label>
@@ -248,20 +260,64 @@
     </form>
   </div>
 
+  <!-- ============================================================
+       3D HERO MODEL MODAL
+  ============================================================ -->
+  <div id="modelModal" class="modal hidden">
+    <div class="modal-header">
+      <h2>3D Hero Model</h2>
+      <button type="button" id="closeModelModal">&times;</button>
+    </div>
+
+    <form id="model-form">
+
+      <label for="model-upload">Upload GLB / GLTF File (max 50 MB)</label>
+      <input type="file" id="model-upload" accept=".glb,.gltf" required />
+
+      <div
+        id="current-model-info"
+        style="
+          margin: 8px 0;
+          padding: 10px 12px;
+          border-radius: 10px;
+          background: #f3f4f6;
+          border: 1px solid #e5e7eb;
+          font-size: 14px;
+          color: #374151;
+        "
+      >
+        Checking current model...
+      </div>
+
+      <p id="modelMessage"></p>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button type="submit">Upload Model</button>
+        <button type="button" id="deleteModelBtn" class="btn delete">
+          Remove Model
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ============================================================
+       FOOTER
+  ============================================================ -->
   <footer class="site-footer">
     <div class="footer-inner">
       <p id="footer-text">© Clothing Store. All rights reserved.</p>
-
       <div class="footer-socials">
-        <a id="social-facebook" href="#" target="_blank" rel="noopener" style="display:none;">Facebook</a>
+        <a id="social-facebook"  href="#" target="_blank" rel="noopener" style="display:none;">Facebook</a>
         <a id="social-instagram" href="#" target="_blank" rel="noopener" style="display:none;">Instagram</a>
-        <a id="social-tiktok" href="#" target="_blank" rel="noopener" style="display:none;">TikTok</a>
-        <a id="social-twitter" href="#" target="_blank" rel="noopener" style="display:none;">X</a>
-        <a id="social-whatsapp" href="#" target="_blank" rel="noopener" style="display:none;">WhatsApp</a>
+        <a id="social-tiktok"    href="#" target="_blank" rel="noopener" style="display:none;">TikTok</a>
+        <a id="social-twitter"   href="#" target="_blank" rel="noopener" style="display:none;">X</a>
+        <a id="social-whatsapp"  href="#" target="_blank" rel="noopener" style="display:none;">WhatsApp</a>
       </div>
     </div>
   </footer>
 
+  <!-- Scripts -->
   <script src="onboarding.js"></script>
   <script src="config.js"></script>
   <script src="api.js"></script>
@@ -270,5 +326,7 @@
   <script src="admin-orders.js"></script>
   <script src="admin.js"></script>
   <script src="admin-settings.js"></script>
+  <script src="admin-model.js"></script>
+
 </body>
 </html>

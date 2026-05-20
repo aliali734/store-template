@@ -89,6 +89,7 @@ function showLogin(msg = "") {
   loginSection?.classList.remove("hidden");
   dashboardSection?.classList.add("hidden");
   document.getElementById("orders-section")?.classList.add("hidden");
+  document.querySelector(".products-section")?.classList.add("hidden");
 
   if (loginMessage) {
     loginMessage.textContent = msg;
@@ -333,7 +334,7 @@ audienceInput?.addEventListener("change", () => {
 });
 
 // =====================
-// MODAL
+// PRODUCT MODAL — OPEN
 // =====================
 openBtn?.addEventListener("click", () => {
   modalTitle.textContent = "Add Product";
@@ -354,23 +355,35 @@ openBtn?.addEventListener("click", () => {
   overlay.classList.remove("hidden");
 });
 
+// =====================
+// PRODUCT MODAL — CLOSE
+// =====================
 closeBtn?.addEventListener("click", closeModal);
-
-overlay?.addEventListener("click", () => {
-  closeModal();
-  closeHeaderModal();
-  if (typeof closeSettingsModal === "function") closeSettingsModal();
-});
 
 function closeModal() {
   modal?.classList.add("hidden");
   overlay?.classList.add("hidden");
 }
 
+// =====================
+// HEADER MODAL — CLOSE
+// =====================
 function closeHeaderModal() {
   headerModal?.classList.add("hidden");
   overlay?.classList.add("hidden");
 }
+
+closeHeaderBtn?.addEventListener("click", closeHeaderModal);
+
+// =====================
+// OVERLAY — closes all modals
+// =====================
+overlay?.addEventListener("click", () => {
+  closeModal();
+  closeHeaderModal();
+  if (typeof closeSettingsModal === "function") closeSettingsModal();
+  if (typeof closeModelModal    === "function") closeModelModal();
+});
 
 // =====================
 // ADD / EDIT PRODUCT
@@ -401,7 +414,7 @@ form?.addEventListener("submit", async (e) => {
   }
 
   const productId = productIdInput.value;
-  const method    = productId ? "PUT"              : "POST";
+  const method    = productId ? "PUT"                  : "POST";
   const path      = productId ? `/product/${productId}` : `/product`;
 
   try {
@@ -462,10 +475,10 @@ function renderProducts(products) {
     const imgSrc = resolveImageUrl(firstImage, "https://via.placeholder.com/50");
 
     tr.innerHTML = `
-      <td><img src="${imgSrc}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;"></td>
+      <td><img src="${imgSrc}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;" alt="${product.name}" /></td>
       <td>${product.name}</td>
       <td>${product.department || "-"}</td>
-      <td>${product.category  || "-"}</td>
+      <td>${product.category   || "-"}</td>
       <td>$${product.price}</td>
       <td>${product.stock}</td>
       <td class="actions">
@@ -524,20 +537,20 @@ function openEditPopup(product) {
   featuredInput.checked = !!product.featured;
   isActiveInput.checked = product.isActive !== false;
 
+  messageEl.textContent = "";
+
   modal.classList.remove("hidden");
   overlay.classList.remove("hidden");
 }
 
 // =====================
-// HEADER MODAL
+// HEADER MODAL — OPEN
 // =====================
 openHeaderBtn?.addEventListener("click", () => {
   headerModal?.classList.remove("hidden");
   overlay?.classList.remove("hidden");
   loadHeaderSettings();
 });
-
-closeHeaderBtn?.addEventListener("click", closeHeaderModal);
 
 headerLogo?.addEventListener("change", () => {
   if (headerLogo.files[0]) {
@@ -550,7 +563,7 @@ async function loadHeaderSettings() {
     const data = await apiFetch("/header");
 
     if (data.success) {
-      logoPreview.src = data.header.logo
+      logoPreview.src = data.header?.logo
         ? resolveImageUrl(data.header.logo, "")
         : "";
 
@@ -585,12 +598,16 @@ headerForm?.addEventListener("submit", async (e) => {
       logoPreview.src = resolveImageUrl(data.header.logo, "");
     }
 
-    headerMessage.textContent = "Header logo updated successfully";
-    headerMessage.style.color = "#166534";
+    if (headerMessage) {
+      headerMessage.textContent = "Header logo updated successfully";
+      headerMessage.style.color = "#166534";
+    }
   } catch (err) {
     console.error(err);
-    headerMessage.textContent = err.message || "Server error";
-    headerMessage.style.color = "#b91c1c";
+    if (headerMessage) {
+      headerMessage.textContent = err.message || "Server error";
+      headerMessage.style.color = "#b91c1c";
+    }
   }
 });
 
@@ -610,6 +627,8 @@ links.forEach((link) => {
     e.preventDefault();
 
     const sectionName = link.dataset.section;
+
+    // Hide all sections first
     Object.values(sections).forEach((s) => s?.classList.add("hidden"));
 
     if (sectionName === "orders") {

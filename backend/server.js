@@ -1,16 +1,16 @@
 require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
-const fs = require("fs");
+const express      = require("express");
+const cors         = require("cors");
+const path         = require("path");
+const fs           = require("fs");
 const cookieParser = require("cookie-parser");
-const connectDB = require("./config/db");
+const connectDB    = require("./config/db");
 const { setCsrfCookie } = require("./middlewares/csrf.middleware");
 
-const app = express();
+const app   = express();
 const isDev = process.env.NODE_ENV !== "production";
 
-// Ensure upload folders exist
+// ── Ensure upload folders exist ────────────────────────────────────────────
 const uploadDirs = [
   path.join(__dirname, "uploads"),
   path.join(__dirname, "uploads/header"),
@@ -22,6 +22,12 @@ uploadDirs.forEach((dir) => {
     fs.mkdirSync(dir, { recursive: true });
   }
 });
+
+// ── Ensure public/models folder exists (for 3D hero model) ────────────────
+const modelDir = path.join(__dirname, "public", "models");
+if (!fs.existsSync(modelDir)) {
+  fs.mkdirSync(modelDir, { recursive: true });
+}
 
 // ── CORS ───────────────────────────────────────────────────────────────────
 const allowedOrigins = [
@@ -40,7 +46,6 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-
     return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
@@ -61,7 +66,6 @@ app.options("*", cors({
 // ── Webhook routes (must be before body parsers) ───────────────────────────
 // Both Stripe and Moyasar require the raw request body for HMAC signature
 // verification, so they are mounted here before express.json() runs.
-
 app.post(
   "/api/payments/stripe/webhook",
   express.raw({ type: "application/json" }),
@@ -78,20 +82,23 @@ app.post(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Cookies + CSRF
+// ── Cookies + CSRF ─────────────────────────────────────────────────────────
 app.use(cookieParser());
 app.use(setCsrfCookie);
 
-// Public CSRF route
+// ── Public CSRF route ──────────────────────────────────────────────────────
 app.get("/api/csrf", (req, res) => {
   res.json({
-    success: true,
+    success:   true,
     csrfToken: req.cookies.csrfToken || null
   });
 });
 
-// Static
+// ── Static folders ─────────────────────────────────────────────────────────
+// /uploads  — product images, header logos, etc.
+// /public   — static frontend assets including /public/models/hero.glb
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(express.static(path.join(__dirname, "public")));
 
 // ── Application routes ─────────────────────────────────────────────────────
 app.use("/api/auth",        require("./routes/auth.routes"));
@@ -102,6 +109,7 @@ app.use("/api/settings",    require("./routes/storeSettings.routes"));
 app.use("/api/setup",       require("./routes/setup.routes"));
 app.use("/api/setup-admin", require("./routes/setupAdmin.routes"));
 app.use("/api/payments",    require("./routes/payment.routes"));
+app.use("/api/model",       require("./routes/model.routes"));
 
 // ── Development-only routes ────────────────────────────────────────────────
 // These expose internal details and debug tooling. They must never run in
