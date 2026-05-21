@@ -3,22 +3,33 @@ const path   = require("path");
 
 const storage = multer.memoryStorage();
 
-const fileFilter = (req, file, cb) => {
-  const ext     = path.extname(file.originalname).toLowerCase();
-  const allowed = [".glb", ".gltf"];
+const allowedExtensions = [".glb", ".gltf"];
+const allowedMimeTypes  = [
+  "model/gltf-binary",      // .glb
+  "model/gltf+json",        // .gltf
+  "application/octet-stream" // fallback (some browsers send this)
+];
 
-  if (allowed.includes(ext)) {
-    return cb(null, true);
+const fileFilter = (req, file, cb) => {
+  const ext  = path.extname(file.originalname).toLowerCase();
+  const mime = file.mimetype;
+
+  if (!allowedExtensions.includes(ext)) {
+    return cb(new Error("Invalid file extension. Only .glb and .gltf allowed."));
   }
 
-  cb(new Error("Only .glb and .gltf files are allowed."));
+  if (!allowedMimeTypes.includes(mime)) {
+    return cb(new Error("Invalid file type."));
+  }
+
+  cb(null, true);
 };
 
 const uploadModel = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 50 * 1024 * 1024
+    fileSize: 50 * 1024 * 1024 // 50MB
   }
 });
 
