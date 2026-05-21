@@ -39,7 +39,7 @@
     modelInfo.textContent = "Checking current model...";
 
     try {
-      const res  = await fetch(`${API_BASE}/api/model`, {
+      const res  = await fetch(`${API_BASE}/model`, {
         credentials: "include"
       });
       const data = await res.json().catch(() => ({}));
@@ -87,7 +87,7 @@
     formData.append("model", file);
 
     try {
-      const data = await window.adminApiFetch("/api/model", {
+      const data = await window.adminApiFetch("/model", {
         method: "PUT",
         body: formData
       });
@@ -105,7 +105,7 @@
     if (!confirm("Remove the current 3D model from the hero section?")) return;
 
     try {
-      await window.adminApiFetch("/api/model", { method: "DELETE" });
+      await window.adminApiFetch("/model", { method: "DELETE" });
       showMsg("Model removed.", "success");
       loadCurrentModel();
     } catch (err) {
