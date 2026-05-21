@@ -1,33 +1,34 @@
 const multer = require("multer");
 const path   = require("path");
 
-// =====================
-// MEMORY STORAGE
-// =====================
+// ── Memory storage ─────────────────────────────────────────────────────────
+// Files are held as Buffer objects in req.file.buffer / req.files[].buffer
+// and piped directly to Cloudinary — never written to disk.
 const storage = multer.memoryStorage();
-// =====================
-// FILE FILTER
-// =====================
 
+// ── File filter ────────────────────────────────────────────────────────────
+// Allows only web-safe image formats. Checks BOTH the file extension AND
+// the MIME type so a renamed non-image file cannot slip through.
 const fileFilter = (req, file, cb) => {
-  const ext      = path.extname(file.originalname).toLowerCase();
-  const allowed  = [".glb", ".gltf"];
+  const allowedTypes = /jpeg|jpg|png|webp/;
 
-  if (allowed.includes(ext)) {
+  const ext  = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mime = allowedTypes.test(file.mimetype);
+
+  if (ext && mime) {
     return cb(null, true);
   }
 
-  cb(new Error("Only .glb and .gltf files are allowed."));
+  return cb(new Error("Only image files are allowed (jpeg, jpg, png, webp)."));
 };
-// =====================
-// MULTER CONFIG
-// =====================
-const uploadRaw = multer({
+
+// ── Multer instance ────────────────────────────────────────────────────────
+const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 50 * 1024 * 1024 // 50 MB — 3D models can be large
+    fileSize: 2 * 1024 * 1024 // 2 MB per image
   }
 });
 
-module.exports = uploadRaw;
+module.exports = upload;
