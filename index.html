@@ -595,7 +595,7 @@
       const apiBase = (typeof API_BASE !== 'undefined' && API_BASE) ? API_BASE : '';
 
       try {
-        const res  = await fetch(`${apiBase}/api/model`, { credentials: 'include' });
+        const res  = await fetch(`${apiBase}/model`, { credentials: 'include' });
         const data = await res.json().catch(() => ({}));
 
         if (res.ok && data.success && data.modelUrl) {
