@@ -51,12 +51,11 @@ function applyHomepageSettings(settings) {
 }
 
 // =====================
-// LOAD STORE SETTINGS FOR HOMEPAGE
+// LOAD STORE SETTINGS
 // =====================
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     const settingsData = await getStoreSettings();
-
     if (settingsData.success && settingsData.settings) {
       window.applyStoreSettingsToUI?.(settingsData.settings);
       applyHomepageSettings(settingsData.settings);
@@ -111,8 +110,8 @@ async function loadDiscountOffers() {
             </div>
             <h3>${product.name}</h3>
             <div class="offer-prices">
-              <p class="offer-old">Old Price: <span>$${oldPrice.toFixed(2)}</span></p>
-              <p class="offer-new">New Price: <strong>$${newPrice.toFixed(2)}</strong></p>
+              <p class="offer-old">Old: <span>$${oldPrice.toFixed(2)}</span></p>
+              <p class="offer-new">Now: <strong>$${newPrice.toFixed(2)}</strong></p>
             </div>
             <a href="product.html?id=${product._id}" class="offer-btn">Shop Now</a>
           </article>
@@ -134,7 +133,6 @@ function initOffersSlider() {
   const grid    = document.getElementById("offers-grid");
   const prevBtn = document.querySelector(".offers-prev");
   const nextBtn = document.querySelector(".offers-next");
-
   if (!grid || !prevBtn || !nextBtn) return;
 
   let currentIndex = 0;
@@ -156,21 +154,18 @@ function initOffersSlider() {
     if (currentIndex < 0)        currentIndex = 0;
 
     const cardWidth = cards[0].offsetWidth;
-    const gap       = 28;
-    const offset    = currentIndex * (cardWidth + gap);
-
-    grid.style.transform = `translateX(-${offset}px)`;
+    const gap       = 24;
+    grid.style.transform = `translateX(-${currentIndex * (cardWidth + gap)}px)`;
   }
 
   prevBtn.addEventListener("click", () => { currentIndex -= 1; updateSlider(); });
   nextBtn.addEventListener("click", () => { currentIndex += 1; updateSlider(); });
   window.addEventListener("resize", updateSlider);
-
   updateSlider();
 }
 
 // =====================
-// ABOUT ORBITS - CLICK ONLY
+// ABOUT ORBITS — click-only
 // =====================
 (function () {
   function init() {
@@ -187,7 +182,6 @@ function initOffersSlider() {
     });
 
     const map = new Map();
-
     buttons.forEach((btn) => {
       const ctrl = btn.getAttribute("aria-controls");
       if (ctrl && bigById[ctrl]) map.set(btn, bigById[ctrl]);
@@ -251,21 +245,16 @@ function initOffersSlider() {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
         const expanded = btn.getAttribute("aria-expanded") === "true";
-        if (expanded) {
-          hideAll();
-          btn.focus();
-        } else {
-          showFor(btn);
-        }
+        if (expanded) { hideAll(); btn.focus(); }
+        else           { showFor(btn); }
       });
-
       big.addEventListener("click", (ev) => ev.stopPropagation());
     });
 
     document.addEventListener("click", (e) => {
-      const clickedButton = buttons.find((b) => b.contains(e.target) || b === e.target);
-      const clickedBig    = Object.values(bigById).find((b) => b.contains(e.target) || b === e.target);
-      if (!clickedButton && !clickedBig) hideAll();
+      const hitBtn = buttons.find((b) => b.contains(e.target) || b === e.target);
+      const hitBig = Object.values(bigById).find((b) => b.contains(e.target) || b === e.target);
+      if (!hitBtn && !hitBig) hideAll();
     });
 
     document.addEventListener("keydown", (e) => {
@@ -316,9 +305,8 @@ function initOffersSlider() {
     const toggle = document.getElementById("theme-toggle");
     if (!toggle) return;
 
-    const saved         = localStorage.getItem(LS_KEY);
-    const systemPrefDark =
-      window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const saved          = localStorage.getItem(LS_KEY);
+    const systemPrefDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
 
     function applyTheme(theme) {
       if (theme === "dark") document.documentElement.classList.add("dark");
@@ -330,30 +318,21 @@ function initOffersSlider() {
       if (icon) icon.textContent = theme === "dark" ? "☀️" : "🌙";
     }
 
-    const initial =
-      saved === "dark" || (saved === null && systemPrefDark) ? "dark" : "light";
+    applyTheme(saved === "dark" || (!saved && systemPrefDark) ? "dark" : "light");
 
-    applyTheme(initial);
-
-    if (window.matchMedia) {
-      const mq = window.matchMedia("(prefers-color-scheme: dark)");
-      mq.addEventListener?.("change", (e) => {
+    window.matchMedia?.("(prefers-color-scheme: dark)")
+      .addEventListener?.("change", (e) => {
         if (!localStorage.getItem(LS_KEY)) applyTheme(e.matches ? "dark" : "light");
       });
-    }
 
     toggle.addEventListener("click", () => {
-      const isDark   = document.documentElement.classList.contains("dark");
-      const newTheme = isDark ? "light" : "dark";
+      const newTheme = document.documentElement.classList.contains("dark") ? "light" : "dark";
       applyTheme(newTheme);
       localStorage.setItem(LS_KEY, newTheme);
     });
 
     toggle.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        toggle.click();
-      }
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle.click(); }
     });
   });
 })();
@@ -376,15 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const circle13   = document.getElementById("circle13");
   const circle1313 = document.getElementById("circle1313");
 
-  if (
-    !orbit4      ||
-    !circle7  || !circle77   ||
-    !circle8  || !circle88   ||
-    !circle9  || !circle99   ||
-    !circle10 || !circle1010 ||
-    !circle12 || !circle1212 ||
-    !circle13 || !circle1313
-  ) return;
+  if (!orbit4 || !circle7 || !circle77) return;
 
   circle7.style.visibility   = "hidden";
   circle8.style.visibility   = "hidden";
@@ -437,12 +408,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!grid || !wrap || !rightBtn || !leftBtn) return;
 
-  let cards = Array.from(grid.querySelectorAll(".card"));
-
-  cards = cards.sort((a, b) => {
-    const aLeft = a.getBoundingClientRect().left;
-    const bLeft = b.getBoundingClientRect().left;
-    return aLeft - bLeft;
+  let cards = Array.from(grid.querySelectorAll(".card")).sort((a, b) => {
+    return a.getBoundingClientRect().left - b.getBoundingClientRect().left;
   });
 
   cards.forEach((card) => grid.appendChild(card));
@@ -456,9 +423,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const wrapRect      = wrap.getBoundingClientRect();
     const activeRect    = active.getBoundingClientRect();
-    const wrapCenterX   = wrapRect.left   + wrapRect.width  / 2;
-    const activeCenterX = activeRect.left + activeRect.width / 2;
-    const delta         = wrapCenterX - activeCenterX;
+    const delta         = (wrapRect.left + wrapRect.width / 2) -
+                          (activeRect.left + activeRect.width / 2);
 
     if (!animate) {
       grid.style.transition = "none";
@@ -473,21 +439,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderCards(animate = true) {
     const firstRects = new Map();
-    cards.forEach((card) => firstRects.set(card, card.getBoundingClientRect()));
-
-    cards.forEach((card) => grid.appendChild(card));
+    cards.forEach((c) => firstRects.set(c, c.getBoundingClientRect()));
+    cards.forEach((c) => grid.appendChild(c));
 
     cards.forEach((c) => c.classList.remove("active"));
-    const middleIndex = Math.floor(cards.length / 2);
-    cards[middleIndex].classList.add("active");
+    cards[Math.floor(cards.length / 2)].classList.add("active");
 
-    if (!animate) {
-      centerActive(false);
-      return;
-    }
+    if (!animate) { centerActive(false); return; }
 
     const lastRects = new Map();
-    cards.forEach((card) => lastRects.set(card, card.getBoundingClientRect()));
+    cards.forEach((c) => lastRects.set(c, c.getBoundingClientRect()));
 
     cards.forEach((card) => {
       const first = firstRects.get(card);
@@ -496,7 +457,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const dx = first.left - last.left;
       const dy = first.top  - last.top;
-
       if (dx === 0 && dy === 0) return;
 
       card.style.transition = "none";
@@ -513,19 +473,14 @@ document.addEventListener("DOMContentLoaded", () => {
         card.style.transform  = "";
         card.removeEventListener("transitionend", cleanup);
       };
-
       card.addEventListener("transitionend", cleanup);
     });
 
-    const FLIP_DURATION = 450;
-    setTimeout(() => centerActive(true), FLIP_DURATION - 40);
+    setTimeout(() => centerActive(true), 410);
   }
 
-  function rotateRight() { const last  = cards.pop();   cards.unshift(last);  renderCards(true); }
-  function rotateLeft()  { const first = cards.shift(); cards.push(first);    renderCards(true); }
-
-  rightBtn.addEventListener("click", rotateRight);
-  leftBtn.addEventListener("click",  rotateLeft);
+  rightBtn.addEventListener("click", () => { const last  = cards.pop();   cards.unshift(last);  renderCards(true); });
+  leftBtn.addEventListener("click",  () => { const first = cards.shift(); cards.push(first);    renderCards(true); });
 
   let resizeTimer;
   window.addEventListener("resize", () => {
@@ -537,41 +492,49 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // =====================
-// SECTION-BY-SECTION SCROLL
-// Desktop only
+// SECTION-BY-SECTION SCROLL — desktop only
+//
+// BUG FIXED: selector was ".pricing" which never matched because the
+// element has id="pricing" and class="offers-section".  Fixed to "#pricing".
+//
+// IMPROVED: replaced the isAnimating + touchpadLock boolean flags with a
+// single lastScrollTime timestamp.  During the cooldown window the handler
+// calls preventDefault() (no partial scroll); outside the window it snaps
+// to the next or previous section.  At the first/last section the handler
+// returns early so the browser can scroll naturally past the boundary.
 // =====================
 (function () {
   const sectionSelectors = [
     ".hero",
     ".about",
     ".projects",
-    ".pricing",
+    "#pricing",        // ← FIXED (was ".pricing")
     ".testimonials",
     ".contact"
   ];
 
   let currentSectionIndex = 0;
-  let isAnimating         = false;
-  let touchpadLock        = false;
+  let lastScrollTime      = 0;
+  const COOLDOWN          = 920; // ms — matches smooth-scroll duration
 
   function getSections() {
     return sectionSelectors
-      .map((selector) => document.querySelector(selector))
+      .map((sel) => document.querySelector(sel))
       .filter(Boolean);
   }
 
+  // Use section mid-points for more accurate detection on
+  // sections that are shorter or taller than the viewport.
   function detectCurrentSection() {
-    const sections = getSections();
-    const scrollY  = window.scrollY;
-    let bestIndex    = 0;
-    let bestDistance = Infinity;
+    const sections  = getSections();
+    const viewMid   = window.scrollY + window.innerHeight / 2;
+    let bestIndex   = 0;
+    let bestDist    = Infinity;
 
-    sections.forEach((section, index) => {
-      const distance = Math.abs(section.offsetTop - scrollY);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestIndex    = index;
-      }
+    sections.forEach((sec, i) => {
+      const secMid = sec.offsetTop + sec.offsetHeight / 2;
+      const dist   = Math.abs(secMid - viewMid);
+      if (dist < bestDist) { bestDist = dist; bestIndex = i; }
     });
 
     currentSectionIndex = bestIndex;
@@ -581,46 +544,61 @@ document.addEventListener("DOMContentLoaded", () => {
     const sections = getSections();
     if (!sections[index]) return;
 
-    isAnimating         = true;
     currentSectionIndex = index;
 
-    window.scrollTo({ top: sections[index].offsetTop - 70, behavior: "smooth" });
-
-    setTimeout(() => { isAnimating = false; }, 900);
+    window.scrollTo({
+      // 80px offset accounts for the sticky header height (68px) + buffer
+      top:      Math.max(0, sections[index].offsetTop - 80),
+      behavior: "smooth"
+    });
   }
 
   function handleWheel(event) {
     if (window.innerWidth <= 768) return;
-    if (isAnimating)   { event.preventDefault(); return; }
-    if (touchpadLock)  { event.preventDefault(); return; }
 
-    const sections = getSections();
+    const now       = Date.now();
+    const sections  = getSections();
     if (!sections.length) return;
 
+    const direction = event.deltaY > 0 ? 1 : -1;
+
     detectCurrentSection();
 
-    if (event.deltaY > 30 && currentSectionIndex < sections.length - 1) {
+    const nextIndex = currentSectionIndex + direction;
+
+    // At the boundary — return without preventing default so the browser
+    // can scroll naturally past the first / last section.
+    if (nextIndex < 0 || nextIndex >= sections.length) return;
+
+    // During cooldown — the smooth-scroll animation is still playing.
+    // Block any further scrolling until it finishes.
+    if (now - lastScrollTime < COOLDOWN) {
       event.preventDefault();
-      touchpadLock = true;
-      scrollToSection(currentSectionIndex + 1);
-      setTimeout(() => { touchpadLock = false; }, 950);
-    } else if (event.deltaY < -30 && currentSectionIndex > 0) {
-      event.preventDefault();
-      touchpadLock = true;
-      scrollToSection(currentSectionIndex - 1);
-      setTimeout(() => { touchpadLock = false; }, 950);
+      return;
     }
+
+    // Ignore micro-movements (trackpad drift, accidental nudge < 10 px).
+    if (Math.abs(event.deltaY) < 10) return;
+
+    event.preventDefault();
+    lastScrollTime = now;
+    scrollToSection(nextIndex);
   }
 
-  function initSectionScroll() {
+  function init() {
     detectCurrentSection();
+
     window.addEventListener("wheel", handleWheel, { passive: false });
+
+    // Re-sync current section on manual scroll (e.g. clicking anchor links).
     window.addEventListener("scroll", () => {
-      if (!isAnimating) detectCurrentSection();
-    });
+      if (Date.now() - lastScrollTime > COOLDOWN) {
+        detectCurrentSection();
+      }
+    }, { passive: true });
   }
 
-  document.addEventListener("DOMContentLoaded", initSectionScroll);
+  document.addEventListener("DOMContentLoaded", init);
 })();
 
 // =====================
