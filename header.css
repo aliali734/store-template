@@ -10,8 +10,8 @@
   --hdr-muted:    rgba(240, 240, 245, 0.28);
   --hdr-border:   rgba(255, 255, 255, 0.07);
   --hdr-hover:    rgba(255, 255, 255, 0.055);
-  --hdr-accent:   #7850ff;
-  --hdr-pink:     #ff6496;
+  --hdr-accent:   #868686;
+  --hdr-pink:     #adadad;
   --hdr-radius:   9px;
   --hdr-z:        9999;
 }
