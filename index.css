@@ -124,13 +124,13 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(120, 80, 255, .1);
+  background: rgba(70, 70, 70, 0.1);
   border: 1px solid ;
   padding: 6px 14px 6px 10px;
   border-radius: 100px;
   font-size: .78rem;
   font-weight: 500;
-  color: rgba(255,255,255,.75);
+  color: rgba(0,0,0,.75);
   margin-bottom: 28px;
   letter-spacing: .2px;
 }
