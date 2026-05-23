@@ -363,25 +363,37 @@ function renderHeaderCartModal() {
 }
 
 function setupHeaderCartModal() {
-  const cartBtn  = document.querySelector(".cart-wrapper .icon-btn");
-  const modal    = document.getElementById("cart-modal");
-  const closeBtn = document.getElementById("cart-close");
+// 1. Grab our DOM elements
+  const cartBtn = document.querySelector('.cart-wrapper .icon-btn');
+  const cartModal = document.getElementById('cart-modal');
+  const cartCloseBtn = document.getElementById('cart-close');
 
-  if (!cartBtn || !modal) return;
+  // 2. Open the cart drawer
+  if (cartBtn && cartModal) {
+    cartBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      cartModal.classList.add('active'); // This triggers the smooth CSS slide-in
+      document.body.style.overflow = 'hidden'; // Prevents the main page from scrolling in the background
+    });
+  }
 
-  cartBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    renderHeaderCartModal();
-    modal.style.display = "flex";
-  });
+  // 3. Close the cart drawer using the 'X' button
+  if (cartCloseBtn && cartModal) {
+    cartCloseBtn.addEventListener('click', () => {
+      cartModal.classList.remove('active'); // Smoothly slides the cart back out of view
+      document.body.style.overflow = ''; // Lets the main page scroll normally again
+    });
+  }
 
-  closeBtn?.addEventListener("click", () => {
-    modal.style.display = "none";
-  });
-
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) modal.style.display = "none";
-  });
+  // 4. Close the cart drawer if a user clicks outside on the dark overlay
+  if (cartModal) {
+    cartModal.addEventListener('click', (e) => {
+      if (e.target === cartModal) {
+        cartModal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+  }
 }
 
 // =====================
