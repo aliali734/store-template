@@ -417,16 +417,16 @@
     scene.add(new THREE.AmbientLight(0xffffff, 0.4));
 
     const keyLight = new THREE.DirectionalLight(0xffffff, 2);
-    keyLight.position.set(0, 0, 0);
+    keyLight.position.set(3, 5, 3);
     keyLight.castShadow = true;
     scene.add(keyLight);
 
     const fillLight = new THREE.DirectionalLight(0x7850ff, 0.8);
-    fillLight.position.set(0, 0, 0);
+    fillLight.position.set(-3, 2, -2);
     scene.add(fillLight);
 
     const rimLight = new THREE.DirectionalLight(0xff6496, 0.5);
-    rimLight.position.set(0, 0, 0);
+    rimLight.position.set(0, -2, -3);
     scene.add(rimLight);
 
     const controls = new OrbitControls(camera, canvas);
