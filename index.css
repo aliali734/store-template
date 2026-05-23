@@ -81,8 +81,6 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
   padding: 120px 64px 80px;
   position: relative;
   overflow: hidden;
-  /* Dark canvas background */
-  background: #09090d;
   /* Isolate stacking context so the WebGL canvas never bleeds
      above the sticky header regardless of GPU compositing    */
   isolation: isolate;
