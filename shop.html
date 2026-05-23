@@ -3,47 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Clothing Store</title>
+  <title>Shop — Clothing Store</title>
+  <meta name="robots" content="noindex" />
 
   <link rel="stylesheet" href="header.css" />
   <link rel="stylesheet" href="shop.css" />
-  <link rel="stylesheet" href="product-card.css" />
+  <link rel="icon" href="1.JPG" type="image/jpeg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+  <script src="https://kit.fontawesome.com/d55f670ce3.js" crossorigin="anonymous"></script>
+
+  <style>
+    :root {
+      --bg:     linear-gradient(160deg, #faf8ff 0%, #ffffff 48%, #f8f3ff 100%);
+      --h1:     #020205;
+      --h2:     #6d6d6d;
+      --h3:     #5a5a5a;
+      --text:   #0f0b20;
+      --glass:  rgba(255, 255, 255, 0.72);
+      --panel:  #f2eeff;
+      --shadow: 0 6px 28px rgba(60, 30, 140, 0.10);
+      --space-xs: 8px; --space-sm: 12px; --space-md: 20px;
+      --space-lg: 32px; --space-xl: 48px;
+      --gutter: clamp(16px, 4vw, 40px);
+    }
+    .dark {
+      --bg:    linear-gradient(160deg, #0e0b1f 0%, #140e2a 100%);
+      --h1:    #ede9ff; --h2: #c8beef; --h3: #ebe6ff;
+      --text:  #ede9ff; --glass: rgba(0,0,0,0.58);
+      --panel: #000000; --shadow: 0 6px 30px rgba(0,0,0,0.55);
+    }
+  </style>
 </head>
+
 <body>
   <div id="header"></div>
 
-  <main class="page">
-    <div class="toolbar">
-      <h1 class="title">Products</h1>
+  <main class="shop-main">
 
-      <div class="toolbar-actions">
-        <button id="toggle-filters" class="link-btn" type="button">
-          Hide Filters
-          <span class="icon">⚙️</span>
-        </button>
-
-        <select id="filter-sort" class="link-btn">
-          <option value="newest">Newest</option>
-          <option value="oldest">Oldest</option>
-          <option value="price_asc">Price: Low to High</option>
-          <option value="price_desc">Price: High to Low</option>
-          <option value="name_asc">Name: A-Z</option>
-          <option value="name_desc">Name: Z-A</option>
-        </select>
+    <!-- Top bar -->
+    <div class="shop-topbar">
+      <div class="shop-topbar-inner">
+        <div class="topbar-left">
+          <button type="button" id="toggle-filters" class="filter-toggle-btn">
+            <i class="fa-solid fa-sliders"></i> Filters
+          </button>
+          <span class="result-count title">Products</span>
+        </div>
+        <div class="topbar-right">
+          <label for="filter-sort" class="sr-only">Sort by</label>
+          <select id="filter-sort" class="shop-select">
+            <option value="newest">Newest</option>
+            <option value="price-low">Price: Low → High</option>
+            <option value="price-high">Price: High → Low</option>
+            <option value="name-asc">Name A → Z</option>
+          </select>
+        </div>
       </div>
     </div>
 
-    <div class="content">
-      <aside id="filters" class="filters">
-        <div class="filter-block">
-          <input type="text" id="search-input" placeholder="Search products..." />
+    <!-- Layout -->
+    <div class="shop-layout">
+
+      <!-- Sidebar -->
+      <aside id="filters" class="shop-sidebar" aria-label="Product filters">
+
+        <div class="sidebar-header">
+          <span class="sidebar-title">Filter</span>
+          <button type="button" id="filter-clear" class="clear-btn">Clear all</button>
         </div>
 
-        <div class="divider"></div>
+        <div class="filter-group">
+          <label for="filter-search" class="filter-label">Search</label>
+          <div class="search-input-wrap">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="search" id="filter-search" class="shop-input"
+              placeholder="Search products…" autocomplete="off" />
+          </div>
+        </div>
 
-        <div class="filter-block">
-          <select id="filter-audience">
-            <option value="">All audiences</option>
+        <div class="filter-divider"></div>
+
+        <div class="filter-group">
+          <label for="filter-audience" class="filter-label">For</label>
+          <select id="filter-audience" class="shop-select full">
+            <option value="">Everyone</option>
             <option value="men">Men</option>
             <option value="women">Women</option>
             <option value="kids">Kids</option>
@@ -51,126 +97,63 @@
           </select>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="filter-block">
-          <select id="filter-department">
-            <option value="">All departments</option>
+        <div class="filter-group">
+          <label for="filter-department" class="filter-label">Department</label>
+          <select id="filter-department" class="shop-select full">
+            <option value="">All Departments</option>
           </select>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="filter-block">
-          <select id="filter-category">
-            <option value="">All categories</option>
+        <div class="filter-group">
+          <label for="filter-category" class="filter-label">Category</label>
+          <select id="filter-category" class="shop-select full">
+            <option value="">All Categories</option>
           </select>
         </div>
 
-        <div class="divider"></div>
+        <div class="filter-divider"></div>
 
-        <div class="filter-block">
-          <select id="filter-size">
-            <option value="">All sizes</option>
-            <option value="XS">XS</option>
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-          </select>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="filter-block">
-          <select id="filter-color">
-            <option value="">All colors</option>
-            <option value="black">Black</option>
-            <option value="white">White</option>
-            <option value="blue">Blue</option>
-            <option value="red">Red</option>
-            <option value="green">Green</option>
-            <option value="gray">Gray</option>
-            <option value="beige">Beige</option>
-            <option value="brown">Brown</option>
-          </select>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="filter-block">
-          <input type="number" id="filter-minPrice" placeholder="Min price" />
-          <input type="number" id="filter-maxPrice" placeholder="Max price" />
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="filter-block">
-          <label>
-            <input type="checkbox" id="filter-inStock" />
-            In stock only
-          </label>
-        </div>
-
-        <div class="filter-block">
-          <label>
+        <div class="filter-group">
+          <label class="filter-check-label">
             <input type="checkbox" id="filter-featured" />
+            <span class="check-box"></span>
             Featured only
           </label>
         </div>
 
-        <div class="filter-block">
-          <label>
-            <input type="checkbox" id="filter-promo" />
-            On sale only
-          </label>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="filter-block">
-          <button id="reset-filters" class="filter-item" type="button">
-            Reset Filters
-          </button>
-        </div>
       </aside>
 
-      <section class="grid-wrap">
-        <section id="products" class="products-grid"></section>
+      <!-- Product grid -->
+      <section class="shop-content">
+        <div id="products" class="products-grid"></div>
         <div id="pagination" class="pagination"></div>
       </section>
+
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="footer-inner">
+  <footer class="shop-footer">
+    <div class="shop-footer-inner">
       <p id="footer-text">© Clothing Store. All rights reserved.</p>
-
+      <nav class="shop-footer-nav">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+      </nav>
       <div class="footer-socials">
-        <a id="social-facebook" href="#" target="_blank" rel="noopener" style="display:none;">Facebook</a>
-        <a id="social-instagram" href="#" target="_blank" rel="noopener" style="display:none;">Instagram</a>
-        <a id="social-tiktok" href="#" target="_blank" rel="noopener" style="display:none;">TikTok</a>
-        <a id="social-twitter" href="#" target="_blank" rel="noopener" style="display:none;">X</a>
-        <a id="social-whatsapp" href="#" target="_blank" rel="noopener" style="display:none;">WhatsApp</a>
+        <a id="social-facebook"  href="#" style="display:none">Facebook</a>
+        <a id="social-twitter"   href="#" style="display:none">X</a>
+        <a id="social-instagram" href="#" style="display:none">Instagram</a>
+        <a id="social-tiktok"    href="#" style="display:none">TikTok</a>
+        <a id="social-whatsapp"  href="#" style="display:none">WhatsApp</a>
       </div>
     </div>
   </footer>
 
-  <!-- Script loading order:
-       1. config.js  — API_BASE, SERVER_BASE, shared utilities
-       2. api.js     — apiFetch, getStoreSettings
-       3. header.js  — depends on config.js and api.js
-       4. size-options.js — getSizesForProduct, used by filters.js
-       5. filters.js — filter state management, depends on api.js
-       6. onboarding.js — setup gate, fires on DOMContentLoaded
-       7. shop.js    — page logic, depends on all of the above
-  -->
   <script src="config.js"></script>
   <script src="api.js"></script>
   <script src="header.js"></script>
-  <script src="size-options.js"></script>
-  <script src="filters.js"></script>
   <script src="onboarding.js"></script>
+  <script src="filters.js"></script>
   <script src="shop.js"></script>
 </body>
 </html>
