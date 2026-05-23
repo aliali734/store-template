@@ -27,8 +27,8 @@ body {
 
 /* ── Top bar ──────────────────────────────────────────────── */
 .shop-topbar {
-  position: sticky;
-  top: 68px; /* header height */
+  position: relative;
+  top: 0px; /* header height */
   z-index: 100;
   background: var(--bg);
   backdrop-filter: blur(12px);
