@@ -93,7 +93,7 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
   top: 0; right: 0;
   width: 60%; height: 100%;
   background: radial-gradient(ellipse at 85% 40%,
-    rgba(120, 80, 255, .13) 0%,
+    rgba(92, 92, 92, 0.13) 0%,
     transparent 62%);
   pointer-events: none;
   z-index: 0;
@@ -341,7 +341,7 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
 .upload-text { color: #999; font-size: .88rem; text-align: center; }
 .upload-btn {
   background: linear-gradient(135deg,#696969,#6e6e6e);
-  color: #fff;
+  color: #000;
   padding: 8px 20px;
   border-radius: 18px;
   font-size: .85rem;
