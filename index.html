@@ -469,7 +469,7 @@
         const box    = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
         const size   = box.getSize(new THREE.Vector3());
-        const scale  = 2.5 / Math.max(size.x, size.y, size.z);
+        const scale  = 2.0 / Math.max(size.x, size.y, size.z);
 
         model.scale.setScalar(scale);
         model.position.sub(center.multiplyScalar(scale));
