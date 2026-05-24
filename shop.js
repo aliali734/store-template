@@ -29,7 +29,7 @@ async function shopApiFetch(path, options = {}) {
   try {
     csrfToken = await getCsrfToken();
   } catch (err) {
-    console.error("Failed to get CSRF token:", err);
+    console.error("CSRF token error:", err);
   }
 
   const response = await fetch(`${API_BASE}${path}`, {
@@ -52,18 +52,7 @@ async function shopApiFetch(path, options = {}) {
     body: options.body || null
   });
 
-  // =====================
-  // AUTO LOGOUT
-  // =====================
   if (response.status === 401 || response.status === 403) {
-    console.warn("Authentication expired");
-
-    try {
-      await forceLogout();
-    } catch (err) {
-      console.error("Logout error:", err);
-    }
-
     alert("Your session has expired. Please login again.");
 
     window.location.href = "login.html";
@@ -87,10 +76,6 @@ async function protectPage() {
     if (!res.ok) {
       throw new Error("Session invalid");
     }
-
-    const data = await res.json();
-
-    console.log("Authenticated user:", data);
 
   } catch (err) {
     console.error("Session verification failed:", err);
@@ -127,14 +112,14 @@ function showToast(message, type = "success") {
 }
 
 // =====================
-// PRODUCTS SKELETON
+// SKELETON LOADING
 // =====================
 function showProductsSkeleton() {
-  const container = document.getElementById("products");
+  const container = document.getElementById("products-grid");
 
   if (!container) return;
 
-  container.innerHTML = Array(9)
+  container.innerHTML = Array(8)
     .fill(`
       <div class="product-skeleton">
         <div class="img"></div>
@@ -169,20 +154,21 @@ async function loadProducts(page = 1) {
     currentPage = data.page || 1;
     totalPages = data.totalPages || 1;
 
-    updateTitle(data.totalProducts || 0);
+    updateProductCount(
+      data.totalProducts || 0
+    );
 
     await renderProducts();
 
-    renderPagination();
-
   } catch (err) {
-    console.error("Load products error:", err);
+    console.error(err);
 
-    const container = document.getElementById("products");
+    const container =
+      document.getElementById("products-grid");
 
     if (container) {
       container.innerHTML = `
-        <p style="color:#b91c1c">
+        <p class="error-text">
           Failed to load products
         </p>
       `;
@@ -191,40 +177,50 @@ async function loadProducts(page = 1) {
 }
 
 // =====================
-// UPDATE TITLE
+// UPDATE PRODUCT COUNT
 // =====================
-function updateTitle(total) {
-  const title = document.querySelector(".title");
+function updateProductCount(total) {
+  const el = document.getElementById(
+    "product-count-display"
+  );
 
-  if (!title) return;
+  if (!el) return;
 
-  title.textContent = `Products (${total})`;
+  el.textContent =
+    `Showing ${total} product${total !== 1 ? "s" : ""}`;
 }
 
 // =====================
 // RENDER PRODUCTS
 // =====================
 async function renderProducts() {
-  const container = document.getElementById("products");
+  const container =
+    document.getElementById("products-grid");
 
   if (!container) return;
 
   container.innerHTML = "";
 
   // =====================
-  // LOAD TEMPLATE
+  // LOAD CARD TEMPLATE
   // =====================
   if (!cachedCardTemplate) {
     try {
-      const res = await fetch("product-card.html");
+      const res = await fetch(
+        "product-card.html"
+      );
 
-      cachedCardTemplate = await res.text();
+      cachedCardTemplate =
+        await res.text();
 
     } catch (err) {
-      console.error("Template load error:", err);
+      console.error(
+        "Template loading failed:",
+        err
+      );
 
       container.innerHTML = `
-        <p>Failed to load product template</p>
+        <p>Template error</p>
       `;
 
       return;
@@ -238,7 +234,7 @@ async function renderProducts() {
     container.innerHTML = `
       <div class="empty-state">
         <h3>No products found</h3>
-        <p>Try changing filters or search</p>
+        <p>Try adjusting filters.</p>
       </div>
     `;
 
@@ -246,25 +242,45 @@ async function renderProducts() {
   }
 
   // =====================
-  // BUILD PRODUCTS
+  // BUILD GRID
   // =====================
-  const fragment = document.createDocumentFragment();
+  const fragment =
+    document.createDocumentFragment();
 
   products.forEach((product) => {
-    const firstImage = Array.isArray(product.images)
-      ? product.images[0]
-      : product.images || "";
+    const firstImage =
+      Array.isArray(product.images)
+        ? product.images[0]
+        : product.images || "";
 
-    const imageUrl = resolveImageUrl(firstImage);
+    const imageUrl =
+      resolveImageUrl(firstImage);
 
-    const cardHTML = cachedCardTemplate
-      .replace(/{{_id}}/g, escapeHtml(product._id))
-      .replace(/{{image}}/g, imageUrl)
-      .replace(/{{name}}/g, escapeHtml(product.name || ""))
-      .replace(/{{category}}/g, escapeHtml(product.category || ""))
-      .replace(/{{price}}/g, Number(product.price || 0));
+    const cardHTML =
+      cachedCardTemplate
+        .replace(
+          /{{_id}}/g,
+          escapeHtml(product._id)
+        )
+        .replace(
+          /{{image}}/g,
+          imageUrl
+        )
+        .replace(
+          /{{name}}/g,
+          escapeHtml(product.name || "")
+        )
+        .replace(
+          /{{category}}/g,
+          escapeHtml(product.category || "")
+        )
+        .replace(
+          /{{price}}/g,
+          Number(product.price || 0)
+        );
 
-    const wrapper = document.createElement("div");
+    const wrapper =
+      document.createElement("div");
 
     wrapper.innerHTML = cardHTML;
 
@@ -291,9 +307,11 @@ function initAddToCart() {
   buttons.forEach((btn) => {
     btn.onclick = (e) => {
       e.preventDefault();
+
       e.stopPropagation();
 
-      const card = btn.closest(".product-card");
+      const card =
+        btn.closest(".product-card");
 
       if (!card) return;
 
@@ -306,7 +324,8 @@ function initAddToCart() {
       if (!product) return;
 
       const existing = cart.find(
-        (item) => item.id === product._id
+        (item) =>
+          item.id === product._id
       );
 
       if (existing) {
@@ -315,8 +334,8 @@ function initAddToCart() {
       } else {
         cart.push({
           id: product._id,
-          name: product.name || "Product",
-          price: Number(product.price) || 0,
+          name: product.name,
+          price: Number(product.price),
           quantity: 1
         });
       }
@@ -346,71 +365,12 @@ function initAddToCart() {
 }
 
 // =====================
-// PAGINATION
-// =====================
-function renderPagination() {
-  const container =
-    document.getElementById("pagination");
-
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  if (totalPages <= 1) return;
-
-  const fragment = document.createDocumentFragment();
-
-  for (let i = 1; i <= totalPages; i++) {
-    const btn = document.createElement("button");
-
-    btn.textContent = i;
-
-    btn.disabled = i === currentPage;
-
-    btn.onclick = () => {
-      loadProducts(i);
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
-    };
-
-    fragment.appendChild(btn);
-  }
-
-  container.appendChild(fragment);
-}
-
-// =====================
-// INIT
+// INITIALIZATION
 // =====================
 document.addEventListener(
   "DOMContentLoaded",
   async () => {
     await protectPage();
-
-    const toggleFilters =
-      document.getElementById(
-        "toggle-filters"
-      );
-
-    const aside =
-      document.getElementById("filters");
-
-    toggleFilters?.addEventListener(
-      "click",
-      () => {
-        if (!aside) return;
-
-        const hidden =
-          aside.style.display === "none";
-
-        aside.style.display = hidden
-          ? ""
-          : "none";
-      }
-    );
 
     applyUrlFilters();
 
