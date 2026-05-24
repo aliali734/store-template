@@ -35,7 +35,6 @@ function getSizesForProduct(department, audience = "") {
 function getSizesForDepartment(department) {
   return getSizesForProduct(department, "");
 }
-سشسشسش
 
 window.SIZE_OPTIONS          = SIZE_OPTIONS;
 window.getSizesForProduct    = getSizesForProduct;

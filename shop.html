@@ -14,31 +14,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/d55f670ce3.js" crossorigin="anonymous"></script>
-
-  <style>
-    :root {
-      --bg:     linear-gradient(160deg, #faf8ff 0%, #ffffff 48%, #f8f3ff 100%);
-      --h1:     #020205;
-      --h2:     #6d6d6d;
-      --h3:     #5a5a5a;
-      --text:   #0f0b20;
-      --glass:  rgba(255, 255, 255, 0.72);
-      --panel:  #f2eeff;
-      --shadow: 0 6px 28px rgba(60, 30, 140, 0.10);
-      --space-xs: 8px; --space-sm: 12px; --space-md: 20px;
-      --space-lg: 32px; --space-xl: 48px;
-      --gutter: clamp(16px, 4vw, 40px);
-    }
-    .dark {
-      --bg:    linear-gradient(160deg, #0e0b1f 0%, #140e2a 100%);
-      --h1:    #ede9ff; --h2: #c8beef; --h3: #ebe6ff;
-      --text:  #ede9ff; --glass: rgba(0,0,0,0.58);
-      --panel: #000000; --shadow: 0 6px 30px rgba(0,0,0,0.55);
-    }
-  </style>
 </head>
 
 <body>
+  <!-- Shared header injected by header.js -->
   <div id="header"></div>
 
   <main class="shop-main">
@@ -79,7 +58,7 @@
           <label for="filter-search" class="filter-label">Search</label>
           <div class="search-input-wrap">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="search" id="filter-search" class="shop-input"
+            <input type="search" id="search-input" class="shop-input"
               placeholder="Search products…" autocomplete="off" />
           </div>
         </div>
@@ -149,6 +128,14 @@
     </div>
   </footer>
 
+  <!-- Script loading order:
+       1. config.js     — API_BASE, SERVER_BASE, shared utilities (must be first)
+       2. api.js        — apiFetch, getStoreSettings (depends on config.js)
+       3. header.js     — injects shared header, cart, auth (depends on config + api)
+       4. onboarding.js — setup gate, fires on DOMContentLoaded
+       5. filters.js    — filter state + taxonomy helpers
+       6. shop.js       — page logic, depends on all of the above
+  -->
   <script src="config.js"></script>
   <script src="api.js"></script>
   <script src="header.js"></script>

@@ -20,6 +20,8 @@ function escapeHtml(str) {
 
 // =====================
 // API FETCH WRAPPER
+// Used only for auth-required actions (e.g. checkout redirect).
+// Product loading uses the public apiFetch() from config.js.
 // =====================
 async function shopApiFetch(path, options = {}) {
   const isFormData = options.body instanceof FormData;
@@ -44,26 +46,9 @@ async function shopApiFetch(path, options = {}) {
   return res;
 }
 
-// =====================
-// PROTECT PAGE
-// Uses /auth/me — a permanent, production-safe endpoint — instead of
-// /test/user which is only mounted in development (fix #4).
-// =====================
-(async function protectPage() {
-  try {
-    const res = await fetch(`${API_BASE}/auth/me`, {
-      credentials: "include"
-    });
-
-    if (!res.ok) {
-      throw new Error("Session invalid");
-    }
-  } catch (err) {
-    console.error("Session verification failed:", err);
-    alert("Your session has expired. Please login again.");
-    window.location.href = "login.html";
-  }
-})();
+// NOTE: protectPage() has been intentionally removed.
+// The shop page is public — guests should be able to browse products.
+// Auth is enforced at checkout time by the backend, not here.
 
 // =====================
 // TOAST NOTIFICATION
@@ -103,6 +88,7 @@ function showProductsSkeleton() {
 
 // =====================
 // LOAD PRODUCTS
+// Uses the public apiFetch() — products endpoint requires no auth.
 // =====================
 async function loadProducts(page = 1) {
   showProductsSkeleton();
@@ -180,12 +166,14 @@ async function renderProducts() {
       .replace(/{{image}}/g,    imageUrl)
       .replace(/{{name}}/g,     escapeHtml(product.name     || ""))
       .replace(/{{category}}/g, escapeHtml(product.category || ""))
-      .replace(/{{price}}/g,    Number(product.price ?? 0));
+      .replace(/{{price}}/g,    Number(product.price ?? 0).toFixed(2));
 
     const wrapper = document.createElement("div");
     wrapper.innerHTML = cardHTML;
 
-    fragment.appendChild(wrapper.firstElementChild);
+    if (wrapper.firstElementChild) {
+      fragment.appendChild(wrapper.firstElementChild);
+    }
   });
 
   container.appendChild(fragment);
@@ -256,11 +244,12 @@ function renderPagination() {
 
     btn.textContent = i;
     btn.disabled    = i === currentPage;
+    if (i === currentPage) btn.classList.add("active");
 
-    btn.onclick = () => {
+    btn.addEventListener("click", () => {
       loadProducts(i);
       window.scrollTo({ top: 0, behavior: "smooth" });
-    };
+    });
 
     fragment.appendChild(btn);
   }
@@ -277,15 +266,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   toggleFilters?.addEventListener("click", () => {
     if (!aside) return;
-
-    const hidden = aside.style.display === "none";
-    aside.style.display = hidden ? "" : "none";
+    aside.classList.toggle("open");
   });
 
   applyUrlFilters();
   loadFilterTaxonomy().then(() => {
     syncFilterInputsFromState();
     setupFilters(() => loadProducts(1));
+    loadProducts(1);
+  }).catch((err) => {
+    console.error("Failed to load filter taxonomy:", err);
     loadProducts(1);
   });
 });
