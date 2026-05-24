@@ -38,7 +38,6 @@ function buildHeaderLinkHTML(link) {
   const isPromo = url.includes("promo=true");
 
   let labelHtml = label;
-
   if (isPromo) {
     labelHtml = label.replace(
       /(Sale|Promo|sale|promo|On Sale|on sale)/i,
@@ -73,16 +72,12 @@ function renderDesktopMenu(menu) {
       .map((section) => {
         const linksHtml = (section.links || [])
           .map((link, i, arr) => {
-            const html    = buildHeaderLinkHTML(link);
-            const isPromo = (link.url || "").includes("promo=true");
-
+            const html       = buildHeaderLinkHTML(link);
+            const isPromo    = (link.url || "").includes("promo=true");
             const nextLink   = arr[i + 1];
             const nextIsPromo = nextLink && (nextLink.url || "").includes("promo=true");
             const addDivider  = isPromo && !nextIsPromo;
-
-            return addDivider
-              ? html + '<div class="mega-link-divider"></div>'
-              : html;
+            return addDivider ? html + '<div class="mega-link-divider"></div>' : html;
           })
           .join("");
 
@@ -101,9 +96,7 @@ function renderDesktopMenu(menu) {
       <div class="menu-item">
         ${menuItem.title}
         <div class="mega">
-          <div class="mega-inner">
-            ${sectionsHtml}
-          </div>
+          <div class="mega-inner">${sectionsHtml}</div>
         </div>
       </div>
       `
@@ -135,16 +128,12 @@ function renderMobileMenu(menu) {
       .map((section) => {
         const linksHtml = (section.links || [])
           .map((link, i, arr) => {
-            const html     = buildHeaderLinkHTML(link);
-            const isPromo  = (link.url || "").includes("promo=true");
-
-            const nextLink    = arr[i + 1];
+            const html       = buildHeaderLinkHTML(link);
+            const isPromo    = (link.url || "").includes("promo=true");
+            const nextLink   = arr[i + 1];
             const nextIsPromo = nextLink && (nextLink.url || "").includes("promo=true");
             const addDivider  = isPromo && !nextIsPromo;
-
-            return addDivider
-              ? html + '<div class="mega-link-divider"></div>'
-              : html;
+            return addDivider ? html + '<div class="mega-link-divider"></div>' : html;
           })
           .join("");
 
@@ -160,9 +149,7 @@ function renderMobileMenu(menu) {
       `
       <div class="mobile-item">
         <button type="button" class="mobile-toggle-sub">${menuItem.title} ▾</button>
-        <div class="mobile-submenu">
-          ${sectionsHtml}
-        </div>
+        <div class="mobile-submenu">${sectionsHtml}</div>
       </div>
       `
     );
@@ -171,6 +158,8 @@ function renderMobileMenu(menu) {
 
 // =====================
 // AUTH-AWARE BUTTONS
+// BUG FIX: was calling /test/user which is blocked in production.
+// Now uses /auth/me which is always available (fix #4 & session fix).
 // =====================
 async function setupHeaderAuth() {
   const loginLink    = document.getElementById("login-link");
@@ -180,7 +169,7 @@ async function setupHeaderAuth() {
   if (!loginLink || !registerLink || !logoutBtn) return;
 
   try {
-    const res = await fetch(`${API_BASE}/test/user`, {
+    const res = await fetch(`${API_BASE}/auth/me`, {
       credentials: "include"
     });
 
@@ -192,13 +181,10 @@ async function setupHeaderAuth() {
       logoutBtn.onclick = async () => {
         try {
           const csrfToken = await getCsrfToken();
-
           await fetch(`${API_BASE}/auth/logout`, {
             method: "POST",
             credentials: "include",
-            headers: {
-              ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
-            }
+            headers: { ...(csrfToken ? { "x-csrf-token": csrfToken } : {}) }
           });
         } catch (err) {
           console.error("Logout failed:", err);
@@ -257,7 +243,6 @@ function setupHeaderInteractions() {
       document.querySelectorAll(".mobile-submenu").forEach((sub) => {
         sub.style.display = "none";
       });
-
       document.querySelectorAll(".mobile-toggle-sub").forEach((b) => {
         b.classList.remove("active");
       });
@@ -271,12 +256,8 @@ function setupHeaderInteractions() {
 
   searchToggle?.addEventListener("click", () => {
     if (!headerSearch) return;
-
-    const isHidden =
-      headerSearch.style.display === "none" || !headerSearch.style.display;
-
+    const isHidden = headerSearch.style.display === "none" || !headerSearch.style.display;
     headerSearch.style.display = isHidden ? "inline-block" : "none";
-
     if (isHidden) headerSearch.focus();
   });
 }
@@ -295,7 +276,6 @@ function getHeaderCart() {
 function updateHeaderCartCounter() {
   const cartCountEl = document.getElementById("cart-count");
   if (!cartCountEl) return;
-
   const cart  = getHeaderCart();
   const count = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
   cartCountEl.textContent = count;
@@ -304,18 +284,15 @@ function updateHeaderCartCounter() {
 function renderHeaderCartModal() {
   const list    = document.getElementById("cart-items-list");
   const totalEl = document.getElementById("cart-total");
-
   if (!list || !totalEl) return;
 
   const cart = getHeaderCart();
   list.innerHTML = "";
-
   let total = 0;
 
   if (!cart.length) {
-    list.innerHTML =
-      `<li style="justify-content:center;opacity:.7;">Cart is empty</li>`;
-    totalEl.textContent = "$0";
+    list.innerHTML = `<li style="justify-content:center;opacity:.6;font-size:13px;">Your cart is empty</li>`;
+    totalEl.textContent = "$0.00";
     return;
   }
 
@@ -325,31 +302,26 @@ function renderHeaderCartModal() {
     li.innerHTML = `
       <span>${item.name}</span>
       <div>
-        <button type="button" class="dec" ${item.quantity <= 1 ? "disabled" : ""}>-</button>
+        <button type="button" class="dec" ${item.quantity <= 1 ? "disabled" : ""}>−</button>
         <span>${item.quantity}</span>
         <button type="button" class="inc">+</button>
       </div>
       <span>$${(item.price * item.quantity).toFixed(2)}</span>
     `;
 
-    const incBtn = li.querySelector(".inc");
-    const decBtn = li.querySelector(".dec");
-
-    incBtn.onclick = () => {
+    li.querySelector(".inc").onclick = () => {
       item.quantity += 1;
       localStorage.setItem("cart", JSON.stringify(cart));
       updateHeaderCartCounter();
       renderHeaderCartModal();
     };
 
-    decBtn.onclick = () => {
+    li.querySelector(".dec").onclick = () => {
       item.quantity -= 1;
-
       if (item.quantity <= 0) {
-        const index = cart.findIndex((c) => c.id === item.id);
-        if (index > -1) cart.splice(index, 1);
+        const idx = cart.findIndex((c) => c.id === item.id);
+        if (idx > -1) cart.splice(idx, 1);
       }
-
       localStorage.setItem("cart", JSON.stringify(cart));
       updateHeaderCartCounter();
       renderHeaderCartModal();
@@ -362,38 +334,165 @@ function renderHeaderCartModal() {
   totalEl.textContent = `$${total.toFixed(2)}`;
 }
 
+// =====================
+// CHECKOUT HANDLER
+// Wires up the "Proceed to Checkout" button inside the cart modal.
+//
+// Flow:
+//   Cash on Delivery  → POST /orders → confirmation.html
+//   Card              → POST /orders → POST /payments → POST /payments/moyasar
+//                       → redirect to Moyasar hosted page
+//   BNPL              → same as Card with provider: tabby / tamara
+// =====================
+async function handleCheckout() {
+  const cart = getHeaderCart();
+
+  if (!cart.length) {
+    alert("Your cart is empty.");
+    return;
+  }
+
+  const paymentMethodEl = document.getElementById("payment-method");
+  const paymentMethod   = paymentMethodEl?.value || "cash";
+
+  const checkoutBtn     = document.getElementById("checkout-btn");
+  const originalText    = checkoutBtn?.textContent || "Proceed to Checkout";
+
+  if (checkoutBtn) {
+    checkoutBtn.disabled     = true;
+    checkoutBtn.textContent  = "Processing…";
+  }
+
+  try {
+    const csrfToken = await getCsrfToken();
+
+    // ── Step 1: create order ───────────────────────────────
+    const orderRes = await fetch(`${API_BASE}/orders`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
+      },
+      body: JSON.stringify({
+        products: cart.map((item) => ({
+          product:  item.id,
+          quantity: item.quantity
+        })),
+        paymentMethod
+      })
+    });
+
+    const orderData = await orderRes.json().catch(() => ({}));
+
+    if (!orderRes.ok) {
+      throw new Error(orderData.message || "Failed to create order.");
+    }
+
+    const orderId = orderData.order._id;
+    localStorage.setItem("currentOrderId", orderId);
+
+    // ── Cash on delivery — done ────────────────────────────
+    if (paymentMethod === "cash") {
+      localStorage.removeItem("cart");
+      window.location.href = `confirmation.html?orderId=${orderId}`;
+      return;
+    }
+
+    // ── Card / BNPL — create payment record ───────────────
+    const provider = paymentMethod === "card" ? "moyasar" : "tabby";
+
+    const payRes = await fetch(`${API_BASE}/payments`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
+      },
+      body: JSON.stringify({ orderId, method: paymentMethod, provider })
+    });
+
+    const payData = await payRes.json().catch(() => ({}));
+
+    if (!payRes.ok) {
+      throw new Error(payData.message || "Failed to create payment record.");
+    }
+
+    // ── Initiate Moyasar hosted payment page ───────────────
+    const initRes = await fetch(`${API_BASE}/payments/moyasar`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
+      },
+      body: JSON.stringify({
+        paymentId:   payData.payment._id,
+        callbackUrl: `${window.location.origin}/confirmation.html?orderId=${orderId}`
+      })
+    });
+
+    const initData = await initRes.json().catch(() => ({}));
+
+    if (!initRes.ok) {
+      throw new Error(initData.message || "Failed to initialize payment.");
+    }
+
+    if (!initData.paymentUrl) {
+      throw new Error("Payment provider did not return a payment URL.");
+    }
+
+    localStorage.removeItem("cart");
+    window.location.href = initData.paymentUrl;
+
+  } catch (err) {
+    console.error("Checkout error:", err);
+    alert(err.message || "Checkout failed. Please try again.");
+
+    if (checkoutBtn) {
+      checkoutBtn.disabled    = false;
+      checkoutBtn.textContent = originalText;
+    }
+  }
+}
+
+// =====================
+// CART MODAL
+// BUG FIX: was missing renderHeaderCartModal() call on open,
+// so the cart always showed stale / empty content.
+// =====================
 function setupHeaderCartModal() {
-// 1. Grab our DOM elements
-  const cartBtn = document.querySelector('.cart-wrapper .icon-btn');
-  const cartModal = document.getElementById('cart-modal');
-  const cartCloseBtn = document.getElementById('cart-close');
+  const cartBtn     = document.querySelector(".cart-wrapper .icon-btn");
+  const cartModal   = document.getElementById("cart-modal");
+  const cartClose   = document.getElementById("cart-close");
+  const checkoutBtn = document.getElementById("checkout-btn");
 
-  // 2. Open the cart drawer
-  if (cartBtn && cartModal) {
-    cartBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      cartModal.classList.add('active'); // This triggers the smooth CSS slide-in
-      document.body.style.overflow = 'hidden'; // Prevents the main page from scrolling in the background
-    });
-  }
+  if (!cartBtn || !cartModal) return;
 
-  // 3. Close the cart drawer using the 'X' button
-  if (cartCloseBtn && cartModal) {
-    cartCloseBtn.addEventListener('click', () => {
-      cartModal.classList.remove('active'); // Smoothly slides the cart back out of view
-      document.body.style.overflow = ''; // Lets the main page scroll normally again
-    });
-  }
+  // Open — render current cart state first, then show modal
+  cartBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    renderHeaderCartModal();          // ← BUG FIX: was missing
+    cartModal.classList.add("active");
+    document.body.style.overflow = "hidden";
+  });
 
-  // 4. Close the cart drawer if a user clicks outside on the dark overlay
-  if (cartModal) {
-    cartModal.addEventListener('click', (e) => {
-      if (e.target === cartModal) {
-        cartModal.classList.remove('active');
-        document.body.style.overflow = '';
-      }
-    });
-  }
+  // Close via × button
+  cartClose?.addEventListener("click", () => {
+    cartModal.classList.remove("active");
+    document.body.style.overflow = "";
+  });
+
+  // Close via overlay click
+  cartModal.addEventListener("click", (e) => {
+    if (e.target === cartModal) {
+      cartModal.classList.remove("active");
+      document.body.style.overflow = "";
+    }
+  });
+
+  // Checkout button
+  checkoutBtn?.addEventListener("click", handleCheckout);
 }
 
 // =====================
@@ -410,7 +509,7 @@ async function initSharedHeader() {
     ]);
 
     const settings =
-      settingsData && settingsData.success ? settingsData.settings : null;
+      settingsData?.success ? settingsData.settings : null;
 
     if (headerData.success && headerData.header) {
       renderHeaderLogo(headerData.header.logo, settings);
