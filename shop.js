@@ -51,7 +51,7 @@ async function shopApiFetch(path, options = {}) {
 // =====================
 (async function protectPage() {
   try {
-    const res = await fetch(`${API_BASE}/auth/me`, {
+    const res = await apiFetch(`${API_BASE}/auth/me`, {
       credentials: "include"
     });
 
