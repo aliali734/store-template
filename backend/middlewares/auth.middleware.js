@@ -1,8 +1,11 @@
 const jwt = require("jsonwebtoken");
 
 const protect = (roles = []) => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     try {
+      // =========================
+      // VERIFY SERVER CONFIG
+      // =========================
       if (!process.env.JWT_SECRET) {
         console.error("JWT_SECRET is missing");
 
@@ -14,33 +17,58 @@ const protect = (roles = []) => {
 
       let token = null;
 
-      // Read token from cookie
-      if (req.cookies?.token) {
+      // =========================
+      // TOKEN FROM COOKIE
+      // =========================
+      if (req.cookies && req.cookies.token) {
         token = req.cookies.token;
       }
 
-      // Fallback: Authorization header
-      const auth = req.headers?.authorization;
-      if (!token && auth && auth.startsWith("Bearer ")) {
-        token = auth.split(" ")[1];
+      // =========================
+      // TOKEN FROM AUTH HEADER
+      // Fallback for APIs/mobile
+      // =========================
+      if (!token && req.headers.authorization) {
+        const authHeader = req.headers.authorization;
+
+        if (authHeader.startsWith("Bearer ")) {
+          token = authHeader.split(" ")[1];
+        }
       }
 
+      // =========================
+      // NO TOKEN
+      // =========================
       if (!token) {
         return res.status(401).json({
           success: false,
-          message: "No authentication token"
+          message: "Authentication required"
         });
       }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // =========================
+      // VERIFY JWT
+      // =========================
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET
+      );
 
+      // =========================
+      // ATTACH USER TO REQUEST
+      // =========================
       req.user = {
         id: decoded.userId,
         role: decoded.role
       };
 
-      // Role-based protection
-      if (roles.length && !roles.includes(req.user.role)) {
+      // =========================
+      // ROLE AUTHORIZATION
+      // =========================
+      if (
+        roles.length > 0 &&
+        !roles.includes(req.user.role)
+      ) {
         return res.status(403).json({
           success: false,
           message: "Access denied"
@@ -48,8 +76,9 @@ const protect = (roles = []) => {
       }
 
       return next();
+
     } catch (err) {
-      console.error("Auth middleware error:", err.message);
+      console.error("Auth middleware error:", err);
 
       return res.status(401).json({
         success: false,
