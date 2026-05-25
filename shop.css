@@ -29,7 +29,7 @@ body {
 
 /* ── Top bar ──────────────────────────────────────────────── */
 .shop-topbar {
-  position: sticky;
+  position: absolute;
   top: var(--hdr-h, 68px);
   z-index: 90;
   background: rgba(9, 9, 11, 0.92);
@@ -113,7 +113,7 @@ body {
 
 /* ── Sidebar ──────────────────────────────────────────────── */
 .shop-sidebar {
-  position: absolute;
+  position: sticky;
   top: calc(var(--hdr-h, 68px) + 52px + 20px);
   background: rgba(255,255,255,.03);
   border: 1px solid rgba(255,255,255,.07);
