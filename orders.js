@@ -4,6 +4,9 @@ const ordersContainer = document.getElementById("orders-container");
 
 // =====================
 // API FETCH
+// Handles auth-required requests for the orders page.
+// On 401/403: redirects to login instead of force-logging out,
+// which avoids the aggressive session-kill that caused the login loop.
 // =====================
 async function ordersApiFetch(path, options = {}) {
   const isFormData = options.body instanceof FormData;
@@ -21,7 +24,9 @@ async function ordersApiFetch(path, options = {}) {
   });
 
   if (res.status === 401 || res.status === 403) {
-    await forceLogout();
+    // Redirect to login without wiping the session server-side.
+    // A genuine expired session will be cleaned up naturally on next login.
+    window.location.href = "login.html";
     throw new Error("Unauthorized");
   }
 
@@ -54,9 +59,12 @@ async function loadMyOrders() {
 
     renderOrders(orders);
   } catch (err) {
+    // If the error is from the redirect above, stay silent.
+    if (err.message === "Unauthorized") return;
+
     console.error(err);
     ordersContainer.innerHTML =
-      "<p style='color:#b91c1c'>Error loading orders</p>";
+      "<p style='color:#b91c1c'>Error loading orders. Please try again.</p>";
   }
 }
 
@@ -84,6 +92,8 @@ async function cancelOrder(orderId) {
 
     loadMyOrders();
   } catch (err) {
+    if (err.message === "Unauthorized") return;
+
     console.error(err);
     alert("Server error while cancelling order");
   }
@@ -103,7 +113,6 @@ function getStatusLabel(order) {
 
   const text = labels[order.status] || order.status;
 
-  // Use status-specific class so CSS can colour each state differently.
   return `<span class="status-label status-${order.status}">${text}</span>`;
 }
 
