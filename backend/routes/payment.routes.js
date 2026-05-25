@@ -8,21 +8,12 @@ const {
   getPaymentById,
   getPaymentByOrderId,
   createPayment,
-  createMoyasarPayment,
-  handleMoyasarReturn,
   createStripeCheckoutSession,
   updatePaymentStatus
 } = require("../controllers/payment.controllers");
 
 // Create payment record
 router.post("/", protect(), verifyCsrf, createPayment);
-
-// Moyasar routes
-router.post("/moyasar", protect(), verifyCsrf, createMoyasarPayment);
-router.get("/moyasar/return", handleMoyasarReturn);
-// NOTE: POST /moyasar/webhook is mounted directly in server.js (before body
-// parsers) with express.raw() so the raw body is available for HMAC
-// signature verification — same pattern as the Stripe webhook.
 
 // Stripe routes
 router.post("/stripe/create-session", protect(), verifyCsrf, createStripeCheckoutSession);

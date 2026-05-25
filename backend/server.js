@@ -59,28 +59,17 @@ app.use(cors({
 }));
 
 app.options("*", cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error("Not allowed by CORS"));
-  },
+  origin: allowedOrigins,
   credentials: true
 }));
 
 // ── Webhook routes (must be before body parsers) ───────────────────────────
-// Both Stripe and Moyasar require the raw request body for HMAC signature
-// verification, so they are mounted here before express.json() runs.
+// Stripe requires the raw request body for HMAC signature verification,
+// so the webhook is mounted here before express.json() runs.
 app.post(
   "/api/payments/stripe/webhook",
   express.raw({ type: "application/json" }),
   require("./controllers/payment.controllers").handleStripeWebhook
-);
-
-app.post(
-  "/api/payments/moyasar/webhook",
-  express.raw({ type: "application/json" }),
-  require("./controllers/payment.controllers").handleMoyasarWebhook
 );
 
 // ── Body parsers ───────────────────────────────────────────────────────────

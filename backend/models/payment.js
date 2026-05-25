@@ -46,7 +46,7 @@ const paymentSchema = new mongoose.Schema(
 
     provider: {
       type: String,
-      enum: ["cod", "stripe", "moyasar", "paytabs", "tabby", "tamara", ""],
+      enum: ["cod", "stripe", "paytabs", "tabby", "tamara", ""],
       default: "cod"
     },
 

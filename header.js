@@ -389,7 +389,7 @@ async function handleCheckout() {
       body: JSON.stringify({
         orderId:  order._id,
         method:   paymentMethod,
-        provider: paymentMethod === "cash" ? "cod" : paymentMethod === "card" ? "stripe" : "tabby",
+        provider: paymentMethod === "cash" ? "cod" : paymentMethod === "card" ? "stripe" : "tabby", // bnpl
         currency: "SAR"
       })
     });
