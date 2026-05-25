@@ -10,12 +10,10 @@ router.get("/status", async (req, res) => {
   try {
     const settings = await StoreSettings.findOne();
 
-    const isConfigured = !!(
-      settings &&
-      settings.storeName &&
-      settings.storeName.trim() &&
-      settings.storeName.trim().toLowerCase() !== "clothing store"
-    );
+    // Use the explicit isConfigured flag. Previously this inferred setup
+    // state from the store name, which broke when the admin legitimately
+    // named their store "Clothing Store".
+    const isConfigured = !!(settings && settings.isConfigured);
 
     return res.json({
       success: true,

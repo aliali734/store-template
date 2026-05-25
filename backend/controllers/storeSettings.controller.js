@@ -158,6 +158,10 @@ const updateStoreSettings = async (req, res) => {
           : settings.homepage?.supportTwitter || ""
     };
 
+
+    // Mark the store as configured so subsequent PUT requests require
+    // admin auth (see storeSettings.routes.js).
+    settings.isConfigured = true;
     await settings.save();
 
     return res.json({

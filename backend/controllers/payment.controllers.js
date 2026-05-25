@@ -34,6 +34,19 @@ const getPaymentById = async (req, res) => {
       });
     }
 
+    // Ownership check: users may only view their own payments.
+    // Admins can view any payment.
+    const isOwner = payment.user?._id
+      ? payment.user._id.toString() === (req.user?.id || req.user?._id)?.toString()
+      : payment.user.toString() === (req.user?.id || req.user?._id)?.toString();
+
+    if (!isOwner && req.user?.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized"
+      });
+    }
+
     return res.json({
       success: true,
       payment
@@ -70,6 +83,18 @@ const getPaymentByOrderId = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Payment not found for this order"
+      });
+    }
+
+    // Ownership check: users may only view their own payments.
+    const isOwner = payment.user?._id
+      ? payment.user._id.toString() === (req.user?.id || req.user?._id)?.toString()
+      : payment.user.toString() === (req.user?.id || req.user?._id)?.toString();
+
+    if (!isOwner && req.user?.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized"
       });
     }
 
@@ -403,9 +428,11 @@ const createStripeCheckoutSession = async (req, res) => {
   } catch (error) {
     console.error("Create Stripe checkout session error:", error.message);
 
+    // Do not expose error.message to the client — Stripe errors can contain
+    // internal details. Log server-side only.
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to create Stripe checkout session"
+      message: "Failed to create payment session. Please try again."
     });
   }
 };
@@ -508,34 +535,20 @@ const handleMoyasarReturn = async (req, res) => {
       return res.status(404).send("Order not found");
     }
 
+    // IMPORTANT: Do NOT update payment/order status here based on the URL
+    // query parameter. The return URL is visible to the user and can be
+    // manipulated (e.g. visiting ?status=paid manually). The authoritative
+    // status update is handled by the HMAC-verified webhook handler
+    // (handleMoyasarWebhook). This handler only redirects the user to the
+    // appropriate page for UX — the webhook does the actual bookkeeping.
+    const frontendBase = process.env.FRONTEND_URL || "http://127.0.0.1:5500";
+
     if (status === "paid" || status === "succeeded" || status === "success") {
-      payment.status = "paid";
-      payment.paidAt = new Date();
-
-      order.paymentStatus    = "paid";
-      order.isPaid           = true;
-      order.paidAt           = payment.paidAt;
-      order.paymentReference = payment.reference;
-      order.paymentProvider  = payment.provider || "moyasar";
-
-      await payment.save();
-      await order.save();
-
-      return res.redirect(
-        `${process.env.FRONTEND_URL || "http://127.0.0.1:5500"}/confirmation.html`
-      );
+      return res.redirect(`${frontendBase}/confirmation.html`);
     }
 
-    payment.status      = "failed";
-    order.paymentStatus = "failed";
-    order.isPaid        = false;
-    order.paidAt        = undefined;
-
-    await payment.save();
-    await order.save();
-
     return res.redirect(
-      `${process.env.FRONTEND_URL || "http://127.0.0.1:5500"}/payment-failed.html?orderId=${order._id}`
+      `${frontendBase}/payment-failed.html?orderId=${order._id}`
     );
   } catch (error) {
     console.error("Moyasar return handler error:", error);

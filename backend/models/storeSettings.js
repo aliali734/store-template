@@ -67,6 +67,15 @@ const storeSettingsSchema = new mongoose.Schema(
       type: String,
       default: "",
       trim: true
+    },
+
+    // Explicit flag set to true the first time the admin saves settings
+    // via the setup wizard. Using a dedicated boolean avoids the fragile
+    // store-name comparison that was previously used to infer setup state,
+    // which broke if the admin legitimately named their store "Clothing Store".
+    isConfigured: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }
