@@ -25,10 +25,11 @@ async function confirmationApiFetch(path, options = {}) {
 // =====================
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    // Verify session only once
-    const me = await confirmationApiFetch("/test/user");
+    // Use /auth/me — a permanent, production-safe session check endpoint.
+    // /test/user is only mounted in development (isDev) and returns 404
+    // in production, which caused "Failed to verify session" for every user.
+    const me = await confirmationApiFetch("/auth/me");
 
-    // ONLY logout if auth check explicitly fails
     if (me.status === 401 || me.status === 403) {
       await forceLogout();
       return;
@@ -57,10 +58,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 // =====================
 async function loadOrder() {
   try {
-    const res = await confirmationApiFetch(`/orders/${ORDER_ID}`);
+    const res  = await confirmationApiFetch(`/orders/${ORDER_ID}`);
     const data = await res.json().catch(() => ({}));
 
-    // Don't force logout here
     if (!res.ok) {
       updateStatus(data.message || "Failed to load order", "error");
       return;
@@ -114,8 +114,7 @@ function renderOrder(order) {
   const totalEl = document.getElementById("order-total");
 
   if (totalEl) {
-    totalEl.textContent =
-      `Total: $${Number(order.totalPrice || 0).toFixed(2)}`;
+    totalEl.textContent = `Total: $${Number(order.totalPrice || 0).toFixed(2)}`;
   }
 }
 

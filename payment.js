@@ -1,27 +1,20 @@
 // =====================
 // CSRF TOKEN
+// Uses the global getCsrfToken() from config.js instead of a local copy.
+// A local duplicate was the source of provider validation failures:
+// if config.js hadn't finished or API_BASE was undefined, the local
+// fetch hit a bad URL and returned HTML instead of JSON, causing every
+// subsequent API call to fail with an unexpected error.
 // =====================
-async function getPaymentCsrfToken() {
-  try {
-    const res = await fetch(`${API_BASE}/csrf`, {
-      method: "GET",
-      credentials: "include"
-    });
-
-    const data = await res.json().catch(() => ({}));
-    return data.csrfToken || null;
-  } catch (err) {
-    console.error("Failed to initialize CSRF:", err);
-    return null;
-  }
-}
 
 // =====================
 // AUTH-PROTECTED FETCH
 // =====================
 async function paymentApiFetch(path, options = {}) {
   const isFormData = options.body instanceof FormData;
-  const csrfToken = await getPaymentCsrfToken();
+
+  // getCsrfToken is defined in config.js and always available globally.
+  const csrfToken = await getCsrfToken();
 
   const res = await fetch(`${API_BASE}${path}`, {
     method: options.method || "GET",
@@ -67,6 +60,8 @@ function savePaymentCart(cart) {
 
 // =====================
 // MAP PAYMENT METHOD TO PROVIDER
+// Only providers recognised by the backend are returned:
+//   ["cod", "stripe", "paytabs", "tabby", "tamara", ""]
 // =====================
 function getProviderFromMethod(method) {
   switch (method) {
@@ -133,17 +128,13 @@ async function createPaymentRecord(orderId, paymentMethod) {
 async function createStripeCheckoutSession(paymentId) {
   const stripeRes = await paymentApiFetch("/payments/stripe/create-session", {
     method: "POST",
-    body: JSON.stringify({
-      paymentId
-    })
+    body: JSON.stringify({ paymentId })
   });
 
   const stripeData = await stripeRes.json().catch(() => ({}));
 
   if (!stripeRes.ok || !stripeData.url) {
-    throw new Error(
-      stripeData.message || "Failed to create Stripe checkout session"
-    );
+    throw new Error(stripeData.message || "Failed to create Stripe checkout session");
   }
 
   return stripeData;
@@ -191,15 +182,15 @@ async function handleCheckout() {
   }
 
   const paymentMethodInput = document.getElementById("payment-method");
-  const paymentMethod = paymentMethodInput?.value || "cash";
+  const paymentMethod      = paymentMethodInput?.value || "cash";
 
   const productsPayload = cart.map((item) => ({
-    product: item.id,
+    product:  item.id,
     quantity: item.quantity
   }));
 
   try {
-    const order = await createCheckoutOrder(productsPayload, paymentMethod);
+    const order   = await createCheckoutOrder(productsPayload, paymentMethod);
     const payment = await createPaymentRecord(order._id, paymentMethod);
 
     if (paymentMethod === "cash") {
