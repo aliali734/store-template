@@ -13,31 +13,38 @@ const socialLinksSchema = new mongoose.Schema(
 
 const homepageSchema = new mongoose.Schema(
   {
-    heroTitle: {
-      type: String,
-      default: "Discover Your Next Favorite Style",
-      trim: true
-    },
-    heroSubtitle: {
-      type: String,
-      default:
-        "Shop fashion for men, women, and kids in one place. Explore modern clothing, stylish shoes, and everyday accessories designed for comfort, confidence, and style.",
-      trim: true
-    },
-    supportHeadline: {
-      type: String,
-      default: "We're Here to Help",
-      trim: true
-    },
-    supportText: {
-      type: String,
-      default:
-        "If you have questions about products, orders, or your shopping experience, feel free to contact our support team.",
-      trim: true
-    },
-    supportEmail:    { type: String, default: "", trim: true, lowercase: true },
-    supportInstagram:{ type: String, default: "", trim: true },
-    supportTwitter:  { type: String, default: "", trim: true }
+    heroTitle:        { type: String, default: "Discover Your Next Favorite Style", trim: true },
+    heroSubtitle:     { type: String, default: "Shop fashion for men, women, and kids in one place.", trim: true },
+    supportHeadline:  { type: String, default: "We're Here to Help", trim: true },
+    supportText:      { type: String, default: "If you have questions, feel free to contact our support team.", trim: true },
+    supportEmail:     { type: String, default: "", trim: true, lowercase: true },
+    supportInstagram: { type: String, default: "", trim: true },
+    supportTwitter:   { type: String, default: "", trim: true }
+  },
+  { _id: false }
+);
+
+// SMTP settings — stored in DB so the client fills them via the
+// setup wizard instead of touching Render environment variables.
+const smtpSchema = new mongoose.Schema(
+  {
+    host: { type: String, default: "smtp.gmail.com", trim: true },
+    port: { type: Number, default: 587 },
+    user: { type: String, default: "", trim: true },
+    // NOTE: stored as plain text — acceptable for a single-tenant store
+    // run by the owner. For multi-tenant SaaS, encrypt at rest.
+    pass: { type: String, default: "", trim: true },
+    from: { type: String, default: "", trim: true }
+  },
+  { _id: false }
+);
+
+// Cloudinary credentials — stored in DB for the same reason.
+const cloudinarySchema = new mongoose.Schema(
+  {
+    cloudName: { type: String, default: "", trim: true },
+    apiKey:    { type: String, default: "", trim: true },
+    apiSecret: { type: String, default: "", trim: true }
   },
   { _id: false }
 );
@@ -51,32 +58,16 @@ const storeSettingsSchema = new mongoose.Schema(
     currency:     { type: String, default: "USD", trim: true, uppercase: true },
     footerText:   { type: String, default: "", trim: true },
 
-    socialLinks: {
-      type: socialLinksSchema,
-      default: () => ({})
-    },
-
-    homepage: {
-      type: homepageSchema,
-      default: () => ({})
-    },
+    socialLinks: { type: socialLinksSchema,  default: () => ({}) },
+    homepage:    { type: homepageSchema,     default: () => ({}) },
+    smtp:        { type: smtpSchema,         default: () => ({}) },
+    cloudinary:  { type: cloudinarySchema,   default: () => ({}) },
 
     // Cloudinary URL for the 3D GLB model shown in the homepage hero.
-    // Stored here so it survives server restarts (Render ephemeral fs).
-    heroModelUrl: {
-      type: String,
-      default: "",
-      trim: true
-    },
+    heroModelUrl: { type: String, default: "", trim: true },
 
-    // Explicit flag set to true the first time the admin saves settings
-    // via the setup wizard. Using a dedicated boolean avoids the fragile
-    // store-name comparison that was previously used to infer setup state,
-    // which broke if the admin legitimately named their store "Clothing Store".
-    isConfigured: {
-      type: Boolean,
-      default: false
-    }
+    // Set to true the first time the admin saves settings via the setup wizard.
+    isConfigured: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

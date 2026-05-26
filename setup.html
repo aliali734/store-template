@@ -67,6 +67,31 @@
         <label for="supportTwitter">Homepage X / Twitter URL</label>
         <input type="text" id="supportTwitter" />
 
+
+        <label for="smtpUser">Email (Gmail)</label>
+        <input type="email" id="smtpUser" placeholder="yourstore@gmail.com" />
+
+        <label for="smtpPass">Gmail App Password</label>
+        <input type="password" id="smtpPass" placeholder="16-character app password" />
+        <small style="color:#6b7280;font-size:12px;">
+          Create one at: myaccount.google.com → Security → App Passwords
+        </small>
+
+        <label for="smtpFrom">Sender Name (optional)</label>
+        <input type="text" id="smtpFrom" placeholder="My Store &lt;yourstore@gmail.com&gt;" />
+
+        <label for="cloudinaryCloudName">Cloudinary Cloud Name</label>
+        <input type="text" id="cloudinaryCloudName" placeholder="your-cloud-name" />
+
+        <label for="cloudinaryApiKey">Cloudinary API Key</label>
+        <input type="text" id="cloudinaryApiKey" placeholder="123456789012345" />
+
+        <label for="cloudinaryApiSecret">Cloudinary API Secret</label>
+        <input type="password" id="cloudinaryApiSecret" placeholder="Your Cloudinary API Secret" />
+        <small style="color:#6b7280;font-size:12px;">
+          Find all three at: cloudinary.com/console
+        </small>
+
         <p id="setup-message"></p>
         <button type="submit" id="setup-btn">Save and Continue</button>
       </form>

@@ -1,7 +1,7 @@
 const express       = require("express");
 const router        = express.Router();
 const streamifier   = require("streamifier");
-const cloudinary    = require("../config/cloudinary");
+const { getCloudinary } = require("../config/cloudinary");
 const StoreSettings = require("../models/storeSettings");
 const protect       = require("../middlewares/auth.middleware");
 const uploadModel   = require("../middlewares/upload.model.middleware");
@@ -16,7 +16,8 @@ function requireAdmin(req, res, next) {
 // resource_type: "raw" is required for non-image files (GLB/GLTF).
 // Cloudinary serves raw files with Access-Control-Allow-Origin: * so
 // Three.js can fetch them cross-origin from any frontend domain.
-function uploadGlbToCloudinary(buffer) {
+async function uploadGlbToCloudinary(buffer) {
+  const cloudinary = await getCloudinary();
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {

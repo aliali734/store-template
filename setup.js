@@ -62,7 +62,15 @@ setupForm?.addEventListener("submit", async (e) => {
     supportText: document.getElementById("supportText")?.value || "",
     homepageSupportEmail: document.getElementById("homepageSupportEmail")?.value || "",
     supportInstagram: document.getElementById("supportInstagram")?.value || "",
-    supportTwitter: document.getElementById("supportTwitter")?.value || ""
+    supportTwitter: document.getElementById("supportTwitter")?.value || "",
+    // SMTP — collected during first-run wizard so client never touches Render
+    smtpUser: document.getElementById("smtpUser")?.value || "",
+    smtpPass: document.getElementById("smtpPass")?.value || "",
+    smtpFrom: document.getElementById("smtpFrom")?.value || "",
+    // Cloudinary
+    cloudinaryCloudName: document.getElementById("cloudinaryCloudName")?.value || "",
+    cloudinaryApiKey: document.getElementById("cloudinaryApiKey")?.value || "",
+    cloudinaryApiSecret: document.getElementById("cloudinaryApiSecret")?.value || ""
   };
 
   if (!payload.storeName.trim()) {

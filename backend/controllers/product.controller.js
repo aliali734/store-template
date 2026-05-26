@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const streamifier = require("streamifier");
-const cloudinary = require("../config/cloudinary");
+const { getCloudinary } = require("../config/cloudinary");
 const Product = require("../models/product");
 const {
   buildProductFilter,
@@ -31,7 +31,8 @@ function makeSlug(text) {
 // ============================
 // CLOUDINARY UPLOAD HELPER
 // ============================
-function uploadBufferToCloudinary(buffer, folder) {
+async function uploadBufferToCloudinary(buffer, folder) {
+  const cloudinary = await getCloudinary();
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { folder },
@@ -40,7 +41,6 @@ function uploadBufferToCloudinary(buffer, folder) {
         resolve(result);
       }
     );
-
     streamifier.createReadStream(buffer).pipe(stream);
   });
 }

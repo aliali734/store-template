@@ -24,6 +24,16 @@ const homepageSupportEmailInput = document.getElementById("homepageSupportEmail"
 const supportInstagramInput   = document.getElementById("supportInstagram");
 const supportTwitterInput     = document.getElementById("supportTwitter");
 
+// SMTP settings
+const smtpUserInput           = document.getElementById("smtpUser");
+const smtpPassInput           = document.getElementById("smtpPass");
+const smtpFromInput           = document.getElementById("smtpFrom");
+
+// Cloudinary settings
+const cloudinaryCloudNameInput = document.getElementById("cloudinaryCloudName");
+const cloudinaryApiKeyInput    = document.getElementById("cloudinaryApiKey");
+const cloudinaryApiSecretInput = document.getElementById("cloudinaryApiSecret");
+
 // =====================
 // MODAL HELPERS
 // =====================
@@ -46,7 +56,8 @@ closeSettingsBtn?.addEventListener("click", closeSettingsModal);
 // =====================
 async function loadStoreSettings() {
   try {
-    const data = await apiFetch("/settings");
+    // Use admin endpoint so smtp/cloudinary fields are returned (public endpoint strips them)
+    const data = await window.adminApiFetch("/settings/admin");
 
     if (!data.success || !data.settings) {
       throw new Error(data.message || "Failed to load settings");
@@ -74,6 +85,16 @@ async function loadStoreSettings() {
     if (homepageSupportEmailInput) homepageSupportEmailInput.value = settings.homepage?.supportEmail   || "";
     if (supportInstagramInput)    supportInstagramInput.value    = settings.homepage?.supportInstagram || "";
     if (supportTwitterInput)      supportTwitterInput.value      = settings.homepage?.supportTwitter   || "";
+
+    // SMTP
+    if (smtpUserInput)            smtpUserInput.value            = settings.smtp?.user   || "";
+    if (smtpPassInput)            smtpPassInput.value            = "";  // never pre-fill password
+    if (smtpFromInput)            smtpFromInput.value            = settings.smtp?.from   || "";
+
+    // Cloudinary
+    if (cloudinaryCloudNameInput) cloudinaryCloudNameInput.value = settings.cloudinary?.cloudName || "";
+    if (cloudinaryApiKeyInput)    cloudinaryApiKeyInput.value    = settings.cloudinary?.apiKey    || "";
+    if (cloudinaryApiSecretInput) cloudinaryApiSecretInput.value = "";  // never pre-fill secret
 
     if (settingsMessage) settingsMessage.textContent = "";
   } catch (err) {
@@ -115,7 +136,15 @@ settingsForm?.addEventListener("submit", async (e) => {
         supportText:          supportTextInput?.value          || "",
         homepageSupportEmail: homepageSupportEmailInput?.value || "",
         supportInstagram:     supportInstagramInput?.value     || "",
-        supportTwitter:       supportTwitterInput?.value       || ""
+        supportTwitter:       supportTwitterInput?.value       || "",
+        // SMTP
+        smtpUser:             smtpUserInput?.value             || "",
+        smtpPass:             smtpPassInput?.value             || "",
+        smtpFrom:             smtpFromInput?.value             || "",
+        // Cloudinary
+        cloudinaryCloudName:  cloudinaryCloudNameInput?.value  || "",
+        cloudinaryApiKey:     cloudinaryApiKeyInput?.value     || "",
+        cloudinaryApiSecret:  cloudinaryApiSecretInput?.value  || ""
       })
     });
 
