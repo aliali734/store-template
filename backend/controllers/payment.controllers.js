@@ -12,10 +12,7 @@ const getPaymentById = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid payment ID"
-      });
+      return res.status(400).json({ success: false, message: "Invalid payment ID" });
     }
 
     const payment = await Payment.findById(id)
@@ -23,23 +20,13 @@ const getPaymentById = async (req, res) => {
       .populate("user", "name email");
 
     if (!payment) {
-      return res.status(404).json({
-        success: false,
-        message: "Payment not found"
-      });
+      return res.status(404).json({ success: false, message: "Payment not found" });
     }
 
-    return res.json({
-      success: true,
-      payment
-    });
+    return res.json({ success: true, payment });
   } catch (error) {
     console.error("Get payment by ID error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch payment"
-    });
+    return res.status(500).json({ success: false, message: "Failed to fetch payment" });
   }
 };
 
@@ -51,10 +38,7 @@ const getPaymentByOrderId = async (req, res) => {
     const { orderId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid order ID"
-      });
+      return res.status(400).json({ success: false, message: "Invalid order ID" });
     }
 
     const payment = await Payment.findOne({ order: orderId })
@@ -62,23 +46,13 @@ const getPaymentByOrderId = async (req, res) => {
       .populate("user", "name email");
 
     if (!payment) {
-      return res.status(404).json({
-        success: false,
-        message: "Payment not found for this order"
-      });
+      return res.status(404).json({ success: false, message: "Payment not found for this order" });
     }
 
-    return res.json({
-      success: true,
-      payment
-    });
+    return res.json({ success: true, payment });
   } catch (error) {
     console.error("Get payment by order ID error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch payment"
-    });
+    return res.status(500).json({ success: false, message: "Failed to fetch payment" });
   }
 };
 
@@ -91,67 +65,41 @@ const createPayment = async (req, res) => {
     const { orderId, method, provider, currency } = req.body;
 
     if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized"
-      });
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
     if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Valid orderId is required"
-      });
+      return res.status(400).json({ success: false, message: "Valid orderId is required" });
     }
 
-    const normalizedMethod = String(method || "cash").toLowerCase();
-    const normalizedProvider = String(
-      provider || (normalizedMethod === "cash" ? "cod" : "")
-    ).toLowerCase();
+    const normalizedMethod   = String(method   || "cash").toLowerCase();
+    const normalizedProvider = String(provider || (normalizedMethod === "cash" ? "cod" : "")).toLowerCase();
 
     const allowedMethods   = ["cash", "card", "wallet", "bnpl"];
     const allowedProviders = ["cod", "stripe", "paytabs", "tabby", "tamara", ""];
 
     if (!allowedMethods.includes(normalizedMethod)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid payment method"
-      });
+      return res.status(400).json({ success: false, message: "Invalid payment method" });
     }
 
     if (!allowedProviders.includes(normalizedProvider)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid payment provider"
-      });
+      return res.status(400).json({ success: false, message: "Invalid payment provider" });
     }
 
     const order = await Order.findById(orderId);
 
     if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found"
-      });
+      return res.status(404).json({ success: false, message: "Order not found" });
     }
 
     if (order.user.toString() !== userId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized for this order"
-      });
+      return res.status(403).json({ success: false, message: "Not authorized for this order" });
     }
 
-    // Manual check as a fast first line of defence. The unique index on
-    // Payment.order is the authoritative guard against race conditions —
-    // the E11000 duplicate-key error it throws is caught below.
+    // Manual guard (unique index is the authoritative race-condition guard)
     const existingPayment = await Payment.findOne({ order: orderId });
-
     if (existingPayment) {
-      return res.status(400).json({
-        success: false,
-        message: "Payment already exists for this order"
-      });
+      return res.status(400).json({ success: false, message: "Payment already exists for this order" });
     }
 
     const payment = await Payment.create({
@@ -175,22 +123,116 @@ const createPayment = async (req, res) => {
       payment
     });
   } catch (error) {
-    // E11000 is MongoDB's duplicate-key error code. It fires when two
-    // concurrent requests both pass the manual findOne check and then race
-    // to insert — the unique index on `order` catches the second write.
     if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        message: "Payment already exists for this order"
-      });
+      return res.status(400).json({ success: false, message: "Payment already exists for this order" });
+    }
+    console.error("Create payment error:", error);
+    return res.status(500).json({ success: false, message: "Failed to create payment" });
+  }
+};
+
+// ============================
+// CREATE STRIPE CHECKOUT SESSION
+// ============================
+const createStripeCheckoutSession = async (req, res) => {
+  try {
+    const userId    = req.user?.id || req.user?._id;
+    const { paymentId } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    console.error("Create payment error:", error);
+    if (!paymentId || !mongoose.Types.ObjectId.isValid(paymentId)) {
+      return res.status(400).json({ success: false, message: "Valid paymentId is required" });
+    }
 
-    return res.status(500).json({
-      success: false,
-      message: "Failed to create payment"
+    const payment = await Payment.findById(paymentId).populate("order");
+
+    if (!payment) {
+      return res.status(404).json({ success: false, message: "Payment not found" });
+    }
+
+    if (payment.user.toString() !== userId.toString()) {
+      return res.status(403).json({ success: false, message: "Not authorized for this payment" });
+    }
+
+    const order = payment.order;
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Associated order not found" });
+    }
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5500";
+
+    const lineItems = (order.products || []).map((item) => ({
+      price_data: {
+        currency:     (payment.currency || "usd").toLowerCase(),
+        product_data: { name: item.name || "Product" },
+        unit_amount:  Math.round(Number(item.price || 0) * 100)
+      },
+      quantity: item.quantity || 1
+    }));
+
+    if (!lineItems.length) {
+      return res.status(400).json({ success: false, message: "Order has no items" });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode:                 "payment",
+      line_items:           lineItems,
+      success_url:          `${frontendUrl}/confirmation.html`,
+      cancel_url:           `${frontendUrl}/payment-failed.html`,
+      metadata: {
+        paymentId: payment._id.toString(),
+        orderId:   order._id.toString()
+      }
     });
+
+    return res.json({ success: true, url: session.url, sessionId: session.id });
+  } catch (error) {
+    console.error("Create Stripe checkout session error:", error);
+    return res.status(500).json({ success: false, message: "Failed to create Stripe checkout session" });
+  }
+};
+
+// ============================
+// UPDATE PAYMENT STATUS (ADMIN)
+// ============================
+const updatePaymentStatus = async (req, res) => {
+  try {
+    const { id }     = req.params;
+    const { status } = req.body;
+
+    const allowedStatuses = ["pending", "paid", "failed", "cancelled", "refunded"];
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: "Invalid payment ID" });
+    }
+
+    if (!status || !allowedStatuses.includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid status value" });
+    }
+
+    const payment = await Payment.findById(id);
+
+    if (!payment) {
+      return res.status(404).json({ success: false, message: "Payment not found" });
+    }
+
+    payment.status = status;
+
+    if (status === "paid" && !payment.paidAt) {
+      payment.paidAt = new Date();
+    }
+
+    await payment.save();
+
+    return res.json({ success: true, message: "Payment status updated", payment });
+  } catch (error) {
+    console.error("Update payment status error:", error);
+    return res.status(500).json({ success: false, message: "Failed to update payment status" });
   }
 };
 
@@ -219,14 +261,12 @@ const handleStripeWebhook = async (req, res) => {
     }
 
     if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
-
+      const session   = event.data.object;
       const paymentId = session.metadata?.paymentId;
       const orderId   = session.metadata?.orderId;
 
       if (paymentId && mongoose.Types.ObjectId.isValid(paymentId)) {
         const payment = await Payment.findById(paymentId);
-
         if (payment) {
           payment.status           = "paid";
           payment.paidAt           = new Date();
@@ -238,7 +278,6 @@ const handleStripeWebhook = async (req, res) => {
 
       if (orderId && mongoose.Types.ObjectId.isValid(orderId)) {
         const order = await Order.findById(orderId);
-
         if (order) {
           order.paymentStatus    = "paid";
           order.paymentProvider  = "stripe";
