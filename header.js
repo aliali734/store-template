@@ -72,9 +72,9 @@ function renderDesktopMenu(menu) {
       .map((section) => {
         const linksHtml = (section.links || [])
           .map((link, i, arr) => {
-            const html       = buildHeaderLinkHTML(link);
-            const isPromo    = (link.url || "").includes("promo=true");
-            const nextLink   = arr[i + 1];
+            const html        = buildHeaderLinkHTML(link);
+            const isPromo     = (link.url || "").includes("promo=true");
+            const nextLink    = arr[i + 1];
             const nextIsPromo = nextLink && (nextLink.url || "").includes("promo=true");
             const addDivider  = isPromo && !nextIsPromo;
             return addDivider ? html + '<div class="mega-link-divider"></div>' : html;
@@ -128,9 +128,9 @@ function renderMobileMenu(menu) {
       .map((section) => {
         const linksHtml = (section.links || [])
           .map((link, i, arr) => {
-            const html       = buildHeaderLinkHTML(link);
-            const isPromo    = (link.url || "").includes("promo=true");
-            const nextLink   = arr[i + 1];
+            const html        = buildHeaderLinkHTML(link);
+            const isPromo     = (link.url || "").includes("promo=true");
+            const nextLink    = arr[i + 1];
             const nextIsPromo = nextLink && (nextLink.url || "").includes("promo=true");
             const addDivider  = isPromo && !nextIsPromo;
             return addDivider ? html + '<div class="mega-link-divider"></div>' : html;
@@ -158,8 +158,6 @@ function renderMobileMenu(menu) {
 
 // =====================
 // AUTH-AWARE BUTTONS
-// BUG FIX: was calling /test/user which is blocked in production.
-// Now uses /auth/me which is always available (fix #4 & session fix).
 // =====================
 async function setupHeaderAuth() {
   const loginLink    = document.getElementById("login-link");
@@ -336,13 +334,13 @@ function renderHeaderCartModal() {
 
 // =====================
 // CHECKOUT HANDLER
-// Wires up the "Proceed to Checkout" button inside the cart modal.
 //
 // Flow:
-//   Cash on Delivery  → POST /orders → confirmation.html
-//   Card              → POST /orders → POST /payments → POST /payments/moyasar
-//                       → redirect to Moyasar hosted page
-//   BNPL              → same as Card with provider: tabby / tamara
+//   Cash → POST /orders → confirmation.html
+//   Card → POST /orders → POST /payments (provider: stripe)
+//          → POST /payments/stripe/create-session → Stripe hosted page
+//   BNPL → POST /orders → POST /payments (provider: tabby)
+//          → alert (Tabby integration pending)
 // =====================
 async function handleCheckout() {
   const cart = getHeaderCart();
@@ -355,18 +353,18 @@ async function handleCheckout() {
   const paymentMethodEl = document.getElementById("payment-method");
   const paymentMethod   = paymentMethodEl?.value || "cash";
 
-  const checkoutBtn     = document.getElementById("checkout-btn");
-  const originalText    = checkoutBtn?.textContent || "Proceed to Checkout";
+  const checkoutBtn  = document.getElementById("checkout-btn");
+  const originalText = checkoutBtn?.textContent || "Proceed to Checkout";
 
   if (checkoutBtn) {
-    checkoutBtn.disabled     = true;
-    checkoutBtn.textContent  = "Processing…";
+    checkoutBtn.disabled    = true;
+    checkoutBtn.textContent = "Processing…";
   }
 
   try {
     const csrfToken = await getCsrfToken();
 
-    // ── Step 1: create order ───────────────────────────────
+    // ── Step 1: create order ─────────────────────────────────────
     const orderRes = await fetch(`${API_BASE}/orders`, {
       method: "POST",
       credentials: "include",
@@ -392,16 +390,25 @@ async function handleCheckout() {
     const orderId = orderData.order._id;
     localStorage.setItem("currentOrderId", orderId);
 
-    // ── Cash on delivery — done ────────────────────────────
+    // ── Cash on delivery — done ──────────────────────────────────
     if (paymentMethod === "cash") {
       localStorage.removeItem("cart");
-      window.location.href = `confirmation.html?orderId=${orderId}`;
+      window.location.href = "confirmation.html";
       return;
     }
 
-    // ── Card / BNPL — create payment record ───────────────
-    const provider = paymentMethod === "card" ? "moyasar" : "tabby";
+    // ── Card / BNPL — map method to provider ─────────────────────
+    // Only providers accepted by the backend:
+    //   card → stripe | bnpl → tabby
+    // "moyasar" has been removed from both frontend and backend.
+    const providerMap = {
+      card: "stripe",
+      bnpl: "tabby"
+    };
 
+    const provider = providerMap[paymentMethod] || "";
+
+    // ── Step 2: create payment record ────────────────────────────
     const payRes = await fetch(`${API_BASE}/payments`, {
       method: "POST",
       credentials: "include",
@@ -409,7 +416,12 @@ async function handleCheckout() {
         "Content-Type": "application/json",
         ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
       },
-      body: JSON.stringify({ orderId, method: paymentMethod, provider })
+      body: JSON.stringify({
+        orderId,
+        method:   paymentMethod,
+        provider,
+        currency: "SAR"
+      })
     });
 
     const payData = await payRes.json().catch(() => ({}));
@@ -418,32 +430,40 @@ async function handleCheckout() {
       throw new Error(payData.message || "Failed to create payment record.");
     }
 
-    // ── Initiate Moyasar hosted payment page ───────────────
-    const initRes = await fetch(`${API_BASE}/payments/moyasar`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
-      },
-      body: JSON.stringify({
-        paymentId:   payData.payment._id,
-        callbackUrl: `${window.location.origin}/confirmation.html?orderId=${orderId}`
-      })
-    });
+    // ── Card: create Stripe checkout session ─────────────────────
+    if (paymentMethod === "card") {
+      const sessionRes = await fetch(`${API_BASE}/payments/stripe/create-session`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(csrfToken ? { "x-csrf-token": csrfToken } : {})
+        },
+        body: JSON.stringify({ paymentId: payData.payment._id })
+      });
 
-    const initData = await initRes.json().catch(() => ({}));
+      const sessionData = await sessionRes.json().catch(() => ({}));
 
-    if (!initRes.ok) {
-      throw new Error(initData.message || "Failed to initialize payment.");
+      if (!sessionRes.ok || !sessionData.url) {
+        throw new Error(sessionData.message || "Failed to create Stripe checkout session.");
+      }
+
+      localStorage.removeItem("cart");
+      window.location.href = sessionData.url;
+      return;
     }
 
-    if (!initData.paymentUrl) {
-      throw new Error("Payment provider did not return a payment URL.");
+    // ── BNPL: Tabby/Tamara integration pending ───────────────────
+    if (paymentMethod === "bnpl") {
+      alert("BNPL integration (Tabby/Tamara) is coming soon. Payment record created.");
+      if (checkoutBtn) {
+        checkoutBtn.disabled    = false;
+        checkoutBtn.textContent = originalText;
+      }
+      return;
     }
 
-    localStorage.removeItem("cart");
-    window.location.href = initData.paymentUrl;
+    throw new Error("Unsupported payment method.");
 
   } catch (err) {
     console.error("Checkout error:", err);
@@ -458,8 +478,6 @@ async function handleCheckout() {
 
 // =====================
 // CART MODAL
-// BUG FIX: was missing renderHeaderCartModal() call on open,
-// so the cart always showed stale / empty content.
 // =====================
 function setupHeaderCartModal() {
   const cartBtn     = document.querySelector(".cart-wrapper .icon-btn");
@@ -469,21 +487,18 @@ function setupHeaderCartModal() {
 
   if (!cartBtn || !cartModal) return;
 
-  // Open — render current cart state first, then show modal
   cartBtn.addEventListener("click", (e) => {
     e.preventDefault();
-    renderHeaderCartModal();          // ← BUG FIX: was missing
+    renderHeaderCartModal();
     cartModal.classList.add("active");
     document.body.style.overflow = "hidden";
   });
 
-  // Close via × button
   cartClose?.addEventListener("click", () => {
     cartModal.classList.remove("active");
     document.body.style.overflow = "";
   });
 
-  // Close via overlay click
   cartModal.addEventListener("click", (e) => {
     if (e.target === cartModal) {
       cartModal.classList.remove("active");
@@ -491,7 +506,6 @@ function setupHeaderCartModal() {
     }
   });
 
-  // Checkout button
   checkoutBtn?.addEventListener("click", handleCheckout);
 }
 
