@@ -1,3 +1,6 @@
+// =====================
+// GET saved app config
+// =====================
 function getSavedAppConfig() {
   try {
     const raw = localStorage.getItem("storeTemplateConfig");
