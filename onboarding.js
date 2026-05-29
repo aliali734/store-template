@@ -1,3 +1,6 @@
+// =====================
+// current page
+// =====================
 (function () {
   const currentPage = (location.pathname.split("/").pop() || "").toLowerCase();
 
@@ -15,7 +18,9 @@
       return {};
     }
   }
-
+// =====================
+// check json
+// =====================
   async function checkJson(url) {
     const res = await fetch(url, {
       credentials: "include"
@@ -29,7 +34,9 @@
 
     return data;
   }
-
+// =====================
+// run onboading check
+// =====================
   async function runOnboardingCheck() {
     try {
       const savedConfig = getSavedAppConfig();
