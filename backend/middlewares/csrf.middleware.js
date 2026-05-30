@@ -1,6 +1,9 @@
 const crypto = require("crypto");
 
 const SAFE_METHODS = ["GET", "HEAD", "OPTIONS"];
+// ============================
+// generate Csrf Token
+// ============================
 
 function generateCsrfToken() {
   return crypto.randomBytes(32).toString("hex");
