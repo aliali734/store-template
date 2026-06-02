@@ -3,7 +3,7 @@
 // Set BACKEND_URL to your deployed Render backend URL.
 // This is the only line you need to change when deploying.
 // =====================================================================
-const BACKEND_URL = "https://your-backend.onrender.com";
+const BACKEND_URL = "https://store-template-nemj.onrender.com";
 
 const API_BASE    = `${BACKEND_URL}/api`;
 const SERVER_BASE = BACKEND_URL;
