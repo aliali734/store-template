@@ -1,57 +1,22 @@
-// =====================
-// current page
-// =====================
 (function () {
   const currentPage = (location.pathname.split("/").pop() || "").toLowerCase();
 
-  const allowedWithoutRedirect = [
-    "connect.html",
-    "setup.html",
-    "setup-admin.html"
-  ];
+  // Pages that are allowed before setup is complete
+  const allowedWithoutRedirect = ["setup.html", "setup-admin.html"];
 
-  function getSavedAppConfig() {
-    try {
-      const raw = localStorage.getItem("storeTemplateConfig");
-      return raw ? JSON.parse(raw) : {};
-    } catch {
-      return {};
-    }
-  }
-// =====================
-// check json
-// =====================
   async function checkJson(url) {
-    const res = await fetch(url, {
-      credentials: "include"
-    });
-
+    const res = await fetch(url, { credentials: "include" });
     const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      throw new Error(data.message || "Request failed");
-    }
-
+    if (!res.ok) throw new Error(data.message || "Request failed");
     return data;
   }
-// =====================
-// run onboading check
-// =====================
+
   async function runOnboardingCheck() {
     try {
-      const savedConfig = getSavedAppConfig();
+      // API_BASE is defined in config.js (hardcoded Render URL)
+      const apiBase = API_BASE.replace(/\/+$/, "");
 
-      // Step 1: backend URL not saved yet
-      if (!savedConfig.API_BASE || !savedConfig.SERVER_BASE) {
-        if (!allowedWithoutRedirect.includes(currentPage)) {
-          window.location.href = "connect.html";
-        }
-        return;
-      }
-
-      const apiBase = savedConfig.API_BASE.replace(/\/+$/, "");
-
-      // Step 2: store settings configured?
+      // Step 1: store settings configured?
       const setupData = await checkJson(`${apiBase}/setup/status`);
 
       if (!setupData.success || !setupData.isConfigured) {
@@ -61,7 +26,7 @@
         return;
       }
 
-      // Step 3: admin exists?
+      // Step 2: admin exists?
       const adminData = await checkJson(`${apiBase}/setup-admin/status`);
 
       if (!adminData.success || !adminData.adminExists) {
@@ -71,9 +36,8 @@
         return;
       }
 
-      // If fully configured and user is still on setup pages, move them to login
+      // Fully configured — move setup pages users to login
       if (
-        currentPage === "connect.html" ||
         currentPage === "setup.html" ||
         currentPage === "setup-admin.html"
       ) {
@@ -81,11 +45,7 @@
       }
     } catch (err) {
       console.error("Onboarding check failed:", err);
-
-      // If we cannot even verify state, safest fallback is connect page
-      if (!allowedWithoutRedirect.includes(currentPage)) {
-        window.location.href = "connect.html";
-      }
+      // If backend is unreachable, don't redirect — let the page handle it
     }
   }
 

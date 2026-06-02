@@ -1,26 +1,12 @@
-// =====================
-// GET saved app config
-// =====================
-function getSavedAppConfig() {
-  try {
-    const raw = localStorage.getItem("storeTemplateConfig");
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
+// =====================================================================
+// BACKEND CONNECTION
+// Set BACKEND_URL to your deployed Render backend URL.
+// This is the only line you need to change when deploying.
+// =====================================================================
+const BACKEND_URL = "https://your-backend.onrender.com";
 
-const savedConfig = getSavedAppConfig();
-
-const API_BASE =
-  savedConfig.API_BASE ||
-  window.APP_CONFIG?.API_BASE ||
-  "http://localhost:5000/api";
-
-const SERVER_BASE =
-  savedConfig.SERVER_BASE ||
-  window.APP_CONFIG?.SERVER_BASE ||
-  "http://localhost:5000";
+const API_BASE    = `${BACKEND_URL}/api`;
+const SERVER_BASE = BACKEND_URL;
 
 // =====================
 // GET COOKIE
@@ -57,7 +43,6 @@ async function ensureCsrf() {
 
 // =====================
 // GET CSRF TOKEN
-// Single shared implementation — previously duplicated across 9 files.
 // =====================
 async function getCsrfToken() {
   try {
@@ -76,10 +61,6 @@ async function getCsrfToken() {
 
 // =====================
 // FORCE LOGOUT
-// Single shared implementation — previously duplicated across 3 files
-// (confirmation.js, orders.js, shop.js).
-// Logs the user out server-side and always redirects to login,
-// even if the server call fails.
 // =====================
 async function forceLogout() {
   try {
@@ -101,8 +82,6 @@ async function forceLogout() {
 
 // =====================
 // RESOLVE IMAGE URL
-// Single shared implementation — previously duplicated across 4 files.
-// Supports Cloudinary full URLs and legacy local /uploads/... paths.
 // =====================
 function resolveImageUrl(path, fallback = "https://via.placeholder.com/300") {
   if (!path) return fallback;
@@ -183,7 +162,6 @@ function applyStoreSettingsToUI(settings) {
 
   Object.entries(socialMap).forEach(([key, el]) => {
     const url = settings.socialLinks?.[key];
-
     if (el && url) {
       el.href = url;
       el.style.display = "inline-block";
@@ -196,18 +174,9 @@ function applyStoreSettingsToUI(settings) {
   }
 }
 
-// =====================
-// OPTIONAL CONFIG CHECK
-// =====================
-function hasSavedConnectionConfig() {
-  return Boolean(savedConfig.API_BASE && savedConfig.SERVER_BASE);
-}
-
-// Expose shared utilities globally so every page script can use them
-// without redefining them locally.
-window.getCsrfToken             = getCsrfToken;
-window.forceLogout              = forceLogout;
-window.resolveImageUrl          = resolveImageUrl;
-window.getStoreSettings         = getStoreSettings;
-window.applyStoreSettingsToUI   = applyStoreSettingsToUI;
-window.hasSavedConnectionConfig = hasSavedConnectionConfig;
+// Expose shared utilities globally
+window.getCsrfToken           = getCsrfToken;
+window.forceLogout            = forceLogout;
+window.resolveImageUrl        = resolveImageUrl;
+window.getStoreSettings       = getStoreSettings;
+window.applyStoreSettingsToUI = applyStoreSettingsToUI;
