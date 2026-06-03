@@ -300,7 +300,7 @@ cat > /mnt/user-data/outputs/header.css << 'EOF'
   background: rgba(10,10,12,.99);
   border-right: 1px solid var(--hdr-border);
   z-index: calc(var(--hdr-z) + 2);
-  overflow-y: auto;
+  overflow-y: visible ;
   overflow-x: hidden;
   padding-bottom: 40px;
   transform: translateX(-100%);
