@@ -1,3 +1,15 @@
+// ============================
+// ESCAPE REGEX
+// User input fed into a MongoDB $regex must be escaped, otherwise:
+//   - regex meta-chars (. * + ? ( [ \ etc.) silently change the
+//     intended substring search;
+//   - a malicious pattern like "(a+)+$" against long strings causes
+//     catastrophic backtracking (ReDoS), hanging the Node event loop.
+// ============================
+function escapeRegex(str) {
+  return String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function buildProductFilter(query) {
   const {
     search,
@@ -16,10 +28,11 @@ function buildProductFilter(query) {
   const filter = { isActive: true };
 
   if (search) {
+    const safe = escapeRegex(search);
     filter.$or = [
-      { name: { $regex: search, $options: "i" } },
-      { description: { $regex: search, $options: "i" } },
-      { brand: { $regex: search, $options: "i" } }
+      { name:        { $regex: safe, $options: "i" } },
+      { description: { $regex: safe, $options: "i" } },
+      { brand:       { $regex: safe, $options: "i" } }
     ];
   }
 
@@ -80,5 +93,6 @@ function buildPagination(query) {
 module.exports = {
   buildProductFilter,
   buildSortOption,
-  buildPagination
+  buildPagination,
+  escapeRegex
 };

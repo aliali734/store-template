@@ -121,6 +121,17 @@ app.get("/", (req, res) => {
   res.send("🚀 Backend is running successfully!");
 });
 
+// ── JSON 404 — must come AFTER all routes ──────────────────────────────────
+// Matches the {success:false, message} shape used everywhere else, so the
+// frontend's apiFetch() can surface the message cleanly instead of choking
+// on Express's default HTML "Cannot GET /api/foo".
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.originalUrl}`
+  });
+});
+
 // ── Global error handler ───────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error("Server error:", err.message);
