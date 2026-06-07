@@ -792,13 +792,39 @@ body.no-scroll { overflow: hidden; touch-action: none; }
    ============================================================ */
 
 #mobile-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100vh;
+  height: 100dvh;                 /* respects mobile browser chrome */
+  width: min(380px, 88vw);
   background: #ffffff;
   border-right: none;
   box-shadow: 8px 0 32px rgba(0, 0, 0, 0.12);
-  width: min(380px, 88vw);
-  padding-bottom: 24px;
   color: #111;
+  z-index: 10010;                 /* above the sticky site-header */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform .35s cubic-bezier(.25, 1, .5, 1);
 }
+#mobile-panel[aria-hidden="false"] { transform: translateX(0); }
+
+/* Overlay must stay below the panel but above everything else */
+#mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 10005;
+  display: none;
+}
+#mobile-overlay.active { display: block; }
 
 /* Top row: just the close button on the right */
 .mobile-panel-header {
@@ -960,12 +986,7 @@ body.no-scroll { overflow: hidden; touch-action: none; }
   height: 1px; background: #ececec; margin: 8px 0;
 }
 
-/* Overlay — lighter for the white drawer */
-#mobile-overlay {
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-}
+/* (overlay rules consolidated above) */
 
 /* Phone sizing — slightly bigger rows for thumb-friendly tapping */
 @media (max-width: 600px) {
