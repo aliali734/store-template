@@ -78,7 +78,7 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
   min-height: 100vh;
   display: flex;
   align-items: center;
-  padding: 120px 64px 80px;
+  padding: 0px 64px 80px;
   position: relative;
   overflow: hidden;
   /* Isolate stacking context so the WebGL canvas never bleeds
