@@ -116,10 +116,22 @@ function renderMobileMenu(menu) {
   menu.forEach((menuItem) => {
     const sections = Array.isArray(menuItem.sections) ? menuItem.sections : [];
 
+    // Detect promo/sale items (color them red, like "Soldes")
+    const titleLower = (menuItem.title || "").toLowerCase();
+    const isPromo =
+      /soldes?|sale|promo|offer/i.test(titleLower) ||
+      (menuItem.url || "").includes("promo=true");
+    const promoClass = isPromo ? " is-promo" : "";
+
     if (!sections.length) {
       mobileMenu.insertAdjacentHTML(
         "beforeend",
-        `<a href="${menuItem.url || "#"}">${menuItem.title}</a>`
+        `
+        <a class="mobile-row${promoClass}" href="${menuItem.url || "#"}">
+          <span class="mobile-row-label">${menuItem.title}</span>
+          <span class="mobile-row-chevron" aria-hidden="true">›</span>
+        </a>
+        `
       );
       return;
     }
@@ -129,10 +141,10 @@ function renderMobileMenu(menu) {
         const linksHtml = (section.links || [])
           .map((link, i, arr) => {
             const html        = buildHeaderLinkHTML(link);
-            const isPromo     = (link.url || "").includes("promo=true");
+            const linkIsPromo = (link.url || "").includes("promo=true");
             const nextLink    = arr[i + 1];
             const nextIsPromo = nextLink && (nextLink.url || "").includes("promo=true");
-            const addDivider  = isPromo && !nextIsPromo;
+            const addDivider  = linkIsPromo && !nextIsPromo;
             return addDivider ? html + '<div class="mega-link-divider"></div>' : html;
           })
           .join("");
@@ -148,7 +160,10 @@ function renderMobileMenu(menu) {
       "beforeend",
       `
       <div class="mobile-item">
-        <button type="button" class="mobile-toggle-sub">${menuItem.title} ▾</button>
+        <button type="button" class="mobile-toggle-sub mobile-row${promoClass}">
+          <span class="mobile-row-label">${menuItem.title}</span>
+          <span class="mobile-row-chevron" aria-hidden="true">›</span>
+        </button>
         <div class="mobile-submenu">${sectionsHtml}</div>
       </div>
       `
@@ -257,6 +272,24 @@ function setupHeaderInteractions() {
     const isHidden = headerSearch.style.display === "none" || !headerSearch.style.display;
     headerSearch.style.display = isHidden ? "inline-block" : "none";
     if (isHidden) headerSearch.focus();
+  });
+
+  // Mobile search inside the drawer → forwards to shop.html?q=…
+  const mobileSearchInput = document.getElementById("mobile-search-input");
+  const mobileSearchBtn   = document.getElementById("mobile-search-btn");
+
+  const submitMobileSearch = () => {
+    const q = (mobileSearchInput?.value || "").trim();
+    if (!q) return;
+    window.location.href = `shop.html?q=${encodeURIComponent(q)}`;
+  };
+
+  mobileSearchBtn?.addEventListener("click", submitMobileSearch);
+  mobileSearchInput?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submitMobileSearch();
+    }
   });
 }
 
