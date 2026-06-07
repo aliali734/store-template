@@ -678,3 +678,110 @@
   .nav { padding: 0 16px; }
   .cart-content { width: 100vw; padding: 28px 20px; }
 }
+/* ============================================================
+   MOBILE UX REFINEMENTS  (added 2026-06 — appended at end so
+   these rules win the cascade without touching anything above)
+   ============================================================ */
+
+/* Smaller default header on phones — more screen room */
+@media (max-width: 600px) {
+  :root { --hdr-h: 60px; }
+  .nav  { padding: 0 14px; gap: 6px; }
+  .logo { font-size: 16px; }
+  .logo img { height: 28px; }
+}
+
+/* Hamburger: animated icon + larger tap target (44×44 min, WCAG) */
+#mobile-toggle {
+  font-size: 0;            /* hide the ☰ character; we draw bars */
+  width: 44px;
+  height: 44px;
+  position: relative;
+}
+#mobile-toggle::before,
+#mobile-toggle::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 22px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  transform: translateX(-50%);
+  transition: transform .3s cubic-bezier(.2,.85,.25,1),
+              top .3s cubic-bezier(.2,.85,.25,1),
+              opacity .2s;
+}
+#mobile-toggle::before { top: 16px; }
+#mobile-toggle::after  { top: 26px; }
+#mobile-toggle.open::before,
+.site-header:has(#mobile-panel[aria-hidden="false"]) #mobile-toggle::before {
+  top: 21px; transform: translateX(-50%) rotate(45deg);
+}
+#mobile-toggle.open::after,
+.site-header:has(#mobile-panel[aria-hidden="false"]) #mobile-toggle::after {
+  top: 21px; transform: translateX(-50%) rotate(-45deg);
+}
+
+/* In the header, hide search-toggle's emoji on very small screens
+   so we don't crowd the row — keep cart + hamburger primary */
+@media (max-width: 380px) {
+  #search-toggle { display: none; }
+}
+
+/* Make actions row hug the right edge when desktop menu is hidden */
+@media (max-width: 900px) {
+  .actions { margin-left: auto; gap: 2px; }
+}
+
+/* Lock page scroll while drawer is open (set by JS via body.no-scroll) */
+body.no-scroll { overflow: hidden; touch-action: none; }
+
+/* Mobile panel — wider on phones, slightly softer entry */
+@media (max-width: 600px) {
+  #mobile-panel { width: min(340px, 92vw); padding-bottom: 24px; }
+  .mobile-panel-header { padding: 16px 18px; font-size: 13px; }
+  .mobile-toggle-sub,
+  #mobile-panel > a    { padding: 16px 18px; font-size: 14px; }
+  .mobile-submenu a    { padding: 12px 22px; font-size: 14px; }
+}
+
+/* Cart drawer — true full-screen on phones, safe-area aware */
+@media (max-width: 600px) {
+  .cart-content {
+    width: 100vw;
+    padding: 24px 18px calc(24px + env(safe-area-inset-bottom));
+  }
+  .cart-content h3 { font-size: 15px; margin-bottom: 18px; padding-bottom: 12px; }
+  #cart-items-list li { font-size: 12.5px; padding: 10px 12px; }
+  .checkout-btn { padding: 14px; font-size: 12px; }
+}
+
+/* Slightly compact search dropdown on mobile */
+@media (max-width: 600px) {
+  #search-input-header { padding: 10px 14px; }
+  #search-input-header input { padding: 10px 14px; font-size: 13px; }
+}
+
+/* Toast — narrow phones can clip wide pills; let it wrap */
+@media (max-width: 480px) {
+  .toast {
+    left: 16px;
+    right: 16px;
+    transform: translateY(18px);
+    white-space: normal;
+    text-align: center;
+    border-radius: 14px;
+    padding: 12px 18px;
+  }
+  .toast.show { transform: translateY(0); }
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  #mobile-panel,
+  #cart-modal,
+  .cart-content,
+  #mobile-toggle::before,
+  #mobile-toggle::after { transition: none !important; }
+}
