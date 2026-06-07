@@ -83,6 +83,42 @@
 }
 .menu-item > a   { color: inherit; text-decoration: none; display: block; position: relative; }
 
+/* Click-toggle trigger styled like the old plain label */
+.menu-item-trigger {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  position: relative;
+}
+.menu-item-trigger:focus-visible {
+  outline: 2px solid var(--hdr-text);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+/* Animated underline for the trigger button (same as <a>) */
+.menu-item-trigger::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: var(--hdr-text);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.menu-item.open .menu-item-trigger::after,
+.menu-item:focus-within .menu-item-trigger::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
 /* Premium Underline Micro-Interaction */
 .menu-item > a::after {
   content: '';
@@ -97,11 +133,11 @@
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.menu-item:hover,
 .menu-item:focus-within { 
   color: var(--hdr-text); 
 }
-.menu-item:hover > a::after,
+.menu-item.open { color: var(--hdr-text); }
+.menu-item.open > a::after,
 .menu-item:focus-within > a::after {
   transform: scaleX(1);
   transform-origin: left;
@@ -132,8 +168,7 @@
   pointer-events: none;
 }
 
-.menu-item:hover > .mega,
-.menu-item:focus-within > .mega {
+.menu-item.open > .mega {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
@@ -143,6 +178,48 @@
     visibility 0s linear 0s;
   pointer-events: auto;
 }
+
+/* Close (×) button inside the mega dropdown */
+.mega-close {
+  position: absolute;
+  top: 14px;
+  right: 22px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--hdr-dim);
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+  font-family: inherit;
+}
+.mega-close:hover {
+  background: var(--hdr-hover);
+  color: var(--hdr-text);
+}
+
+/* Tiny chevron indicator next to menu items that have a dropdown */
+.menu-item.has-mega > a::before,
+.menu-item.has-mega:not(:has(> a))::before {
+  /* nothing — kept minimal; chevron drawn after the label below */
+}
+.menu-item.has-mega > .menu-item-label::after,
+.menu-item.has-mega > a::after { /* don't break underline */ }
+.menu-item.has-mega .menu-chevron {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  transition: transform .25s ease;
+  opacity: .7;
+}
+.menu-item.open .menu-chevron { transform: rotate(180deg); opacity: 1; }
 
 .mega-inner {
   display: flex;

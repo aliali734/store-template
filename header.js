@@ -93,9 +93,12 @@ function renderDesktopMenu(menu) {
     desktopMenu.insertAdjacentHTML(
       "beforeend",
       `
-      <div class="menu-item">
-        ${menuItem.title}
+      <div class="menu-item has-mega">
+        <button type="button" class="menu-item-trigger" aria-expanded="false">
+          ${menuItem.title}<span class="menu-chevron" aria-hidden="true">▾</span>
+        </button>
         <div class="mega">
+          <button type="button" class="mega-close" aria-label="Close menu">&times;</button>
           <div class="mega-inner">${sectionsHtml}</div>
         </div>
       </div>
@@ -272,6 +275,52 @@ function setupHeaderInteractions() {
     const isHidden = headerSearch.style.display === "none" || !headerSearch.style.display;
     headerSearch.style.display = isHidden ? "inline-block" : "none";
     if (isHidden) headerSearch.focus();
+  });
+
+  // ── Desktop mega menu: click to open, click again / × / Esc / outside to close ──
+  const menuItems = document.querySelectorAll("#desktop-menu .menu-item.has-mega");
+
+  const closeAllMega = () => {
+    menuItems.forEach((mi) => {
+      mi.classList.remove("open");
+      const trigger = mi.querySelector(".menu-item-trigger");
+      trigger?.setAttribute("aria-expanded", "false");
+    });
+  };
+
+  menuItems.forEach((mi) => {
+    const trigger = mi.querySelector(".menu-item-trigger");
+    const closeBtn = mi.querySelector(".mega-close");
+
+    trigger?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const wasOpen = mi.classList.contains("open");
+      closeAllMega();
+      if (!wasOpen) {
+        mi.classList.add("open");
+        trigger.setAttribute("aria-expanded", "true");
+      }
+    });
+
+    closeBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeAllMega();
+    });
+
+    // Clicking a link inside the mega should also close it
+    mi.querySelectorAll(".mega a").forEach((a) => {
+      a.addEventListener("click", () => closeAllMega());
+    });
+  });
+
+  // Click outside any mega → close
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".menu-item.has-mega")) closeAllMega();
+  });
+
+  // Esc → close
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeAllMega();
   });
 
   // Mobile search inside the drawer → forwards to shop.html?q=…
