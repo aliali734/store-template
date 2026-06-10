@@ -743,7 +743,6 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
 .offers-section {
   padding: 100px 24px;
   position: relative;
-  background: var(--bg);
 }
 
 .offers-wrap {
