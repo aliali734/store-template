@@ -70,7 +70,7 @@
 
         <div class="hero-actions">
           <a href="shop.html" class="btn-primary">Shop Now</a>
-          <a href="#projects" class="btn-secondary">View Collections</a>
+          <a href="#collections" class="btn-secondary">View Collections</a>
         </div>
 
       </div>
@@ -123,54 +123,99 @@
     </section>
 
     <!-- COLLECTIONS -->
-    <section id="projects" class="projects" aria-labelledby="projects-title">
-      <div class="container">
-        <div class="desc">
-          <div class="orbit3" id="orbit3">
-            <div class="circleh"><img src="images/men.png" alt=""></div>
-          </div>
+    <section id="collections" class="collections" aria-labelledby="collections-title">
+      <h2 id="collections-title" class="main-title">Shop by Audience</h2>
 
-          <div class="orbit4" id="orbit4" aria-hidden="false">
-            <div class="circle" id="circle77"  ><a href="shop.html?audience=men&department=clothing"   ><div class="s-image"><img src="images/clothe.jpg" alt=""></div></a></div>
-            <div class="circle" id="circle88"  ><a href="shop.html?audience=men&department=shoes"      ><div class="s-image"><img src="images/shoes.jpg" alt=""></div></a></div>
-            <div class="circle" id="circle99"  ><a href="shop.html?audience=men&department=accessories"><div class="s-image"><img src="images/accessories-men-black.png" alt=""></div></a></div>
-          </div>
+      <!-- ===== MEN ===== -->
+      <div class="collection-row" data-audience="men">
+        <div class="container">
+          <div class="desc">
 
+            <div class="orbit-center">
+              <a href="shop.html?audience=men" aria-label="Shop Men">
+                <img src="images/men.png" alt="Men">
+              </a>
+              <span class="orbit-label">Men</span>
+            </div>
+
+            <div class="orbit-ring" aria-hidden="false">
+              <a class="orbit-sat" href="shop.html?audience=men&department=clothing"    aria-label="Men — Clothing">
+                <span class="sat-img"><img src="images/clothe.jpg"                    alt=""></span>
+                <span class="sat-label">Clothing</span>
+              </a>
+              <a class="orbit-sat" href="shop.html?audience=men&department=shoes"       aria-label="Men — Shoes">
+                <span class="sat-img"><img src="images/shoes.jpg"                     alt=""></span>
+                <span class="sat-label">Shoes</span>
+              </a>
+              <a class="orbit-sat" href="shop.html?audience=men&department=accessories" aria-label="Men — Accessories">
+                <span class="sat-img"><img src="images/accessories-men-black.png"     alt=""></span>
+                <span class="sat-label">Accessories</span>
+              </a>
+            </div>
+
+          </div>
         </div>
       </div>
-    </section>
 
+      <!-- ===== WOMEN ===== -->
+      <div class="collection-row" data-audience="women">
+        <div class="container">
+          <div class="desc">
 
-    <section id="projects" class="projects" aria-labelledby="projects-title">
-      <div class="container">
-        <div class="desc">
-          <div class="orbit3" id="orbit3">
-            <div class="circleh"><img src="images/women.png" alt=""></div>
+            <div class="orbit-center">
+              <a href="shop.html?audience=women" aria-label="Shop Women">
+                <img src="images/women.png" alt="Women">
+              </a>
+              <span class="orbit-label">Women</span>
+            </div>
+
+            <div class="orbit-ring" aria-hidden="false">
+              <a class="orbit-sat" href="shop.html?audience=women&department=clothing"    aria-label="Women — Clothing">
+                <span class="sat-img"><img src="images/women-clothe.jpg"              alt=""></span>
+                <span class="sat-label">Clothing</span>
+              </a>
+              <a class="orbit-sat" href="shop.html?audience=women&department=shoes"       aria-label="Women — Shoes">
+                <span class="sat-img"><img src="images/women-shoes.png"               alt=""></span>
+                <span class="sat-label">Shoes</span>
+              </a>
+              <a class="orbit-sat" href="shop.html?audience=women&department=accessories" aria-label="Women — Accessories">
+                <span class="sat-img"><img src="images/acssesoir-women-wiht.png"      alt=""></span>
+                <span class="sat-label">Accessories</span>
+              </a>
+            </div>
+
           </div>
-
-          <div class="orbit4" id="orbit4" aria-hidden="false">
-            <div class="circle" id="circle77"  ><a href="shop.html?audience=women&department=clothing"   ><div class="s-image"><img src="images/women-clothe.jpg" alt=""></div></a></div>
-            <div class="circle" id="circle88"  ><a href="shop.html?audience=women&department=shoes"      ><div class="s-image"><img src="images/women-shoes.png" alt=""></div></a></div>
-            <div class="circle" id="circle99"  ><a href="shop.html?audience=women&department=accessories"><div class="s-image"><img src="images/acssesoir-women-wiht.png" alt=""></div></a></div>
-          </div>
-
         </div>
       </div>
-    </section>
 
-    <section id="projects" class="projects" aria-labelledby="projects-title">
-      <div class="container">
-        <div class="desc">
-          <div class="orbit3" id="orbit3">
-            <div class="circleh"><img src="images/kids.png" alt=""></div>
+      <!-- ===== KIDS ===== -->
+      <div class="collection-row" data-audience="kids">
+        <div class="container">
+          <div class="desc">
+
+            <div class="orbit-center">
+              <a href="shop.html?audience=kids" aria-label="Shop Kids">
+                <img src="images/kids.png" alt="Kids">
+              </a>
+              <span class="orbit-label">Kids</span>
+            </div>
+
+            <div class="orbit-ring" aria-hidden="false">
+              <a class="orbit-sat" href="shop.html?audience=kids&department=clothing"    aria-label="Kids — Clothing">
+                <span class="sat-img"><img src="images/kids-clothe.png"               alt=""></span>
+                <span class="sat-label">Clothing</span>
+              </a>
+              <a class="orbit-sat" href="shop.html?audience=kids&department=shoes"       aria-label="Kids — Shoes">
+                <span class="sat-img"><img src="images/kids-shoes.png"                alt=""></span>
+                <span class="sat-label">Shoes</span>
+              </a>
+              <a class="orbit-sat" href="shop.html?audience=kids&department=accessories" aria-label="Kids — Accessories">
+                <span class="sat-img"><img src="images/kids-accesoris.jpg"            alt=""></span>
+                <span class="sat-label">Accessories</span>
+              </a>
+            </div>
+
           </div>
-
-          <div class="orbit4" id="orbit4" aria-hidden="false">
-            <div class="circle" id="circle77"  ><a href="shop.html?audience=kids&department=clothing"   ><div class="s-image"><img src="images/kids-clothe.png" alt=""></div></a></div>
-            <div class="circle" id="circle88"  ><a href="shop.html?audience=kids&department=shoes"      ><div class="s-image"><img src="images/kids-shoes.png" alt=""></div></a></div>
-            <div class="circle" id="circle99"  ><a href="shop.html?audience=kids&department=accessories"><div class="s-image"><img src="images/kids-accesoris.jpg" alt=""></div></a></div>
-          </div>
-
         </div>
       </div>
     </section>
@@ -267,7 +312,7 @@
       <ul class="footer-links">
         <li><a href="#home">Home</a></li>
         <li><a href="#about">Why Us</a></li>
-        <li><a href="#projects">Collections</a></li>
+        <li><a href="#collections">Collections</a></li>
         <li><a href="#pricing">Offers</a></li>
         <li><a href="#contact">Support</a></li>
       </ul>
@@ -468,5 +513,5 @@
     })();
   </script>
 
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a07fcea378bbba93',t:'MTc4MDgzNjg4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a07fcea378bbba93',t:'MTc4MDgzNjg4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a09938a93b4148ed',t:'MTc4MTEwMzM3MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

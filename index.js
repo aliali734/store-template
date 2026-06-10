@@ -165,112 +165,11 @@ function initOffersSlider() {
 }
 
 // =====================
-// ABOUT ORBITS 
+// COLLECTIONS ORBITS
+// The new structure uses .orbit-center + .orbit-ring + .orbit-sat.
+// Spin / counter-spin / hover-pause are all handled in pure CSS,
+// so no JavaScript orbit logic is required here.
 // =====================
-document.addEventListener("DOMContentLoaded", () => {
-  const orbit2     = document.getElementById("orbit2");
-  const circle1    = document.getElementById("circle1");
-  const circle11   = document.getElementById("circle11");
-  const circle2    = document.getElementById("circle2");
-  const circle22   = document.getElementById("circle22");
-  const circle3    = document.getElementById("circle3");
-  const circle33   = document.getElementById("circle33");
-  const circle4    = document.getElementById("circle4");
-  const circle44   = document.getElementById("circle44");
-  const circle5    = document.getElementById("circle5");
-  const circle55   = document.getElementById("circle55");
-  const circle6    = document.getElementById("circle6");
-  const circle66   = document.getElementById("circle66");
-
-  if (!orbit2 || !circle1 || !circle11) return;
-
-  circle1.style.visibility   = "hidden";
-  circle2.style.visibility   = "hidden";
-  circle3.style.visibility   = "hidden";
-  circle4.style.visibility  = "hidden";
-  circle5.style.visibility  = "hidden";
-  circle6.style.visibility  = "hidden";
-
-  if (window.innerWidth > 768) {
-    orbit4.addEventListener("mouseenter", () => {
-      document
-        .querySelectorAll(
-          ".orbit1, .orbit2, .po2, .circle, .content1, .content11, .content2, .content22, .content3, .content33, .content4, .content44, .content5, .content55, .content6, .content66"
-        )
-        .forEach((el) => (el.style.animationPlayState = "paused"));
-    });
-
-    orbit4.addEventListener("mouseleave", () => {
-      document
-        .querySelectorAll(
-          ".orbit1, .orbit2, .po2, .circle, .content1, .content11, .content2, .content22, .content3, .content33, .content4, .content44, .content5, .content55, .content6, .content66"
-        )
-        .forEach((el) => (el.style.animationPlayState = "running"));
-    });
-  }
-
-  circle11.addEventListener("mouseenter",   () => { circle1.style.visibility   = "visible"; });
-  circle22.addEventListener("mouseenter",   () => { circle2.style.visibility   = "visible"; });
-  circle33.addEventListener("mouseenter",   () => { circle3.style.visibility   = "visible"; });
-  circle44.addEventListener("mouseenter",   () => { circle4.style.visibility  = "visible"; });
-  circle55.addEventListener("mouseenter",   () => { circle5.style.visibility  = "visible"; });
-  circle66.addEventListener("mouseenter",   () => { circle6.style.visibility  = "visible"; });
-
-  circle11.addEventListener("mouseleave",   () => { circle1.style.visibility   = "hidden"; });
-  circle22.addEventListener("mouseleave",   () => { circle2.style.visibility   = "hidden"; });
-  circle33.addEventListener("mouseleave",   () => { circle3.style.visibility   = "hidden"; });
-  circle44.addEventListener("mouseleave",   () => { circle4.style.visibility  = "hidden"; });
-  circle55.addEventListener("mouseleave",   () => { circle5.style.visibility  = "hidden"; });
-  circle66.addEventListener("mouseleave",   () => { circle6.style.visibility  = "hidden"; });
-});
-
-// =====================
-// PROJECT ORBITS
-// =====================
-document.addEventListener("DOMContentLoaded", () => {
-  const orbit4     = document.getElementById("orbit4");
-  const circle7    = document.getElementById("circle7");
-  const circle77   = document.getElementById("circle77");
-  const circle8    = document.getElementById("circle8");
-  const circle88   = document.getElementById("circle88");
-  const circle9    = document.getElementById("circle9");
-  const circle99   = document.getElementById("circle99");
-
-  if (!orbit4 || !circle7 || !circle77) return;
-
-  circle7.style.visibility   = "hidden";
-  circle8.style.visibility   = "hidden";
-  circle9.style.visibility   = "hidden";
-
-
-  if (window.innerWidth > 768) {
-    orbit4.addEventListener("mouseenter", () => {
-      document
-        .querySelectorAll(
-          ".orbit3, .orbit4, .po2, .circle, .content7, .content77, .content8, .content88, .content9, .content99"
-        )
-        .forEach((el) => (el.style.animationPlayState = "paused"));
-    });
-
-    orbit4.addEventListener("mouseleave", () => {
-      document
-        .querySelectorAll(
-          ".orbit3, .orbit4, .po2, .circle, .content7, .content77, .content8, .content88, .content9, .content99"
-        )
-        .forEach((el) => (el.style.animationPlayState = "running"));
-    });
-  }
-
-  circle77.addEventListener("mouseenter",   () => { circle7.style.visibility   = "visible"; });
-  circle88.addEventListener("mouseenter",   () => { circle8.style.visibility   = "visible"; });
-  circle99.addEventListener("mouseenter",   () => { circle9.style.visibility   = "visible"; });
-
-
-  circle77.addEventListener("mouseleave",   () => { circle7.style.visibility   = "hidden"; });
-  circle88.addEventListener("mouseleave",   () => { circle8.style.visibility   = "hidden"; });
-  circle99.addEventListener("mouseleave",   () => { circle9.style.visibility   = "hidden"; });
-
-});
 
 
 // =====================

@@ -405,132 +405,197 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
 
 
 /* ===========================
-   PROJECTS (orbit — UNCHANGED)
+   COLLECTIONS (Men / Women / Kids orbits)
+   - One big center image (the audience)
+   - Three rotating satellites (Clothing / Shoes / Accessories)
+   - Reusable classes so the same markup repeats per audience
 =========================== */
-.projects {
+.collections {
+  position: relative;
+  z-index: 0;
+  padding: 40px 0 20px;
+}
+
+.collection-row {
   min-height: auto;
   position: relative;
   z-index: 0;
-  padding: 80px 0;
+  padding: 60px 0;
 }
 
-.projects .container {
+.collection-row .container {
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
 }
 
-.projects .desc {
+.collection-row .desc {
   position: relative;
   max-width: 700px;
-  min-height: 700px;
+  min-height: 640px;
   margin: 0 auto;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 4;
   background-color: transparent;
-  width: min(90vw, 700px);
+  width: min(92vw, 700px);
   padding: var(--space-md);
 }
 
-.orbit3 {
+/* ── CENTER: big audience circle (Men / Women / Kids) ── */
+.orbit-center {
   position: absolute;
-  width: 300px; height: 300px;
-  max-width: 600px; max-height: 600px;
-  border-radius: 50%;
+  width: 280px;
+  height: 280px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  z-index: 4;
-  animation: none !important;
+  justify-content: center;
+  z-index: 5;
+  pointer-events: auto;
 }
-
-.orbit3 .circle {
-  position: absolute;
-  width: 300px; height: 300px;
+.orbit-center > a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
   background: var(--glass);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: var(--shadow);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  z-index: 7;
-  opacity: 0;
-  transform: translateY(8px) scale(.98);
-  pointer-events: none;
-  transition: opacity .28s ease, transform .28s cubic-bezier(.2,.85,.25,1);
-  will-change: opacity, transform;
+  box-shadow: var(--shadow), 0 18px 50px rgba(0,0,0,.12);
+  border: 1px solid rgba(0,0,0,.05);
+  transition: transform .35s cubic-bezier(.2,.85,.25,1),
+              box-shadow .35s ease;
 }
-
-.orbit4 .circle:hover {
-  box-shadow: 0 5px 30px rgba(0,0,0,1);
-  width: 110px; height: 110px;
+.orbit-center > a:hover {
+  transform: scale(1.03);
+  box-shadow: 0 22px 60px rgba(0,0,0,.22);
 }
-
-.orbit3 .circle.is-visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
-  box-shadow: 0 14px 30px rgba(10,20,40,.18);
+.orbit-center img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
-
-.orbit3 h2 { text-align: center; color: var(--text); z-index: 3; }
-
-.orbit4 {
+.orbit-label {
   position: absolute;
-  max-width: 700px; max-height: 700px;
+  bottom: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* ── RING: spinning container for the 3 satellites ── */
+.orbit-ring {
+  position: absolute;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  animation: spin 40s linear infinite;
-  background-color: transparent;
   z-index: 4;
-  width: 100px; height: 100px;
+  background-color: transparent;
+  animation: spin 40s linear infinite;
   margin: 0;
 }
 
-.orbit4 .circle {
+/* Pause spin on hover so users can read labels */
+.collection-row:hover .orbit-ring,
+.collection-row:hover .sat-img { animation-play-state: paused; }
+
+/* ── SATELLITE: clickable round category tile ── */
+.orbit-sat {
   position: absolute;
-  width: 100px; height: 100px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--text);
+  z-index: 6;
+  cursor: pointer;
+  outline: none;
+  transition: transform .25s cubic-bezier(.2,.85,.25,1);
+}
+.orbit-sat:hover { transform: scale(1.08); }
+
+.sat-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
   background: var(--glass);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: var(--shadow);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  z-index: 4;
-  border: none;
-  cursor: pointer;
-  outline: none;
-  transition: transform .18s ease, box-shadow .18s ease;
+  border: 1px solid rgba(0,0,0,.06);
+  transition: box-shadow .25s ease;
+}
+.orbit-sat:hover .sat-img {
+  box-shadow: 0 12px 32px rgba(0,0,0,.22);
+}
+.sat-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-.orbit4 .circle .s-image img,
-.orbit4 .circle .s-image img,
-.orbit4 .circle .s-image img{ display: flex; flex-direction: column; align-items: center;border-radius: 50%; }
+/* Floating label under each satellite (rides along with rotation) */
+.sat-label {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--h2);
+  opacity: 0;
+  white-space: nowrap;
+  transition: opacity .25s ease;
+  pointer-events: none;
+}
+.orbit-sat:hover .sat-label { opacity: 1; }
 
-.orbit4 .circle .s-image   { animation: counterspin1 40s linear infinite; }
-.orbit4 .circle .s-image   { animation: counterspin2 40s linear infinite; }
-.orbit4 .circle .s-image  { animation: counterspin3 40s linear infinite; }
+/* Position the 3 satellites + counter-spin so images stay upright */
+.orbit-sat:nth-child(1) { transform: rotate(0deg)   translate(250px); }
+.orbit-sat:nth-child(2) { transform: rotate(120deg) translate(250px); }
+.orbit-sat:nth-child(3) { transform: rotate(240deg) translate(250px); }
 
-.orbit4 .circle:nth-child(1) { transform: rotate(0deg)   translate(250px); }
-.orbit4 .circle:nth-child(2) { transform: rotate(120deg)  translate(250px); }
-.orbit4 .circle:nth-child(3) { transform: rotate(240deg) translate(250px); }
+.orbit-sat:nth-child(1) .sat-img { animation: counterspin-a 40s linear infinite; }
+.orbit-sat:nth-child(2) .sat-img { animation: counterspin-b 40s linear infinite; }
+.orbit-sat:nth-child(3) .sat-img { animation: counterspin-c 40s linear infinite; }
 
+/* Hover scaling on a satellite multiplies its transform — re-apply position + scale */
+.orbit-sat:nth-child(1):hover { transform: rotate(0deg)   translate(250px) scale(1.08); }
+.orbit-sat:nth-child(2):hover { transform: rotate(120deg) translate(250px) scale(1.08); }
+.orbit-sat:nth-child(3):hover { transform: rotate(240deg) translate(250px) scale(1.08); }
 
-.orbit4 .visual-only { pointer-events: none; user-select: none; opacity: .6; z-index: 700; }
-.orbit4 .circle.is-expanded { visibility: hidden; }
+/* Counter-rotation keyframes — keep each image right-side-up while ring spins */
+@keyframes counterspin-a { from { transform: rotate(0deg);    } to { transform: rotate(-360deg); } }
+@keyframes counterspin-b { from { transform: rotate(-120deg); } to { transform: rotate(-480deg); } }
+@keyframes counterspin-c { from { transform: rotate(-240deg); } to { transform: rotate(-600deg); } }
 
-@media (min-width: 769px) { .orbit4 { animation: spin 40s linear infinite; } }
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .orbit-ring,
+  .orbit-sat .sat-img { animation: none !important; }
+}
 
 /* ===========================
    ANIMATIONS (UNCHANGED)
@@ -1290,4 +1355,47 @@ img, video, canvas, svg { max-width: 100%; height: auto; }
 }
 .circleh{
   border-radius: 50%;
+}
+/* ============================================================
+   COLLECTIONS — Mobile responsive
+   (overrides the generic orbit phone rules above for the new
+    .orbit-center / .orbit-ring / .orbit-sat structure)
+   ============================================================ */
+@media (max-width: 900px) {
+  .collection-row .desc { min-height: 560px; }
+  .orbit-center { width: 230px; height: 230px; }
+  .orbit-sat    { width:  92px; height:  92px; }
+  .orbit-sat:nth-child(1) { transform: rotate(0deg)   translate(200px); }
+  .orbit-sat:nth-child(2) { transform: rotate(120deg) translate(200px); }
+  .orbit-sat:nth-child(3) { transform: rotate(240deg) translate(200px); }
+  .orbit-sat:nth-child(1):hover { transform: rotate(0deg)   translate(200px) scale(1.06); }
+  .orbit-sat:nth-child(2):hover { transform: rotate(120deg) translate(200px) scale(1.06); }
+  .orbit-sat:nth-child(3):hover { transform: rotate(240deg) translate(200px) scale(1.06); }
+}
+
+@media (max-width: 600px) {
+  .collection-row { padding: 48px 0; }
+  .collection-row .desc { min-height: 470px; width: min(96vw, 700px); padding: var(--space-sm); }
+  .orbit-center { width: 180px; height: 180px; }
+  .orbit-label  { font-size: 11px; bottom: -28px; letter-spacing: 1.8px; }
+  .orbit-sat    { width:  76px; height:  76px; }
+  .orbit-sat:nth-child(1) { transform: rotate(0deg)   translate(155px); }
+  .orbit-sat:nth-child(2) { transform: rotate(120deg) translate(155px); }
+  .orbit-sat:nth-child(3) { transform: rotate(240deg) translate(155px); }
+  .orbit-sat:nth-child(1):hover { transform: rotate(0deg)   translate(155px) scale(1.05); }
+  .orbit-sat:nth-child(2):hover { transform: rotate(120deg) translate(155px) scale(1.05); }
+  .orbit-sat:nth-child(3):hover { transform: rotate(240deg) translate(155px) scale(1.05); }
+  .sat-label    { font-size: 10px; bottom: -18px; opacity: 1; } /* show labels by default on touch */
+}
+
+@media (max-width: 380px) {
+  .collection-row .desc { min-height: 420px; }
+  .orbit-center { width: 150px; height: 150px; }
+  .orbit-sat    { width:  64px; height:  64px; }
+  .orbit-sat:nth-child(1) { transform: rotate(0deg)   translate(130px); }
+  .orbit-sat:nth-child(2) { transform: rotate(120deg) translate(130px); }
+  .orbit-sat:nth-child(3) { transform: rotate(240deg) translate(130px); }
+  .orbit-sat:nth-child(1):hover { transform: rotate(0deg)   translate(130px) scale(1.05); }
+  .orbit-sat:nth-child(2):hover { transform: rotate(120deg) translate(130px) scale(1.05); }
+  .orbit-sat:nth-child(3):hover { transform: rotate(240deg) translate(130px) scale(1.05); }
 }
