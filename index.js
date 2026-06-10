@@ -166,10 +166,45 @@ function initOffersSlider() {
 
 // =====================
 // COLLECTIONS ORBITS
-// The new structure uses .orbit-center + .orbit-ring + .orbit-sat.
-// Spin / counter-spin / hover-pause are all handled in pure CSS,
-// so no JavaScript orbit logic is required here.
+// Spin / counter-spin animations are defined in CSS. We also use JS
+// here to pause those animations on hover, which:
+//   1. Mirrors the old behavior the previous version had.
+//   2. Acts as a fallback in case the CSS :hover pause is ignored
+//      (some embedded webviews, reader modes, etc.).
+//   3. Lets us pause an entire row (center + ring + all 3 satellites)
+//      from a single mouseenter, instead of relying on hover bubbling.
 // =====================
+document.addEventListener("DOMContentLoaded", () => {
+  const rows = document.querySelectorAll(".collection-row");
+  if (!rows.length) return;
+
+  // Skip on touch-only devices — hover events don't make sense there.
+  const supportsHover = window.matchMedia?.("(hover: hover)").matches;
+  if (!supportsHover) return;
+
+  rows.forEach((row) => {
+    const ring       = row.querySelector(".orbit-ring");
+    const satImages  = row.querySelectorAll(".orbit-sat .sat-img");
+    if (!ring) return;
+
+    const pauseAll = () => {
+      ring.style.animationPlayState = "paused";
+      satImages.forEach((img) => { img.style.animationPlayState = "paused"; });
+    };
+
+    const resumeAll = () => {
+      ring.style.animationPlayState = "running";
+      satImages.forEach((img) => { img.style.animationPlayState = "running"; });
+    };
+
+    row.addEventListener("mouseenter", pauseAll);
+    row.addEventListener("mouseleave", resumeAll);
+
+    // Keyboard accessibility — pause while a satellite link is focused
+    row.addEventListener("focusin",  pauseAll);
+    row.addEventListener("focusout", resumeAll);
+  });
+});
 
 
 // =====================

@@ -509,9 +509,6 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
 }
 
 /* Pause spin on hover so users can read labels */
-.orbit-sat:nth-child(1) .sat-img,
-.orbit-sat:nth-child(2) .sat-img,
-.orbit-sat:nth-child(3) .sat-img,
 .collection-row:hover .orbit-ring,
 .collection-row:hover .sat-img { animation-play-state: paused; }
 
