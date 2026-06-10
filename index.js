@@ -183,25 +183,27 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!supportsHover) return;
 
   rows.forEach((row) => {
-    const ring       = row.querySelector(".orbit-ring");
-    const satImages  = row.querySelectorAll(".orbit-sat .sat-img");
+    const ring     = row.querySelector(".orbit-ring");
+    const spinners = row.querySelectorAll(
+      ".orbit-sat .sat-img, .orbit-sat .sat-label"
+    );
     if (!ring) return;
 
     // Use setProperty with "important" — inline styles already win over
-    // regular CSS, but if any rule on .sat-img uses the `animation:`
-    // shorthand (which resets play-state to "running"), our pause has to
-    // be marked important to survive.
+    // regular CSS, but if any rule on .sat-img / .sat-label uses the
+    // `animation:` shorthand (which resets play-state to "running"),
+    // our pause has to be marked important to survive.
     const pauseAll = () => {
       ring.style.setProperty("animation-play-state", "paused", "important");
-      satImages.forEach((img) => {
-        img.style.setProperty("animation-play-state", "paused", "important");
+      spinners.forEach((el) => {
+        el.style.setProperty("animation-play-state", "paused", "important");
       });
     };
 
     const resumeAll = () => {
       ring.style.setProperty("animation-play-state", "running", "important");
-      satImages.forEach((img) => {
-        img.style.setProperty("animation-play-state", "running", "important");
+      spinners.forEach((el) => {
+        el.style.setProperty("animation-play-state", "running", "important");
       });
     };
 

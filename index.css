@@ -552,12 +552,17 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
   display: block;
 }
 
-/* Floating label under each satellite (rides along with rotation) */
+/* Floating label under each satellite — counter-rotated like the image
+   so the text stays upright as the ring spins.
+   Centering uses left:0 / right:0 / text-align:center instead of
+   translateX(-50%) because the rotation animation needs to own
+   the transform property. */
 .sat-label {
   position: absolute;
   bottom: -22px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  text-align: center;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.4px;
@@ -575,9 +580,12 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
 .orbit-sat:nth-child(2) { transform: rotate(120deg) translate(250px); }
 .orbit-sat:nth-child(3) { transform: rotate(240deg) translate(250px); }
 
-.orbit-sat:nth-child(1) .sat-img { animation: counterspin-a 40s linear infinite; }
-.orbit-sat:nth-child(2) .sat-img { animation: counterspin-b 40s linear infinite; }
-.orbit-sat:nth-child(3) .sat-img { animation: counterspin-c 40s linear infinite; }
+.orbit-sat:nth-child(1) .sat-img,
+.orbit-sat:nth-child(1) .sat-label { animation: counterspin-a 40s linear infinite; }
+.orbit-sat:nth-child(2) .sat-img,
+.orbit-sat:nth-child(2) .sat-label { animation: counterspin-b 40s linear infinite; }
+.orbit-sat:nth-child(3) .sat-img,
+.orbit-sat:nth-child(3) .sat-label { animation: counterspin-c 40s linear infinite; }
 
 /* Hover scaling on a satellite multiplies its transform — re-apply position + scale */
 .orbit-sat:nth-child(1):hover { transform: rotate(0deg)   translate(250px) scale(1.08); }
@@ -596,15 +604,18 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
    another shorthand. */
 .collection-row:hover .orbit-ring,
 .collection-row:hover .orbit-sat .sat-img,
+.collection-row:hover .orbit-sat .sat-label,
 .collection-row:focus-within .orbit-ring,
-.collection-row:focus-within .orbit-sat .sat-img {
+.collection-row:focus-within .orbit-sat .sat-img,
+.collection-row:focus-within .orbit-sat .sat-label {
   animation-play-state: paused !important;
 }
 
 /* Respect users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .orbit-ring,
-  .orbit-sat .sat-img { animation: none !important; }
+  .orbit-sat .sat-img,
+  .orbit-sat .sat-label { animation: none !important; }
 }
 
 /* ===========================
