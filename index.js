@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const circle6    = document.getElementById("circle6");
   const circle66   = document.getElementById("circle66");
 
-  if (!orbit4 || !circle7 || !circle77) return;
+  if (!orbit2 || !circle1 || !circle11) return;
 
   circle1.style.visibility   = "hidden";
   circle2.style.visibility   = "hidden";
@@ -212,61 +212,17 @@ document.addEventListener("DOMContentLoaded", () => {
   circle11.addEventListener("mouseenter",   () => { circle1.style.visibility   = "visible"; });
   circle22.addEventListener("mouseenter",   () => { circle2.style.visibility   = "visible"; });
   circle33.addEventListener("mouseenter",   () => { circle3.style.visibility   = "visible"; });
-  circle44.addEventListener("mouseenter", () => { circle4.style.visibility  = "visible"; });
-  circle55.addEventListener("mouseenter", () => { circle5.style.visibility  = "visible"; });
-  circle66.addEventListener("mouseenter", () => { circle6.style.visibility  = "visible"; });
+  circle44.addEventListener("mouseenter",   () => { circle4.style.visibility  = "visible"; });
+  circle55.addEventListener("mouseenter",   () => { circle5.style.visibility  = "visible"; });
+  circle66.addEventListener("mouseenter",   () => { circle6.style.visibility  = "visible"; });
 
   circle11.addEventListener("mouseleave",   () => { circle1.style.visibility   = "hidden"; });
   circle22.addEventListener("mouseleave",   () => { circle2.style.visibility   = "hidden"; });
   circle33.addEventListener("mouseleave",   () => { circle3.style.visibility   = "hidden"; });
-  circle44.addEventListener("mouseleave", () => { circle4.style.visibility  = "hidden"; });
-  circle55.addEventListener("mouseleave", () => { circle5.style.visibility  = "hidden"; });
-  circle66.addEventListener("mouseleave", () => { circle6.style.visibility  = "hidden"; });
+  circle44.addEventListener("mouseleave",   () => { circle4.style.visibility  = "hidden"; });
+  circle55.addEventListener("mouseleave",   () => { circle5.style.visibility  = "hidden"; });
+  circle66.addEventListener("mouseleave",   () => { circle6.style.visibility  = "hidden"; });
 });
-
-
-
-// =====================
-// THEME TOGGLE
-// =====================
-(function () {
-  const LS_KEY = "site-theme";
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const toggle = document.getElementById("theme-toggle");
-    if (!toggle) return;
-
-    const saved          = localStorage.getItem(LS_KEY);
-    const systemPrefDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
-
-    function applyTheme(theme) {
-      if (theme === "dark") document.documentElement.classList.add("dark");
-      else                  document.documentElement.classList.remove("dark");
-
-      toggle.setAttribute("aria-pressed", String(theme === "dark"));
-
-      const icon = toggle.querySelector(".theme-icon");
-      if (icon) icon.textContent = theme === "dark" ? "☀️" : "🌙";
-    }
-
-    applyTheme(saved === "dark" || (!saved && systemPrefDark) ? "dark" : "light");
-
-    window.matchMedia?.("(prefers-color-scheme: dark)")
-      .addEventListener?.("change", (e) => {
-        if (!localStorage.getItem(LS_KEY)) applyTheme(e.matches ? "dark" : "light");
-      });
-
-    toggle.addEventListener("click", () => {
-      const newTheme = document.documentElement.classList.contains("dark") ? "light" : "dark";
-      applyTheme(newTheme);
-      localStorage.setItem(LS_KEY, newTheme);
-    });
-
-    toggle.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle.click(); }
-    });
-  });
-})();
 
 // =====================
 // PROJECT ORBITS
@@ -327,6 +283,50 @@ document.addEventListener("DOMContentLoaded", () => {
   circle1212.addEventListener("mouseleave", () => { circle12.style.visibility  = "hidden"; });
   circle1313.addEventListener("mouseleave", () => { circle13.style.visibility  = "hidden"; });
 });
+
+
+// =====================
+// THEME TOGGLE
+// =====================
+(function () {
+  const LS_KEY = "site-theme";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const toggle = document.getElementById("theme-toggle");
+    if (!toggle) return;
+
+    const saved          = localStorage.getItem(LS_KEY);
+    const systemPrefDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+
+    function applyTheme(theme) {
+      if (theme === "dark") document.documentElement.classList.add("dark");
+      else                  document.documentElement.classList.remove("dark");
+
+      toggle.setAttribute("aria-pressed", String(theme === "dark"));
+
+      const icon = toggle.querySelector(".theme-icon");
+      if (icon) icon.textContent = theme === "dark" ? "☀️" : "🌙";
+    }
+
+    applyTheme(saved === "dark" || (!saved && systemPrefDark) ? "dark" : "light");
+
+    window.matchMedia?.("(prefers-color-scheme: dark)")
+      .addEventListener?.("change", (e) => {
+        if (!localStorage.getItem(LS_KEY)) applyTheme(e.matches ? "dark" : "light");
+      });
+
+    toggle.addEventListener("click", () => {
+      const newTheme = document.documentElement.classList.contains("dark") ? "light" : "dark";
+      applyTheme(newTheme);
+      localStorage.setItem(LS_KEY, newTheme);
+    });
+
+    toggle.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle.click(); }
+    });
+  });
+})();
+
 
 // =====================
 // TESTIMONIALS
