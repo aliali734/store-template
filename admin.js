@@ -24,7 +24,7 @@ const audienceInput       = document.getElementById("audience");
 const priceInput          = document.getElementById("price");
 const compareAtPriceInput = document.getElementById("compareAtPrice");
 const stockInput          = document.getElementById("stock");
-const sizesInput          = document.getElementById("sizes");
+const sizesChecklist      = document.getElementById("sizesChecklist");
 const colorsChecklist     = document.getElementById("colorsChecklist");
 const featuredInput       = document.getElementById("featured");
 const isActiveInput       = document.getElementById("isActive");
@@ -262,22 +262,35 @@ function populateCategoryOptions(department, selectedCategory = "") {
 }
 
 function populateSizeOptions(department, audience = "", selectedSizes = []) {
-  if (!sizesInput) return;
+  if (!sizesChecklist) return;
 
   const sizes = window.getSizesForProduct
     ? window.getSizesForProduct(department, audience)
     : [];
 
-  sizesInput.innerHTML = sizes
-    .map((size) => `<option value="${size}">${size}</option>`)
+  sizesChecklist.innerHTML = sizes
+    .map((size) => {
+      const checked = selectedSizes.includes(size) ? "checked" : "";
+      return `
+        <label class="checklist-item">
+          <input type="checkbox" value="${size}" ${checked} />
+          <span>${size}</span>
+        </label>
+      `;
+    })
     .join("");
+}
 
-  setMultiSelectValues(sizesInput, selectedSizes);
+function getSelectedSizes() {
+  if (!sizesChecklist) return [];
+  return [
+    ...sizesChecklist.querySelectorAll('input[type="checkbox"]:checked')
+  ].map((cb) => cb.value);
 }
 
 function clearSizeOptions() {
-  if (!sizesInput) return;
-  sizesInput.innerHTML = "";
+  if (!sizesChecklist) return;
+  sizesChecklist.innerHTML = "";
 }
 
 function populateColorChecklist(selectedColors = []) {
@@ -402,7 +415,7 @@ form?.addEventListener("submit", async (e) => {
   formData.append("price",          priceInput.value);
   formData.append("compareAtPrice", compareAtPriceInput.value || 0);
   formData.append("stock",          stockInput.value);
-  formData.append("sizes",          getMultiSelectValues(sizesInput).join(","));
+  formData.append("sizes",          getSelectedSizes().join(","));
   formData.append("colors",         getSelectedColors().join(","));
   formData.append("featured",       featuredInput.checked);
   formData.append("isActive",       isActiveInput.checked);
