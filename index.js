@@ -165,7 +165,7 @@ function initOffersSlider() {
 }
 
 // =====================
-// ABOUT ORBITS — click-only
+// ABOUT ORBITS 
 // =====================
 document.addEventListener("DOMContentLoaded", () => {
   const orbit2     = document.getElementById("orbit2");
@@ -224,133 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
   circle66.addEventListener("mouseleave", () => { circle6.style.visibility  = "hidden"; });
 });
 
-(function () {
-  function init() {
-    const desc   = document.querySelector(".about .desc") || document.querySelector(".desc");
-    const orbit1 = document.getElementById("orbit1");
-    const orbit2 = document.getElementById("orbit2");
-    if (!desc || !orbit1 || !orbit2) return;
 
-    const buttons = Array.from(orbit2.querySelectorAll("button.circle"));
-    const bigById = {};
-
-    Array.from(orbit1.querySelectorAll(".circle[id]")).forEach((b) => {
-      bigById[b.id] = b;
-    });
-
-    const map = new Map();
-    buttons.forEach((btn) => {
-      const ctrl = btn.getAttribute("aria-controls");
-      if (ctrl && bigById[ctrl]) map.set(btn, bigById[ctrl]);
-    });
-
-    map.forEach((big, btn) => {
-      big.classList.remove("is-visible");
-      big.setAttribute("aria-hidden", "true");
-      if (!big.hasAttribute("tabindex")) big.setAttribute("tabindex", "-1");
-      btn.setAttribute("aria-expanded", "false");
-    });
-
-    function pauseOrbit() {
-      orbit1.classList.add("paused");
-      orbit2.classList.add("paused");
-      desc.classList.add("paused");
-    }
-
-    function resumeOrbit() {
-      const anyOpen = Object.values(bigById).some(
-        (b) => b.classList && b.classList.contains("is-visible")
-      );
-      if (!anyOpen) {
-        orbit1.classList.remove("paused");
-        orbit2.classList.remove("paused");
-        desc.classList.remove("paused");
-      }
-    }
-
-    function hideAll() {
-      map.forEach((big, btn) => {
-        big.classList.remove("is-visible");
-        big.setAttribute("aria-hidden", "true");
-        btn.setAttribute("aria-expanded", "false");
-        btn.classList.remove("is-expanded");
-      });
-      resumeOrbit();
-    }
-
-    function showFor(btn) {
-      const big = map.get(btn);
-      if (!big) return;
-
-      map.forEach((otherBig, otherBtn) => {
-        if (otherBig !== big) {
-          otherBig.classList.remove("is-visible");
-          otherBig.setAttribute("aria-hidden", "true");
-          otherBtn.setAttribute("aria-expanded", "false");
-          otherBtn.classList.remove("is-expanded");
-        }
-      });
-
-      big.classList.add("is-visible");
-      big.setAttribute("aria-hidden", "false");
-      btn.setAttribute("aria-expanded", "true");
-      btn.classList.add("is-expanded");
-      pauseOrbit();
-    }
-
-    map.forEach((big, btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const expanded = btn.getAttribute("aria-expanded") === "true";
-        if (expanded) { hideAll(); btn.focus(); }
-        else           { showFor(btn); }
-      });
-      big.addEventListener("click", (ev) => ev.stopPropagation());
-    });
-
-    document.addEventListener("click", (e) => {
-      const hitBtn = buttons.find((b) => b.contains(e.target) || b === e.target);
-      const hitBig = Object.values(bigById).find((b) => b.contains(e.target) || b === e.target);
-      if (!hitBtn && !hitBig) hideAll();
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" || e.key === "Esc") hideAll();
-    });
-
-    let wheelTimer = null;
-
-    orbit2.addEventListener("wheel", () => {
-      pauseOrbit();
-      clearTimeout(wheelTimer);
-      wheelTimer = setTimeout(resumeOrbit, 220);
-    }, { passive: true });
-
-    orbit1.addEventListener("wheel", () => {
-      pauseOrbit();
-      clearTimeout(wheelTimer);
-      wheelTimer = setTimeout(resumeOrbit, 220);
-    }, { passive: true });
-
-    function handleResponsive() {
-      if (window.innerWidth <= 768) hideAll();
-    }
-
-    handleResponsive();
-
-    let rt;
-    window.addEventListener("resize", () => {
-      clearTimeout(rt);
-      rt = setTimeout(handleResponsive, 120);
-    });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-})();
 
 // =====================
 // THEME TOGGLE
