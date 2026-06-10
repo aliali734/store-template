@@ -508,9 +508,7 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
   margin: 0;
 }
 
-/* Pause spin on hover so users can read labels */
-.collection-row:hover .orbit-ring,
-.collection-row:hover .sat-img { animation-play-state: paused; }
+/* (hover-pause rule moved below the counterspin shorthands — see end of section) */
 
 /* ── SATELLITE: clickable round category tile ── */
 .orbit-sat {
@@ -590,6 +588,18 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
 @keyframes counterspin-a { from { transform: rotate(0deg);    } to { transform: rotate(-360deg); } }
 @keyframes counterspin-b { from { transform: rotate(-120deg); } to { transform: rotate(-480deg); } }
 @keyframes counterspin-c { from { transform: rotate(-240deg); } to { transform: rotate(-600deg); } }
+
+/* ── Pause every spinning element on hover / focus ──────────
+   This MUST come after the `animation:` shorthands above, because
+   that shorthand resets animation-play-state to "running". Using
+   !important guarantees we win the cascade even if future code adds
+   another shorthand. */
+.collection-row:hover .orbit-ring,
+.collection-row:hover .orbit-sat .sat-img,
+.collection-row:focus-within .orbit-ring,
+.collection-row:focus-within .orbit-sat .sat-img {
+  animation-play-state: paused !important;
+}
 
 /* Respect users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {

@@ -187,14 +187,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const satImages  = row.querySelectorAll(".orbit-sat .sat-img");
     if (!ring) return;
 
+    // Use setProperty with "important" — inline styles already win over
+    // regular CSS, but if any rule on .sat-img uses the `animation:`
+    // shorthand (which resets play-state to "running"), our pause has to
+    // be marked important to survive.
     const pauseAll = () => {
-      ring.style.animationPlayState = "paused";
-      satImages.forEach((img) => { img.style.animationPlayState = "paused"; });
+      ring.style.setProperty("animation-play-state", "paused", "important");
+      satImages.forEach((img) => {
+        img.style.setProperty("animation-play-state", "paused", "important");
+      });
     };
 
     const resumeAll = () => {
-      ring.style.animationPlayState = "running";
-      satImages.forEach((img) => { img.style.animationPlayState = "running"; });
+      ring.style.setProperty("animation-play-state", "running", "important");
+      satImages.forEach((img) => {
+        img.style.setProperty("animation-play-state", "running", "important");
+      });
     };
 
     row.addEventListener("mouseenter", pauseAll);
