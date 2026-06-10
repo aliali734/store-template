@@ -1478,3 +1478,9 @@ img, video, canvas, svg { max-width: 100%; height: auto; }
   .offer-card:hover     { transform: none; box-shadow: 0 4px 24px rgba(0,0,0,.07); }
   .offer-card:hover .offer-image-wrap img { transform: none; }
 }
+.s-image{
+  border-radius: 50%;
+}
+.circleh{
+  border-radius: 50%;
+}
