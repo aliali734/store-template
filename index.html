@@ -335,7 +335,6 @@
   <script type="module">
     import * as THREE        from 'three';
     import { GLTFLoader }    from 'three/addons/loaders/GLTFLoader.js';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { DRACOLoader }   from 'three/addons/loaders/DRACOLoader.js';
 
     const container            = document.getElementById('canvas-container');
@@ -375,22 +374,11 @@
     rimLight.position.set(0, -2, -3);
     scene.add(rimLight);
 
-    const controls = new OrbitControls(camera, canvas);
-    controls.enableDamping   = true;
-    controls.dampingFactor   = 0.05;
-    controls.enableZoom      = true;
-    controls.minDistance     = 2;
-    controls.maxDistance     = 8;
-    controls.enablePan       = false;
-    controls.autoRotate      = true;
-    controls.autoRotateSpeed = 1.5;
-
-    let autoRotateTimeout;
-    controls.addEventListener('start', () => { controls.autoRotate = false; });
-    controls.addEventListener('end', () => {
-      clearTimeout(autoRotateTimeout);
-      autoRotateTimeout = setTimeout(() => { controls.autoRotate = true; }, 3000);
-    });
+    // OrbitControls intentionally removed — the model is locked in place.
+    // The user cannot drag, zoom, or pan. Auto-rotation around the Y axis
+    // and the gentle up/down bob are applied directly inside the animate()
+    // loop below.
+    const AUTO_ROTATE_SPEED = 0.4;   // radians per second (Y axis)
 
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
@@ -507,11 +495,21 @@
     const clock = new THREE.Clock();
     (function animate() {
       requestAnimationFrame(animate);
-      if (model) model.position.y = Math.sin(clock.getElapsedTime() * 0.8) * 0.08;
-      controls.update();
+
+      if (model) {
+        const dt = clock.getDelta();          // seconds since last frame
+        const t  = clock.elapsedTime;         // total time (updated by getDelta)
+
+        // Continuous self-rotation around the Y axis (no user input)
+        model.rotation.y += AUTO_ROTATE_SPEED * dt;
+
+        // Gentle up/down bob
+        model.position.y = Math.sin(t * 0.8) * 0.08;
+      }
+
       renderer.render(scene, camera);
     })();
   </script>
 
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a07fcea378bbba93',t:'MTc4MDgzNjg4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a09938a93b4148ed',t:'MTc4MTEwMzM3MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a07fcea378bbba93',t:'MTc4MDgzNjg4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a09997246a61282d',t:'MTc4MTEwNzI0MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

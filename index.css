@@ -295,10 +295,10 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
 #three-canvas {
   width: 100% !important;
   height: 100% !important;
-  cursor: grab;
+  cursor: default;            /* model is non-interactive — no grab hint */
   display: block;
+  pointer-events: none;       /* let clicks pass through the canvas */
 }
-#three-canvas:active { cursor: grabbing; }
 
 .loading-overlay {
   position: absolute;
