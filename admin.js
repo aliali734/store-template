@@ -405,6 +405,26 @@ form?.addEventListener("submit", async (e) => {
   e.preventDefault();
   e.stopPropagation();
 
+  // ── Manual validation for checkbox groups ──
+  // Native `required` doesn't work on a group of checkboxes, so we
+  // enforce "at least one size" and "at least one color" here.
+  const selectedSizes  = getSelectedSizes();
+  const selectedColors = getSelectedColors();
+
+  if (selectedSizes.length === 0) {
+    messageEl.textContent = "Please select at least one size.";
+    messageEl.style.color = "#b91c1c";
+    sizesChecklist?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  if (selectedColors.length === 0) {
+    messageEl.textContent = "Please select at least one color.";
+    messageEl.style.color = "#b91c1c";
+    colorsChecklist?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
   const formData = new FormData();
   formData.append("name",           nameInput.value);
   formData.append("description",    descriptionInput.value);
@@ -415,8 +435,8 @@ form?.addEventListener("submit", async (e) => {
   formData.append("price",          priceInput.value);
   formData.append("compareAtPrice", compareAtPriceInput.value || 0);
   formData.append("stock",          stockInput.value);
-  formData.append("sizes",          getSelectedSizes().join(","));
-  formData.append("colors",         getSelectedColors().join(","));
+  formData.append("sizes",          selectedSizes.join(","));
+  formData.append("colors",         selectedColors.join(","));
   formData.append("featured",       featuredInput.checked);
   formData.append("isActive",       isActiveInput.checked);
 
