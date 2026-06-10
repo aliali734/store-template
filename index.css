@@ -403,168 +403,6 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
   .hero-3d        { width: 100%; height: 400px; }
 }
 
-/* ===========================
-   ABOUT (orbit — UNCHANGED)
-=========================== */
-.about {
-  min-height: auto;
-  position: relative;
-  z-index: 0;
-  padding: 80px 0;
-}
-
-.about .container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-}
-
-.about .desc {
-  position: relative;
-  max-width: 700px;
-  min-height: 700px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 4;
-  background-color: transparent;
-  width: min(90vw, 700px);
-  padding: var(--space-md);
-}
-
-.orbit1 {
-  position: absolute;
-  width: 300px; height: 300px;
-  max-width: 600px; max-height: 600px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 4;
-  animation: none !important;
-}
-
-.orbit1 .circle {
-  position: absolute;
-  width: 300px; height: 300px;
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: var(--shadow);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  z-index: 7;
-  opacity: 0;
-  transform: translateY(8px) scale(.98);
-  pointer-events: none;
-  transition: opacity .28s ease, transform .28s cubic-bezier(.2,.85,.25,1);
-  will-change: opacity, transform;
-}
-
-.orbit2 .circle:hover {
-  box-shadow: 0 5px 30px rgba(0,0,0,1);
-  width: 110px; height: 110px;
-}
-
-.orbit1 .circle.is-visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
-  box-shadow: 0 14px 30px rgba(10,20,40,.18);
-}
-
-.orbit1 h2 { text-align: center; color: var(--text); z-index: 3; }
-
-.orbit1 .circle .content1,
-.orbit1 .circle .content2,
-.orbit1 .circle .content3,
-.orbit1 .circle .content4,
-.orbit1 .circle .content5,
-.orbit1 .circle .content6 {
-  margin: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.orbit1 .circle .content1 p,
-.orbit1 .circle .content2 p,
-.orbit1 .circle .content3 p,
-.orbit1 .circle .content4 p,
-.orbit1 .circle .content5 p,
-.orbit1 .circle .content6 p { font-size: .8rem; margin-top: 6px; }
-
-.orbit2 {
-  position: absolute;
-  max-width: 700px; max-height: 700px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  animation: spin 40s linear infinite;
-  background-color: transparent;
-  z-index: 4;
-  width: 100px; height: 100px;
-  margin: 0;
-}
-
-.orbit2 .circle {
-  position: absolute;
-  width: 100px; height: 100px;
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: var(--shadow);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  z-index: 4;
-  border: none;
-  cursor: pointer;
-  outline: none;
-  transition: transform .18s ease, box-shadow .18s ease;
-}
-
-.orbit2 .circle .content11 { animation: counterspin1 40s linear infinite; }
-.orbit2 .circle .content22 { animation: counterspin2 40s linear infinite; }
-.orbit2 .circle .content33 { animation: counterspin3 40s linear infinite; }
-.orbit2 .circle .content44 { animation: counterspin4 40s linear infinite; }
-.orbit2 .circle .content55 { animation: counterspin5 40s linear infinite; }
-.orbit2 .circle .content66 { animation: counterspin6 40s linear infinite; }
-
-.orbit2 .circle .content11 p,
-.orbit2 .circle .content22 p,
-.orbit2 .circle .content33 p,
-.orbit2 .circle .content44 p,
-.orbit2 .circle .content55 p,
-.orbit2 .circle .content66 p { font-size: .8rem; margin-top: 6px; }
-
-.orbit2 .circle .content11,
-.orbit2 .circle .content22,
-.orbit2 .circle .content33,
-.orbit2 .circle .content44,
-.orbit2 .circle .content55,
-.orbit2 .circle .content66 { display: flex; flex-direction: column; align-items: center; }
-
-.orbit2 .circle:nth-child(1) { transform: rotate(0deg)   translate(250px); }
-.orbit2 .circle:nth-child(2) { transform: rotate(60deg)  translate(250px); }
-.orbit2 .circle:nth-child(3) { transform: rotate(120deg) translate(250px); }
-.orbit2 .circle:nth-child(4) { transform: rotate(180deg) translate(250px); }
-.orbit2 .circle:nth-child(5) { transform: rotate(240deg) translate(250px); }
-.orbit2 .circle:nth-child(6) { transform: rotate(300deg) translate(250px); }
-
-.orbit2 .visual-only { pointer-events: none; user-select: none; opacity: .6; z-index: 700; }
-.orbit2 .circle.is-expanded { visibility: hidden; }
-
-@media (min-width: 769px) { .orbit2 { animation: spin 40s linear infinite; } }
 
 /* ===========================
    PROJECTS (orbit — UNCHANGED)
@@ -643,20 +481,6 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
 
 .orbit3 h2 { text-align: center; color: var(--text); z-index: 3; }
 
-.orbit3 .circle .content7,
-.orbit3 .circle .content8,
-.orbit3 .circle .content9,
-.orbit3 .circle .content10,
-.orbit3 .circle .content12,
-.orbit3 .circle .content13 { margin: 10px; text-align: center; }
-
-.orbit3 .circle .content7 h3,
-.orbit3 .circle .content8 h3,
-.orbit3 .circle .content9 h3,
-.orbit3 .circle .content10 h3,
-.orbit3 .circle .content12 h3,
-.orbit3 .circle .content13 h3 { font-size: .8rem; margin-top: 6px; }
-
 .orbit4 {
   position: absolute;
   max-width: 700px; max-height: 700px;
@@ -690,33 +514,18 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
   transition: transform .18s ease, box-shadow .18s ease;
 }
 
-.orbit4 .circle .content77 h3,
-.orbit4 .circle .content88 h3,
-.orbit4 .circle .content99 h3,
-.orbit4 .circle .content1010 h3,
-.orbit4 .circle .content1212 h3,
-.orbit4 .circle .content1313 h3 { font-size: .8rem; margin-top: 6px; }
-
 .orbit4 .circle .content77,
 .orbit4 .circle .content88,
-.orbit4 .circle .content99,
-.orbit4 .circle .content1010,
-.orbit4 .circle .content1212,
-.orbit4 .circle .content1313 { display: flex; flex-direction: column; align-items: center; }
+.orbit4 .circle .content99{ display: flex; flex-direction: column; align-items: center;border-radius: 50%; }
 
 .orbit4 .circle .content77   { animation: counterspin1 40s linear infinite; }
 .orbit4 .circle .content88   { animation: counterspin2 40s linear infinite; }
 .orbit4 .circle .content99   { animation: counterspin3 40s linear infinite; }
-.orbit4 .circle .content1010 { animation: counterspin4 40s linear infinite; }
-.orbit4 .circle .content1212 { animation: counterspin5 40s linear infinite; }
-.orbit4 .circle .content1313 { animation: counterspin6 40s linear infinite; }
 
 .orbit4 .circle:nth-child(1) { transform: rotate(0deg)   translate(250px); }
-.orbit4 .circle:nth-child(2) { transform: rotate(60deg)  translate(250px); }
-.orbit4 .circle:nth-child(3) { transform: rotate(120deg) translate(250px); }
-.orbit4 .circle:nth-child(4) { transform: rotate(180deg) translate(250px); }
-.orbit4 .circle:nth-child(5) { transform: rotate(240deg) translate(250px); }
-.orbit4 .circle:nth-child(6) { transform: rotate(300deg) translate(250px); }
+.orbit4 .circle:nth-child(2) { transform: rotate(120deg)  translate(250px); }
+.orbit4 .circle:nth-child(3) { transform: rotate(240deg) translate(250px); }
+
 
 .orbit4 .visual-only { pointer-events: none; user-select: none; opacity: .6; z-index: 700; }
 .orbit4 .circle.is-expanded { visibility: hidden; }
@@ -731,11 +540,9 @@ p, li { margin-bottom: calc(var(--space-sm) * 1.2); }
   to   { transform: rotate(360deg); }
 }
 @keyframes counterspin1 { from { transform: rotate(360deg);  } to { transform: rotate(0deg);    } }
-@keyframes counterspin2 { from { transform: rotate(300deg);  } to { transform: rotate(-60deg);  } }
-@keyframes counterspin3 { from { transform: rotate(240deg);  } to { transform: rotate(-120deg); } }
-@keyframes counterspin4 { from { transform: rotate(180deg);  } to { transform: rotate(-180deg); } }
-@keyframes counterspin5 { from { transform: rotate(120deg);  } to { transform: rotate(-240deg); } }
-@keyframes counterspin6 { from { transform: rotate(60deg);   } to { transform: rotate(-300deg); } }
+@keyframes counterspin2 { from { transform: rotate(240deg);  } to { transform: rotate(-120deg);  } }
+@keyframes counterspin3 { from { transform: rotate(120deg);  } to { transform: rotate(-240deg); } }
+
 
 /* ===========================
    OFFERS

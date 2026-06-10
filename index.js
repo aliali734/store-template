@@ -235,27 +235,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const circle88   = document.getElementById("circle88");
   const circle9    = document.getElementById("circle9");
   const circle99   = document.getElementById("circle99");
-  const circle10   = document.getElementById("circle10");
-  const circle1010 = document.getElementById("circle1010");
-  const circle12   = document.getElementById("circle12");
-  const circle1212 = document.getElementById("circle1212");
-  const circle13   = document.getElementById("circle13");
-  const circle1313 = document.getElementById("circle1313");
 
   if (!orbit4 || !circle7 || !circle77) return;
 
   circle7.style.visibility   = "hidden";
   circle8.style.visibility   = "hidden";
   circle9.style.visibility   = "hidden";
-  circle10.style.visibility  = "hidden";
-  circle12.style.visibility  = "hidden";
-  circle13.style.visibility  = "hidden";
+
 
   if (window.innerWidth > 768) {
     orbit4.addEventListener("mouseenter", () => {
       document
         .querySelectorAll(
-          ".orbit3, .orbit4, .po2, .circle, .content7, .content77, .content8, .content88, .content9, .content99, .content10, .content1010, .content12, .content1212, .content13, .content1313"
+          ".orbit3, .orbit4, .po2, .circle, .content7, .content77, .content8, .content88, .content9, .content99"
         )
         .forEach((el) => (el.style.animationPlayState = "paused"));
     });
@@ -263,7 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
     orbit4.addEventListener("mouseleave", () => {
       document
         .querySelectorAll(
-          ".orbit3, .orbit4, .po2, .circle, .content7, .content77, .content8, .content88, .content9, .content99, .content10, .content1010, .content12, .content1212, .content13, .content1313"
+          ".orbit3, .orbit4, .po2, .circle, .content7, .content77, .content8, .content88, .content9, .content99"
         )
         .forEach((el) => (el.style.animationPlayState = "running"));
     });
@@ -272,16 +264,12 @@ document.addEventListener("DOMContentLoaded", () => {
   circle77.addEventListener("mouseenter",   () => { circle7.style.visibility   = "visible"; });
   circle88.addEventListener("mouseenter",   () => { circle8.style.visibility   = "visible"; });
   circle99.addEventListener("mouseenter",   () => { circle9.style.visibility   = "visible"; });
-  circle1010.addEventListener("mouseenter", () => { circle10.style.visibility  = "visible"; });
-  circle1212.addEventListener("mouseenter", () => { circle12.style.visibility  = "visible"; });
-  circle1313.addEventListener("mouseenter", () => { circle13.style.visibility  = "visible"; });
+
 
   circle77.addEventListener("mouseleave",   () => { circle7.style.visibility   = "hidden"; });
   circle88.addEventListener("mouseleave",   () => { circle8.style.visibility   = "hidden"; });
   circle99.addEventListener("mouseleave",   () => { circle9.style.visibility   = "hidden"; });
-  circle1010.addEventListener("mouseleave", () => { circle10.style.visibility  = "hidden"; });
-  circle1212.addEventListener("mouseleave", () => { circle12.style.visibility  = "hidden"; });
-  circle1313.addEventListener("mouseleave", () => { circle13.style.visibility  = "hidden"; });
+
 });
 
 
