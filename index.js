@@ -167,6 +167,63 @@ function initOffersSlider() {
 // =====================
 // ABOUT ORBITS — click-only
 // =====================
+document.addEventListener("DOMContentLoaded", () => {
+  const orbit2     = document.getElementById("orbit2");
+  const circle1    = document.getElementById("circle1");
+  const circle11   = document.getElementById("circle11");
+  const circle2    = document.getElementById("circle2");
+  const circle22   = document.getElementById("circle22");
+  const circle3    = document.getElementById("circle3");
+  const circle33   = document.getElementById("circle33");
+  const circle4    = document.getElementById("circle4");
+  const circle44   = document.getElementById("circle44");
+  const circle5    = document.getElementById("circle5");
+  const circle55   = document.getElementById("circle55");
+  const circle6    = document.getElementById("circle6");
+  const circle66   = document.getElementById("circle66");
+
+  if (!orbit4 || !circle7 || !circle77) return;
+
+  circle1.style.visibility   = "hidden";
+  circle2.style.visibility   = "hidden";
+  circle3.style.visibility   = "hidden";
+  circle4.style.visibility  = "hidden";
+  circle5.style.visibility  = "hidden";
+  circle6.style.visibility  = "hidden";
+
+  if (window.innerWidth > 768) {
+    orbit4.addEventListener("mouseenter", () => {
+      document
+        .querySelectorAll(
+          ".orbit1, .orbit2, .po2, .circle, .content1, .content11, .content2, .content22, .content3, .content33, .content4, .content44, .content5, .content55, .content6, .content66"
+        )
+        .forEach((el) => (el.style.animationPlayState = "paused"));
+    });
+
+    orbit4.addEventListener("mouseleave", () => {
+      document
+        .querySelectorAll(
+          ".orbit1, .orbit2, .po2, .circle, .content1, .content11, .content2, .content22, .content3, .content33, .content4, .content44, .content5, .content55, .content6, .content66"
+        )
+        .forEach((el) => (el.style.animationPlayState = "running"));
+    });
+  }
+
+  circle11.addEventListener("mouseenter",   () => { circle1.style.visibility   = "visible"; });
+  circle22.addEventListener("mouseenter",   () => { circle2.style.visibility   = "visible"; });
+  circle33.addEventListener("mouseenter",   () => { circle3.style.visibility   = "visible"; });
+  circle44.addEventListener("mouseenter", () => { circle4.style.visibility  = "visible"; });
+  circle55.addEventListener("mouseenter", () => { circle5.style.visibility  = "visible"; });
+  circle66.addEventListener("mouseenter", () => { circle6.style.visibility  = "visible"; });
+
+  circle11.addEventListener("mouseleave",   () => { circle1.style.visibility   = "hidden"; });
+  circle22.addEventListener("mouseleave",   () => { circle2.style.visibility   = "hidden"; });
+  circle33.addEventListener("mouseleave",   () => { circle3.style.visibility   = "hidden"; });
+  circle44.addEventListener("mouseleave", () => { circle4.style.visibility  = "hidden"; });
+  circle55.addEventListener("mouseleave", () => { circle5.style.visibility  = "hidden"; });
+  circle66.addEventListener("mouseleave", () => { circle6.style.visibility  = "hidden"; });
+});
+
 (function () {
   function init() {
     const desc   = document.querySelector(".about .desc") || document.querySelector(".desc");
