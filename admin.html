@@ -13,7 +13,7 @@
       <li><a href="#" data-section="products">Products</a></li>
       <li><a href="#" data-section="orders">Orders</a></li>
       <li><button type="button" id="openSettingsModal">Store Settings</button></li>
-      <li><button type="button" id="openHeaderModal">Header Settings</button></li>
+      <li><button type="button" id="openHeaderModal">Logo</button></li>
       <li><button type="button" id="openModelModal">3D Hero Model</button></li>
       <li><button type="button" id="logoutBtn">Logout</button></li>
     </ul>
@@ -235,7 +235,7 @@
     </div>
 
     <form id="header-form">
-      <label for="header-logo">Header Logo</label>
+      <label for="header-logo">Logo</label>
       <input type="file" id="header-logo" accept="image/*" />
       <img
         id="logoPreview"
@@ -243,14 +243,6 @@
         alt="Logo Preview"
         style="max-width:140px; max-height:80px;"
       />
-
-      <label for="header-categories">Mega Menu</label>
-      <textarea
-        id="header-categories"
-        rows="4"
-        readonly
-        disabled
-      >Mega menu structure is managed from backend defaults / database. Logo can be updated here only.</textarea>
 
       <p id="headerMessage"></p>
       <button type="submit">Save Logo</button>
