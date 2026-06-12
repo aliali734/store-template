@@ -103,13 +103,17 @@ async function createCheckoutOrder(productsPayload, paymentMethod) {
 async function createPaymentRecord(orderId, paymentMethod) {
   const provider = getProviderFromMethod(paymentMethod);
 
+  // Currency is intentionally NOT sent from the frontend anymore. The
+  // backend reads it from StoreSettings (configured by the admin in the
+  // setup wizard) and falls back to USD if missing. Hard-coding "SAR"
+  // here caused Stripe to reject sessions for any account that didn't
+  // support SAR for card payments.
   const paymentRes = await paymentApiFetch("/payments", {
     method: "POST",
     body: JSON.stringify({
       orderId,
       method: paymentMethod,
-      provider,
-      currency: "SAR"
+      provider
     })
   });
 

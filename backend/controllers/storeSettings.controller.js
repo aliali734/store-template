@@ -67,6 +67,9 @@ const getStoreSettings = async (req, res) => {
         // apiKey and apiSecret intentionally omitted
       };
     }
+    // Stripe Connect — entirely hidden from the public endpoint.
+    // Admins read the connection status via /api/payments/connect/status.
+    if (safe.stripe) delete safe.stripe;
 
     return res.json({ success: true, settings: safe });
   } catch (error) {

@@ -69,6 +69,15 @@ const paymentSchema = new mongoose.Schema(
       default: {}
     },
 
+    // ID of the last Stripe webhook event we successfully processed for
+    // this payment. Used for idempotency: Stripe retries any webhook that
+    // doesn't get a 2xx within ~10s, so we need to skip duplicates.
+    lastWebhookEventId: {
+      type: String,
+      default: "",
+      index: true
+    },
+
     paidAt: {
       type: Date
     }

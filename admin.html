@@ -15,6 +15,7 @@
       <li><button type="button" id="openSettingsModal">Store Settings</button></li>
       <li><button type="button" id="openHeaderModal">Logo</button></li>
       <li><button type="button" id="openModelModal">3D Hero Model</button></li>
+      <li><button type="button" id="openPaymentsModal">Payments</button></li>
       <li><button type="button" id="logoutBtn">Logout</button></li>
     </ul>
   </aside>
@@ -272,6 +273,70 @@
   </div>
 
   <!-- ============================================================
+       PAYMENTS / STRIPE CONNECT MODAL
+  ============================================================ -->
+  <div id="paymentsModal" class="modal hidden">
+    <div class="modal-header">
+      <h2>Payments</h2>
+      <button type="button" id="closePaymentsModal">&times;</button>
+    </div>
+
+    <div id="stripe-connect-panel" style="display:flex; flex-direction:column; gap:14px;">
+
+      <p id="stripe-status-line"
+         style="margin:0; padding:12px 14px; border-radius:10px;
+                background:#f3f4f6; border:1px solid #e5e7eb;
+                font-size:14px; color:#374151;">
+        Checking Stripe connection…
+      </p>
+
+      <div id="stripe-details"
+           style="display:none; padding:12px 14px; border-radius:10px;
+                  background:#ecfdf5; border:1px solid #6ee7b7;
+                  font-size:13px; color:#065f46; line-height:1.6;">
+        <div>Account: <code id="stripe-acct-id"></code></div>
+        <div>Charges enabled: <strong id="stripe-charges"></strong></div>
+        <div>Payouts enabled: <strong id="stripe-payouts"></strong></div>
+        <div>Details submitted: <strong id="stripe-details-submitted"></strong></div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button type="button" id="stripe-connect-btn">
+          Connect Stripe Account
+        </button>
+        <button type="button" id="stripe-refresh-btn"
+                style="display:none;">
+          Refresh status
+        </button>
+        <button type="button" id="stripe-continue-btn"
+                style="display:none;">
+          Continue onboarding
+        </button>
+        <button type="button" id="stripe-disconnect-btn" class="btn delete"
+                style="display:none;">
+          Disconnect
+        </button>
+      </div>
+
+      <p id="stripe-message" style="margin:0; font-size:13px;"></p>
+
+      <details style="margin-top:8px;">
+        <summary style="cursor:pointer; font-size:13px; color:#6b7280;">
+          How does this work?
+        </summary>
+        <p style="font-size:13px; color:#4b5563; line-height:1.6; margin-top:8px;">
+          We use <strong>Stripe Connect (Express)</strong>. Click
+          <em>Connect Stripe Account</em> and you'll be sent to Stripe
+          to fill in your business details and bank account. Once
+          finished, customer payments on this store will be sent
+          directly to your Stripe account. We never see your password
+          or secret keys.
+        </p>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============================================================
        FOOTER
   ============================================================ -->
   <footer class="site-footer">
@@ -296,6 +361,7 @@
   <script src="admin.js"></script>
   <script src="admin-settings.js"></script>
   <script src="admin-model.js"></script>
+  <script src="admin-payments.js"></script>
 
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a07fca0d2e983fe2',t:'MTc4MDgzNjY5Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a07fca0d2e983fe2',t:'MTc4MDgzNjY5Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0a4ac28d963ba84',t:'MTc4MTIyMzQ0NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

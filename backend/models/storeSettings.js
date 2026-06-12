@@ -49,6 +49,26 @@ const cloudinarySchema = new mongoose.Schema(
   { _id: false }
 );
 
+// Stripe Connect — the admin's connected Stripe Express account.
+// We DO NOT store the admin's secret key. We only store the account ID
+// returned by Stripe after onboarding. All charges are routed to this
+// account via `transfer_data.destination`.
+const stripeConnectSchema = new mongoose.Schema(
+  {
+    // "acct_…" — Stripe-generated, identifies the admin's connected account
+    accountId:        { type: String, default: "", trim: true, index: true },
+
+    // Cached capability flags — refreshed from Stripe on demand
+    chargesEnabled:   { type: Boolean, default: false },
+    payoutsEnabled:   { type: Boolean, default: false },
+    detailsSubmitted: { type: Boolean, default: false },
+
+    // Last time we refreshed the cached flags from Stripe
+    lastCheckedAt:    { type: Date }
+  },
+  { _id: false }
+);
+
 const storeSettingsSchema = new mongoose.Schema(
   {
     storeName:    { type: String, default: "Clothing Store", trim: true },
@@ -58,10 +78,11 @@ const storeSettingsSchema = new mongoose.Schema(
     currency:     { type: String, default: "USD", trim: true, uppercase: true },
     footerText:   { type: String, default: "", trim: true },
 
-    socialLinks: { type: socialLinksSchema,  default: () => ({}) },
-    homepage:    { type: homepageSchema,     default: () => ({}) },
-    smtp:        { type: smtpSchema,         default: () => ({}) },
-    cloudinary:  { type: cloudinarySchema,   default: () => ({}) },
+    socialLinks: { type: socialLinksSchema,    default: () => ({}) },
+    homepage:    { type: homepageSchema,       default: () => ({}) },
+    smtp:        { type: smtpSchema,           default: () => ({}) },
+    cloudinary:  { type: cloudinarySchema,     default: () => ({}) },
+    stripe:      { type: stripeConnectSchema,  default: () => ({}) },
 
     // Cloudinary URL for the 3D GLB model shown in the homepage hero.
     heroModelUrl: { type: String, default: "", trim: true },

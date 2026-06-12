@@ -10,6 +10,15 @@ const { setCsrfCookie } = require("./middlewares/csrf.middleware");
 const app   = express();
 const isDev = process.env.NODE_ENV !== "production";
 
+// ── Trust the platform proxy (Render, Heroku, Fly, etc.) ───────────────────
+// Without this, req.ip is always the proxy's IP, which:
+//   - breaks per-IP rate limiting (express-rate-limit logs a startup warning)
+//   - makes request logs useless for debugging
+//   - prevents Secure cookies from being set correctly when behind https
+// "1" trusts a single hop (the platform's load balancer). Bump higher
+// only if you intentionally chain multiple proxies.
+app.set("trust proxy", 1);
+
 // ── Ensure upload folders exist ────────────────────────────────────────────
 const uploadDirs = [
   path.join(__dirname, "uploads"),
@@ -119,17 +128,6 @@ if (isDev) {
 // ── Health check ───────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
   res.send("🚀 Backend is running successfully!");
-});
-
-// ── JSON 404 — must come AFTER all routes ──────────────────────────────────
-// Matches the {success:false, message} shape used everywhere else, so the
-// frontend's apiFetch() can surface the message cleanly instead of choking
-// on Express's default HTML "Cannot GET /api/foo".
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `Route not found: ${req.method} ${req.originalUrl}`
-  });
 });
 
 // ── Global error handler ───────────────────────────────────────────────────
