@@ -30,6 +30,112 @@ const featuredInput       = document.getElementById("featured");
 const isActiveInput       = document.getElementById("isActive");
 const imageInput          = document.getElementById("image");
 
+// =====================================================================
+// MULTI-IMAGE PICKER — accumulate selections instead of replacing them.
+//
+// A bare <input type="file" multiple> REPLACES its file list every time
+// the user picks new files. To let the admin add images in several
+// rounds we keep our own array and sync it back to the input via a
+// DataTransfer object on every change. We also render a thumbnail list
+// with a × button so individual images can be removed.
+// =====================================================================
+let selectedImageFiles = [];   // File[]
+
+const MAX_PRODUCT_IMAGES = 5;
+
+function makeFileKey(file) {
+  return `${file.name}|${file.size}|${file.lastModified}`;
+}
+
+function syncFilesToInput() {
+  if (!imageInput) return;
+  const dt = new DataTransfer();
+  selectedImageFiles.forEach((f) => dt.items.add(f));
+  imageInput.files = dt.files;
+}
+
+function clearSelectedImages() {
+  selectedImageFiles = [];
+  syncFilesToInput();
+  renderImagePreviews();
+}
+
+function renderImagePreviews() {
+  const list = document.getElementById("image-preview-list");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  if (!selectedImageFiles.length) {
+    list.style.display = "none";
+    return;
+  }
+  list.style.display = "flex";
+
+  selectedImageFiles.forEach((file, index) => {
+    const url = URL.createObjectURL(file);
+
+    const item = document.createElement("div");
+    item.className = "image-preview-item";
+    item.innerHTML = `
+      <img src="${url}" alt="${file.name}" />
+      <button type="button"
+              class="image-preview-remove"
+              data-index="${index}"
+              aria-label="Remove ${file.name}">&times;</button>
+    `;
+
+    // Release the blob URL when the image actually loads, so we don't
+    // leak memory across many open/close cycles.
+    const img = item.querySelector("img");
+    img.addEventListener("load",  () => URL.revokeObjectURL(url), { once: true });
+    img.addEventListener("error", () => URL.revokeObjectURL(url), { once: true });
+
+    list.appendChild(item);
+  });
+
+  // Wire remove buttons (delegated on parent would also work)
+  list.querySelectorAll(".image-preview-remove").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const i = Number(btn.dataset.index);
+      if (Number.isInteger(i)) {
+        selectedImageFiles.splice(i, 1);
+        syncFilesToInput();
+        renderImagePreviews();
+      }
+    });
+  });
+}
+
+imageInput?.addEventListener("change", () => {
+  // Append-merge new picks into the running array, deduping by
+  // name + size + lastModified (avoids the same file being added twice
+  // if the admin re-selects it).
+  const incoming = Array.from(imageInput.files || []);
+  const existing = new Set(selectedImageFiles.map(makeFileKey));
+
+  for (const f of incoming) {
+    const key = makeFileKey(f);
+    if (existing.has(key)) continue;
+
+    if (selectedImageFiles.length >= MAX_PRODUCT_IMAGES) {
+      // Surface a soft warning — backend slices to 5 anyway but the
+      // user shouldn't be surprised.
+      if (messageEl) {
+        messageEl.textContent = `Only ${MAX_PRODUCT_IMAGES} images max per product.`;
+        messageEl.style.color = "#b45309";
+      }
+      break;
+    }
+
+    selectedImageFiles.push(f);
+    existing.add(key);
+  }
+
+  syncFilesToInput();
+  renderImagePreviews();
+});
+
 const openHeaderBtn    = document.getElementById("openHeaderModal");
 const closeHeaderBtn   = document.getElementById("closeHeaderModal");
 const headerModal      = document.getElementById("headerModal");
@@ -363,6 +469,7 @@ openBtn?.addEventListener("click", () => {
   populateCategoryOptions("");
   clearSizeOptions();
   clearColorChecklist();
+  clearSelectedImages();
 
   modal.classList.remove("hidden");
   overlay.classList.remove("hidden");
@@ -463,6 +570,7 @@ form?.addEventListener("submit", async (e) => {
       populateCategoryOptions("");
       clearSizeOptions();
       clearColorChecklist();
+      clearSelectedImages();
       loadProducts();
     }, 600);
   } catch (err) {
@@ -569,6 +677,11 @@ function openEditPopup(product) {
 
   featuredInput.checked = !!product.featured;
   isActiveInput.checked = product.isActive !== false;
+
+  // Reset the local picker — when editing, the admin starts fresh; any
+  // images they pick will be ADDED on the server side. Existing images
+  // already saved on the product are not re-uploaded.
+  clearSelectedImages();
 
   messageEl.textContent = "";
 
